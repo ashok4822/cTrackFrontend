@@ -5,6 +5,7 @@ import LandingPage from "@/pages/LandingPage";
 import NotFound from "@/pages/NotFound";
 import AdminLogin from "@/pages/admin/AdminLogin";
 import OperatorLogin from "@/pages/operator/OperatorLogin";
+import CustomerLogin from "@/pages/customer/CustomerLogin";
 
 const AppRoutes = () => {
   return (
@@ -19,6 +20,9 @@ const AppRoutes = () => {
 
           {/* Operator Routes */}
           <Route path="/operator/login" element={<OperatorLogin />} />
+
+          {/* Customer Routes */}
+          <Route path="/customer/login" element={<CustomerLogin />} />
 
           {/* Catch-all*/}
           <Route path="*" element={<NotFound />} />
