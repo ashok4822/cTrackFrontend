@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LandingPage from "@/pages/LandingPage";
 import NotFound from "@/pages/NotFound";
 import AdminLogin from "@/pages/admin/AdminLogin";
+import OperatorLogin from "@/pages/operator/OperatorLogin";
 
 const AppRoutes = () => {
   return (
@@ -15,6 +16,9 @@ const AppRoutes = () => {
 
           {/* Admin Login & Routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
+
+          {/* Operator Routes */}
+          <Route path="/operator/login" element={<OperatorLogin />} />
 
           {/* Catch-all*/}
           <Route path="*" element={<NotFound />} />

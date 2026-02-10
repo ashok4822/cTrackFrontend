@@ -37,7 +37,7 @@ const userTypes = [
     title: "Terminal Operator",
     description: "Terminal operations management",
     icon: Building2,
-    href: "/terminal/login",
+    href: "/operator/login",
     color: "bg-warning/10 text-warning",
     features: [
       "Gate operations",
@@ -116,7 +116,7 @@ const LandingPage = () => {
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Button size="lg" asChild className="gap-2">
-                <Link to="/terminal/login">
+                <Link to="/operator/login">
                   Terminal User Login
                   <ArrowRight className="h-4 w-4" />
                 </Link>
