@@ -6,6 +6,7 @@ import NotFound from "@/pages/NotFound";
 import AdminLogin from "@/pages/admin/AdminLogin";
 import OperatorLogin from "@/pages/operator/OperatorLogin";
 import CustomerLogin from "@/pages/customer/CustomerLogin";
+import CustomerSignup from "@/pages/customer/CustomerSignup";
 
 const AppRoutes = () => {
   return (
@@ -23,6 +24,7 @@ const AppRoutes = () => {
 
           {/* Customer Routes */}
           <Route path="/customer/login" element={<CustomerLogin />} />
+          <Route path="/customer/signup" element={<CustomerSignup />} />
 
           {/* Catch-all*/}
           <Route path="*" element={<NotFound />} />
