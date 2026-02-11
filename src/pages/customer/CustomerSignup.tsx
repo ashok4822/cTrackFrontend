@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Factory, ChevronLeft, Eye, EyeOff } from "lucide-react";
 
-const CustomerLogin = () => {
+const CustomerSignup = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
@@ -30,24 +30,40 @@ const CustomerLogin = () => {
         </div>
       </header>
 
-      {/* Login Form */}
+      {/* Signup Form */}
       <div className="container flex min-h-[calc(100vh-4rem)] items-center justify-center py-12">
         <Card className="w-full max-w-md animate-fade-in">
           <CardHeader className="text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-success/10">
               <Factory className="h-8 w-8 text-success" />
             </div>
-            <CardTitle className="text-2xl">Customer Portal</CardTitle>
+            <CardTitle className="text-2xl">Create Customer Account</CardTitle>
             <CardDescription>
-              Sign in to view your containers and submit requests
+              Register your organization to manage containers
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form className="space-y-6">
+            <form className="space-y-4">
+              {/* Organization Name */}
+              <div className="space-y-2">
+                <Label htmlFor="orgName">Organization Name</Label>
+                <Input
+                  id="orgName"
+                  type="text"
+                  placeholder="e.g. ABC Manufacturing"
+                  required
+                />
+              </div>
+
               {/* Email */}
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="Enter your email" />
+                <Label htmlFor="email">Work Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="name@company.com"
+                  required
+                />
               </div>
 
               {/* Password */}
@@ -57,7 +73,8 @@ const CustomerLogin = () => {
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
+                    placeholder="Create a password"
+                    required
                   />
                   <Button
                     type="button"
@@ -75,20 +92,22 @@ const CustomerLogin = () => {
                 </div>
               </div>
 
-              {/* Forgot Password Link */}
-              <div className="text-right">
-                <Button
-                  type="button"
-                  variant="link"
-                  className="h-auto p-0 text-sm text-muted-foreground hover:text-success"
-                >
-                  Forgot Password?
-                </Button>
+              {/* Confirm Password */}
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Confirm your password"
+                    required
+                  />
+                </div>
               </div>
 
               {/* Submit */}
               <Button type="submit" className="w-full" size="lg">
-                Sign In
+                Create Account
               </Button>
 
               <div className="relative my-4">
@@ -124,30 +143,26 @@ const CustomerLogin = () => {
                     d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"
                   ></path>
                 </svg>
-                Sign in with Google
+                Sign up with Google
               </Button>
 
               <div className="text-center text-sm">
                 <span className="text-muted-foreground">
-                  Don't have an account?{" "}
+                  Already have an account?{" "}
                 </span>
                 <Link
-                  to="/customer/signup"
+                  to="/customer/login"
                   className="text-success hover:underline font-medium"
                 >
-                  Create an account
+                  Sign in
                 </Link>
               </div>
-
-              {/* Demo Note */}
             </form>
           </CardContent>
         </Card>
       </div>
-
-      {/* Forgot Password Dialog */}
     </div>
   );
 };
 
-export default CustomerLogin;
+export default CustomerSignup;
