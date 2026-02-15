@@ -1,19 +1,10 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import api from "@/services/api";
+import { authService } from "@/services/authService";
+import type { LoginResponse } from "@/services/authService";
 import type { User, UserRole } from "@/types";
 import { AxiosError } from "axios";
-
-interface LoginResponse {
-  accessToken: string;
-  refreshToken: string;
-  user: {
-    id: string;
-    email: string;
-    role: string;
-    name?: string;
-  };
-}
+import { getProfile, updateProfile, updateProfileImage } from "./profileSlice";
 
 interface AuthState {
   user: User | null;
@@ -40,11 +31,7 @@ export const login = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const response = await api.post<LoginResponse>(
-        "/auth/login",
-        credentials,
-      );
-      return response.data;
+      return await authService.login(credentials);
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;
       const message =
@@ -63,11 +50,7 @@ export const googleLogin = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const response = await api.post<LoginResponse>("/auth/google", {
-        code,
-        role,
-      });
-      return response.data;
+      return await authService.googleLogin({ code, role });
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;
       const message =
@@ -79,13 +62,11 @@ export const googleLogin = createAsyncThunk(
   },
 );
 
-
 export const initiateSignup = createAsyncThunk(
   "auth/initiateSignup",
   async (email: string, { rejectWithValue }) => {
     try {
-      const response = await api.post("/auth/initiate-signup", { email });
-      return response.data;
+      return await authService.initiateSignup(email);
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;
       const message =
@@ -104,8 +85,7 @@ export const signup = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const response = await api.post("/auth/signup", credentials);
-      return response.data;
+      return await authService.signup(credentials);
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;
       const message =
@@ -121,7 +101,7 @@ export const logoutUser = createAsyncThunk(
   "auth/logout",
   async (_, { dispatch }) => {
     try {
-      await api.post("/auth/logout");
+      await authService.logout();
     } catch (error) {
       console.error("Logout failed on server:", error);
     } finally {
@@ -134,8 +114,7 @@ export const forgotPassword = createAsyncThunk(
   "auth/forgotPassword",
   async (email: string, { rejectWithValue }) => {
     try {
-      const response = await api.post("/auth/forgot-password", { email });
-      return response.data;
+      return await authService.forgotPassword(email);
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;
       const message =
@@ -154,12 +133,7 @@ export const resetPassword = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const response = await api.post("/auth/reset-password", {
-        email,
-        otp,
-        newPassword,
-      });
-      return response.data;
+      return await authService.resetPassword({ email, otp, newPassword });
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;
       const message =
@@ -208,6 +182,7 @@ const authSlice = createSlice({
             name: userData.name || userData.email.split("@")[0],
             email: userData.email,
             role: userData.role as UserRole,
+            profileImage: userData.profileImage,
           };
 
           localStorage.setItem("accessToken", accessToken);
@@ -237,6 +212,7 @@ const authSlice = createSlice({
             name: userData.name || userData.email.split("@")[0],
             email: userData.email,
             role: userData.role as UserRole,
+            profileImage: userData.profileImage,
           };
 
           localStorage.setItem("accessToken", accessToken);
@@ -280,6 +256,27 @@ const authSlice = createSlice({
       .addCase(resetPassword.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
+      })
+      // Sync profile changes to user state
+      .addCase(getProfile.fulfilled, (state, action) => {
+        if (state.user) {
+          state.user.name = action.payload.name || state.user.name;
+          state.user.profileImage = action.payload.profileImage;
+          localStorage.setItem("user", JSON.stringify(state.user));
+        }
+      })
+      .addCase(updateProfile.fulfilled, (state, action) => {
+        if (state.user) {
+          state.user.name = action.payload.name || state.user.name;
+          state.user.profileImage = action.payload.profileImage;
+          localStorage.setItem("user", JSON.stringify(state.user));
+        }
+      })
+      .addCase(updateProfileImage.fulfilled, (state, action) => {
+        if (state.user) {
+          state.user.profileImage = action.payload;
+          localStorage.setItem("user", JSON.stringify(state.user));
+        }
       });
   },
 });
