@@ -18,6 +18,7 @@ import ResetPassword from "@/pages/common/ResetPassword";
 import AdminProfile from "@/pages/admin/AdminProfile";
 import CustomerProfile from "@/pages/customer/CustomerProfile";
 import OperatorProfile from "@/pages/operator/OperatorProfile";
+import AdminYardConfiguration from "@/pages/admin/AdminYardConfiguration";
 
 const AppRoutes = () => {
   return (
@@ -50,6 +51,15 @@ const AppRoutes = () => {
             element={
               <AuthProtectedRoute requiredRole="admin">
                 <AdminProfile />
+              </AuthProtectedRoute>
+            }
+          />
+
+          <Route
+            path="admin/yard"
+            element={
+              <AuthProtectedRoute requiredRole="admin">
+                <AdminYardConfiguration />
               </AuthProtectedRoute>
             }
           />
