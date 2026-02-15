@@ -3,6 +3,7 @@ import authReducer from "./slices/authSlice";
 import profileReducer from "./slices/profileSlice";
 import dashboardReducer from "./slices/dashboardSlice";
 import yardReducer from "./slices/yardSlice";
+import adminReducer from "./slices/adminSlice";
 
 export const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ export const store = configureStore({
     profile: profileReducer,
     dashboard: dashboardReducer,
     yard: yardReducer,
+    admin: adminReducer,
   },
 });
 

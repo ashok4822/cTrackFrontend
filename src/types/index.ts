@@ -10,6 +10,7 @@ export interface User {
   avatar?: string;
   profileImage?: string;
   companyName?: string;
+  isBlocked: boolean;
 }
 
 // Container Types
