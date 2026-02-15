@@ -1,19 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { fetchKPIData } from "@/store/slices/dashboardSlice";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { KPICard } from "@/components/common/KPICard";
 import { ActivityFeed } from "@/components/common/ActivityFeed";
 import { AlertsPanel } from "@/components/common/AlertsPanel";
 import { adminNavItems } from "@/config/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Container, Truck, DoorOpen, BarChart3 } from "lucide-react";
-// import { gateService } from "@/services/gateService";
+import { Container, Truck, DoorOpen, BarChart3, Loader2 } from "lucide-react";
 import {
   dummyActivityFeed,
   dummyGateMovementsData,
   dummyDwellTimeData,
   dummyYardBlocks,
 } from "@/data/dummyData";
-import type { KPIData } from "@/types";
 import {
   BarChart,
   Bar,
@@ -52,25 +52,18 @@ const alerts = [
 ];
 
 export default function AdminDashboard() {
-  const [kpiData, setKpiData] = useState<KPIData | null>(null);
+  const dispatch = useAppDispatch();
+  const { kpiData, isLoading } = useAppSelector((state) => state.dashboard);
 
-  // useEffect(() => {
-  //   const fetchKpi = async () => {
-  //     try {
-  //       const data = await gateService.getKPIData();
-  //       setKpiData(data);
-  //     } catch (error) {
-  //       console.error("Failed to fetch KPI data");
-  //     }
-  //   };
-  //   fetchKpi();
-  // }, []);
+  useEffect(() => {
+    dispatch(fetchKPIData());
+  }, [dispatch]);
 
-  if (!kpiData) {
+  if (isLoading || !kpiData) {
     return (
       <DashboardLayout navItems={adminNavItems} pageTitle="Admin Dashboard">
         <div className="flex h-[400px] items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       </DashboardLayout>
     );
@@ -177,8 +170,8 @@ export default function AdminDashboard() {
                     outerRadius={100}
                     paddingAngle={2}
                     dataKey="value"
-                    label={({ name, percent }) =>
-                      `${name} (${(percent * 100).toFixed(0)}%)`
+                    label={({ name, percent }: { name?: string; percent?: number }) =>
+                      `${name || "Unknown"} (${((percent || 0) * 100).toFixed(0)}%)`
                     }
                     labelLine={false}
                   >

@@ -15,6 +15,7 @@ import OperatorDashboard from "@/pages/operator/OperatorDashboard";
 import CustomerDashboard from "@/pages/customer/CustomerDashboard";
 import ForgotPassword from "@/pages/common/ForgotPassword";
 import ResetPassword from "@/pages/common/ResetPassword";
+import AdminProfile from "@/pages/admin/AdminProfile";
 
 const AppRoutes = () => {
   return (
@@ -38,6 +39,15 @@ const AppRoutes = () => {
             element={
               <AuthProtectedRoute requiredRole="admin">
                 <AdminDashboard />
+              </AuthProtectedRoute>
+            }
+          />
+
+          <Route
+            path="admin/profile"
+            element={
+              <AuthProtectedRoute requiredRole="admin">
+                <AdminProfile />
               </AuthProtectedRoute>
             }
           />

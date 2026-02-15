@@ -8,6 +8,7 @@ export interface User {
   role: UserRole;
   organization?: string;
   avatar?: string;
+  profileImage?: string;
 }
 
 // Container Types
