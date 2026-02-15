@@ -5,6 +5,7 @@ import dashboardReducer from "./slices/dashboardSlice";
 import yardReducer from "./slices/yardSlice";
 import adminReducer from "./slices/adminSlice";
 import shippingLineReducer from "./slices/shippingLineSlice";
+import containerReducer from "./slices/containerSlice";
 
 export const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ export const store = configureStore({
     yard: yardReducer,
     admin: adminReducer,
     shippingLine: shippingLineReducer,
+    container: containerReducer,
   },
 });
 

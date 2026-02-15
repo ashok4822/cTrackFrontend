@@ -723,20 +723,6 @@ export const dummyActivityFeed = [
     type: "gate",
   },
   {
-    id: "2",
-    action: "Survey Assigned",
-    description: "Survey assigned for EITU5432109",
-    time: "25 minutes ago",
-    type: "survey",
-  },
-  {
-    id: "3",
-    action: "Approval Pending",
-    description: "Gate-out request for HLCU7654321",
-    time: "1 hour ago",
-    type: "approval",
-  },
-  {
     id: "4",
     action: "Payment Received",
     description: "CMA CGM paid invoice INV-2024-002",
