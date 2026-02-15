@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,10 +10,63 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ChevronLeft, Eye, EyeOff, Shield } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { login, clearError } from "@/store/slices/authSlice";
 
 const AdminLogin = () => {
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const { isLoading, error, user, accessToken } = useAppSelector(
+    (state) => state.auth,
+  );
+
+  useEffect(() => {
+    dispatch(clearError());
+  }, [dispatch]);
+
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  useEffect(() => {
+    console.log("AdminLogin UI State:", { user, accessToken });
+    if (user && accessToken) {
+      if (user.role === "admin") {
+        console.log("AdminLogin: Admin user found, navigating to dashboard");
+        navigate("/admin/dashboard", { replace: true });
+      } else {
+        console.warn(
+          "AdminLogin: Non-admin user attempted to access admin portal",
+          user.role,
+        );
+      }
+    }
+  }, [user, accessToken, navigate]);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      console.log("AdminLogin: Attempting login for", email);
+      const resultAction = await dispatch(
+        login({ email, password, role: "admin" }),
+      );
+      if (login.fulfilled.match(resultAction)) {
+        console.log("AdminLogin: Login fulfilled, navigating to dashboard");
+        navigate("/admin/dashboard");
+      } else {
+        console.warn(
+          "AdminLogin: Login action failed or not fulfilled",
+          resultAction,
+        );
+      }
+    } catch (err) {
+      // Error handled by Redux state
+      console.error("Login error:", err);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
       {/* Header */}
@@ -42,18 +95,30 @@ const AdminLogin = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form className="space-y-6">
+            <form onSubmit={handleLogin} className="space-y-6">
               {/* Email */}
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="admin@ctrack.com" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="admin@ctrack.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
               </div>
 
               {/* Password */}
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
-                  <Input id="password" placeholder="Enter your password" />
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
                   <Button
                     type="button"
                     variant="ghost"
@@ -76,20 +141,28 @@ const AdminLogin = () => {
                   type="button"
                   variant="link"
                   className="h-auto p-0 text-sm text-muted-foreground hover:text-primary"
+                  asChild
                 >
-                  Forgot Password?
+                  <Link to="/forgot-password?role=admin">Forgot Password?</Link>
                 </Button>
               </div>
 
               {/* Submit */}
-              <Button type="submit" className="w-full" size="lg">
-                Sign In as Administrator
+              <Button
+                type="submit"
+                className="w-full"
+                size="lg"
+                disabled={isLoading}
+              >
+                {isLoading ? "Signing In..." : "Sign In as Administrator"}
               </Button>
 
-              {/* Demo Note */}
-              <p className="text-center text-sm text-muted-foreground">
-                Enter credentials for Admin Login
-              </p>
+              {/* Error Message */}
+              {error && (
+                <p className="text-center text-sm font-medium text-destructive animate-in fade-in slide-in-from-top-1">
+                  {error}
+                </p>
+              )}
             </form>
           </CardContent>
         </Card>

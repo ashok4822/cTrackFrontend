@@ -53,7 +53,12 @@ api.interceptors.response.use(
       _retry?: boolean;
     };
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !originalRequest.url?.includes("/auth/login") &&
+      !originalRequest.url?.includes("/auth/google")
+    ) {
       if (isRefreshing) {
         return new Promise<string | null>((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -82,10 +87,10 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
-        // If refresh fails, clear auth and redirect
+        // If refresh fails, clear auth state
         localStorage.removeItem("accessToken");
         localStorage.removeItem("user");
-        window.location.href = "/customer/login";
+        localStorage.removeItem("refreshToken");
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

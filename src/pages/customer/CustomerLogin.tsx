@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,9 +11,63 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Factory, ChevronLeft, Eye, EyeOff } from "lucide-react";
+import { login, clearError, googleLogin } from "@/store/slices/authSlice";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { useGoogleLogin } from "@react-oauth/google";
 
 const CustomerLogin = () => {
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const { isLoading, error } = useAppSelector((state) => state.auth);
+
+  useEffect(() => {
+    dispatch(clearError());
+  }, [dispatch]);
+
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      console.log("CustomerLogin: Attempting login for", email);
+      const resultAction = await dispatch(
+        login({ email, password, role: "customer" }),
+      );
+      if (login.fulfilled.match(resultAction)) {
+        console.log("CustomerLogin: Login fulfilled, navigating to dashboard");
+        navigate("/customer/dashboard");
+      } else {
+        console.warn("CustomerLogin: Login action failed or not fulfilled", resultAction);
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+    }
+  };
+
+  const handleGoogleLogin = useGoogleLogin({
+    flow: "auth-code",
+    onSuccess: async (codeResponse) => {
+      console.log("Google Login Success (Code):", codeResponse);
+      try {
+        const resultAction = await dispatch(
+          googleLogin({ code: codeResponse.code, role: "customer" })
+        );
+        if (googleLogin.fulfilled.match(resultAction)) {
+          console.log("Google Login fulfilled, navigating to dashboard");
+          navigate("/customer/dashboard");
+        } else if (googleLogin.rejected.match(resultAction)) {
+          console.error("Google Login rejected:", resultAction.payload);
+          // Error is already set in Redux state and will be displayed
+        }
+      } catch (err) {
+        console.error("Google Login Thunk Error:", err);
+      }
+    },
+    onError: (error) => console.log("Google Login Failed:", error),
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-success/5 via-background to-primary/5">
@@ -43,11 +97,17 @@ const CustomerLogin = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form className="space-y-6">
+            <form onSubmit={handleLogin} className="space-y-6">
               {/* Email */}
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="Enter your email" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
               </div>
 
               {/* Password */}
@@ -58,6 +118,8 @@ const CustomerLogin = () => {
                     id="password"
                     type={showPassword ? "text" : "password"}
                     placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                   />
                   <Button
                     type="button"
@@ -81,15 +143,28 @@ const CustomerLogin = () => {
                   type="button"
                   variant="link"
                   className="h-auto p-0 text-sm text-muted-foreground hover:text-success"
+                  asChild
                 >
-                  Forgot Password?
+                  <Link to="/forgot-password?role=customer">Forgot Password?</Link>
                 </Button>
               </div>
 
               {/* Submit */}
-              <Button type="submit" className="w-full" size="lg">
-                Sign In
+              <Button
+                type="submit"
+                className="w-full"
+                size="lg"
+                disabled={isLoading}
+              >
+                {isLoading ? "Signing In..." : "Sign In"}
               </Button>
+
+              {/* Error Message */}
+              {error && (
+                <p className="text-center text-sm font-medium text-destructive animate-in fade-in slide-in-from-top-1">
+                  {error}
+                </p>
+              )}
 
               <div className="relative my-4">
                 <div className="absolute inset-0 flex items-center">
@@ -108,6 +183,8 @@ const CustomerLogin = () => {
                 variant="outline"
                 className="w-full"
                 size="lg"
+                onClick={() => handleGoogleLogin()}
+                disabled={isLoading}
               >
                 <svg
                   className="mr-2 h-4 w-4"
@@ -124,7 +201,7 @@ const CustomerLogin = () => {
                     d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"
                   ></path>
                 </svg>
-                Sign in with Google
+                {isLoading ? "Signing In..." : "Sign in with Google"}
               </Button>
 
               <div className="text-center text-sm">
@@ -138,8 +215,6 @@ const CustomerLogin = () => {
                   Create an account
                 </Link>
               </div>
-
-              {/* Demo Note */}
             </form>
           </CardContent>
         </Card>

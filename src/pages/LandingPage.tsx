@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,6 +16,8 @@ import {
   Shield,
   Truck,
 } from "lucide-react";
+import { useAppSelector } from "@/store/hooks";
+import { useEffect } from "react";
 
 const userTypes = [
   {
@@ -70,6 +72,20 @@ const stats = [
 ];
 
 const LandingPage = () => {
+  const { user, accessToken } = useAppSelector((state) => state.auth);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user && accessToken) {
+      if (user.role === "admin") {
+        navigate("/admin/dashboard", { replace: true });
+      } else if (user.role === "operator") {
+        navigate("/operator/dashboard", { replace: true });
+      } else if (user.role === "customer") {
+        navigate("/customer/dashboard", { replace: true });
+      }
+    }
+  }, [user, accessToken, navigate]);
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,9 +11,57 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Building2, ChevronLeft, Eye, EyeOff } from "lucide-react";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { login, clearError } from "@/store/slices/authSlice";
 
 const OperatorLogin = () => {
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const { isLoading, error, user, accessToken } = useAppSelector((state) => state.auth);
+
+  useEffect(() => {
+    dispatch(clearError());
+  }, [dispatch]);
+
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  useEffect(() => {
+    console.log("OperatorLogin UI State:", { user, accessToken });
+    if (user && accessToken) {
+      if (user.role === "operator") {
+        console.log(
+          "OperatorLogin: Operator user found, navigating to dashboard",
+        );
+        navigate("/operator/dashboard", { replace: true });
+      } else {
+        console.warn(
+          "OperatorLogin: Non-operator user attempted to access operator portal",
+          user.role,
+        );
+      }
+    }
+  }, [user, accessToken, navigate]);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      console.log("OperatorLogin: Attempting login for", email);
+      const resultAction = await dispatch(
+        login({ email, password, role: "operator" }),
+      );
+      if (login.fulfilled.match(resultAction)) {
+        console.log("OperatorLogin: Login fulfilled, navigating to dashboard");
+        navigate("/operator/dashboard");
+      } else {
+        console.warn("OperatorLogin: Login action failed or not fulfilled", resultAction);
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-warning/5 via-background to-accent/5">
@@ -43,7 +91,7 @@ const OperatorLogin = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form className="space-y-6">
+            <form onSubmit={handleLogin} className="space-y-6">
               {/* Email */}
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
@@ -51,6 +99,8 @@ const OperatorLogin = () => {
                   id="email"
                   type="email"
                   placeholder="operator@ctrack.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
 
@@ -62,6 +112,8 @@ const OperatorLogin = () => {
                     id="password"
                     type={showPassword ? "text" : "password"}
                     placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                   />
                   <Button
                     type="button"
@@ -85,8 +137,9 @@ const OperatorLogin = () => {
                   type="button"
                   variant="link"
                   className="h-auto p-0 text-sm text-muted-foreground hover:text-warning"
+                  asChild
                 >
-                  Forgot Password?
+                  <Link to="/forgot-password?role=operator">Forgot Password?</Link>
                 </Button>
               </div>
 
@@ -95,14 +148,17 @@ const OperatorLogin = () => {
                 type="submit"
                 className="w-full bg-warning text-warning-foreground hover:bg-warning/90"
                 size="lg"
+                disabled={isLoading}
               >
-                Sign In as Operator
+                {isLoading ? "Signing In..." : "Sign In as Operator"}
               </Button>
 
-              {/* Demo Note */}
-              <p className="text-center text-sm text-muted-foreground">
-                Enter credentials for Operator Login
-              </p>
+              {/* Error Message */}
+              {error && (
+                <p className="text-center text-sm font-medium text-destructive animate-in fade-in slide-in-from-top-1">
+                  {error}
+                </p>
+              )}
             </form>
           </CardContent>
         </Card>
