@@ -202,7 +202,7 @@ export interface Approval {
   approvedBy?: string;
   approvedAt?: string;
   remarks?: string;
-  details: Record<string, any>;
+  details: Record<string, unknown>;
 }
 
 // Report Types

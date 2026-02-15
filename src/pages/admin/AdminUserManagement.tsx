@@ -73,8 +73,9 @@ export default function AdminUserManagement() {
         organization: "",
       });
       toast.success("User added successfully");
-    } catch (error: any) {
-      toast.error(error || "Failed to add user");
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error || "Failed to add user");
+      toast.error(message);
     }
   };
 
@@ -97,8 +98,9 @@ export default function AdminUserManagement() {
       })).unwrap();
       setEditUserOpen(false);
       toast.success("User updated successfully");
-    } catch (error: any) {
-      toast.error(error || "Failed to update user");
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error || "Failed to update user");
+      toast.error(message);
     }
   };
 
@@ -106,8 +108,9 @@ export default function AdminUserManagement() {
     try {
       await dispatch(toggleUserBlock(userId)).unwrap();
       toast.success("User status updated");
-    } catch (error: any) {
-      toast.error(error || "Failed to update user status");
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error || "Failed to update user status");
+      toast.error(message);
     }
   };
 
