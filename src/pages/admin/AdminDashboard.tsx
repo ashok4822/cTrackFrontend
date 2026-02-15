@@ -170,7 +170,13 @@ export default function AdminDashboard() {
                     outerRadius={100}
                     paddingAngle={2}
                     dataKey="value"
-                    label={({ name, percent }: { name?: string; percent?: number }) =>
+                    label={({
+                      name,
+                      percent,
+                    }: {
+                      name?: string;
+                      percent?: number;
+                    }) =>
                       `${name || "Unknown"} (${((percent || 0) * 100).toFixed(0)}%)`
                     }
                     labelLine={false}

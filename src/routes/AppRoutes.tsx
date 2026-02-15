@@ -20,6 +20,7 @@ import CustomerProfile from "@/pages/customer/CustomerProfile";
 import OperatorProfile from "@/pages/operator/OperatorProfile";
 import AdminYardConfiguration from "@/pages/admin/AdminYardConfiguration";
 import AdminUserManagement from "@/pages/admin/AdminUserManagement";
+import AdminShippinglineManagement from "@/pages/admin/AdminShippinglineManagement";
 
 const AppRoutes = () => {
   return (
@@ -70,6 +71,15 @@ const AppRoutes = () => {
             element={
               <AuthProtectedRoute requiredRole="admin">
                 <AdminYardConfiguration />
+              </AuthProtectedRoute>
+            }
+          />
+
+          <Route
+            path="admin/shippingline"
+            element={
+              <AuthProtectedRoute requiredRole="admin">
+                <AdminShippinglineManagement />
               </AuthProtectedRoute>
             }
           />

@@ -300,3 +300,11 @@ export interface NavItem {
   badge?: number;
   children?: NavItem[];
 }
+
+export interface ShippingLine {
+  id: string;
+  shipping_line_name: string;
+  shipping_line_code: string;
+  createdAt?: string;
+  updatedAt?: string;
+}

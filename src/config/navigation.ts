@@ -16,11 +16,13 @@ import {
   Navigation,
   ListChecks,
   Boxes,
+  Anchor,
 } from "lucide-react";
 
 export const adminNavItems: NavItem[] = [
   { title: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
   { title: "Container Management", href: "/admin/containers", icon: Container },
+  { title: "Shipping Line", href: "/admin/shippingline", icon: Anchor },
   { title: "Yard Configuration", href: "/admin/yard", icon: MapPin },
   { title: "Gate Operations", href: "/admin/gate", icon: DoorOpen },
   { title: "Stuffing / Destuffing", href: "/admin/stuffing", icon: Package },
