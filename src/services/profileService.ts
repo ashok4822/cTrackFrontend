@@ -7,11 +7,13 @@ export interface ProfileData {
     name?: string;
     phone?: string;
     profileImage?: string;
+    companyName?: string;
 }
 
 export interface UpdateProfileRequest {
     name?: string;
     phone?: string;
+    companyName?: string;
 }
 
 export interface UpdatePasswordRequest {

@@ -9,6 +9,7 @@ export interface User {
   organization?: string;
   avatar?: string;
   profileImage?: string;
+  companyName?: string;
 }
 
 // Container Types

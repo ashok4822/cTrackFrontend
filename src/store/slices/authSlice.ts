@@ -1,8 +1,10 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import { authService, LoginResponse } from "@/services/authService";
+import { authService } from "@/services/authService";
+import type { LoginResponse } from "@/services/authService";
 import type { User, UserRole } from "@/types";
 import { AxiosError } from "axios";
+import { getProfile, updateProfile, updateProfileImage } from "./profileSlice";
 
 interface AuthState {
   user: User | null;
@@ -254,6 +256,27 @@ const authSlice = createSlice({
       .addCase(resetPassword.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
+      })
+      // Sync profile changes to user state
+      .addCase(getProfile.fulfilled, (state, action) => {
+        if (state.user) {
+          state.user.name = action.payload.name || state.user.name;
+          state.user.profileImage = action.payload.profileImage;
+          localStorage.setItem("user", JSON.stringify(state.user));
+        }
+      })
+      .addCase(updateProfile.fulfilled, (state, action) => {
+        if (state.user) {
+          state.user.name = action.payload.name || state.user.name;
+          state.user.profileImage = action.payload.profileImage;
+          localStorage.setItem("user", JSON.stringify(state.user));
+        }
+      })
+      .addCase(updateProfileImage.fulfilled, (state, action) => {
+        if (state.user) {
+          state.user.profileImage = action.payload;
+          localStorage.setItem("user", JSON.stringify(state.user));
+        }
       });
   },
 });

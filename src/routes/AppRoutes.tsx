@@ -16,6 +16,8 @@ import CustomerDashboard from "@/pages/customer/CustomerDashboard";
 import ForgotPassword from "@/pages/common/ForgotPassword";
 import ResetPassword from "@/pages/common/ResetPassword";
 import AdminProfile from "@/pages/admin/AdminProfile";
+import CustomerProfile from "@/pages/customer/CustomerProfile";
+import OperatorProfile from "@/pages/operator/OperatorProfile";
 
 const AppRoutes = () => {
   return (
@@ -62,12 +64,30 @@ const AppRoutes = () => {
             }
           />
 
+          <Route
+            path="/operator/profile"
+            element={
+              <AuthProtectedRoute requiredRole="operator">
+                <OperatorProfile />
+              </AuthProtectedRoute>
+            }
+          />
+
           {/* Customer Routes */}
           <Route
             path="/customer/dashboard"
             element={
               <AuthProtectedRoute requiredRole="customer">
                 <CustomerDashboard />
+              </AuthProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/customer/profile"
+            element={
+              <AuthProtectedRoute requiredRole="customer">
+                <CustomerProfile />
               </AuthProtectedRoute>
             }
           />
