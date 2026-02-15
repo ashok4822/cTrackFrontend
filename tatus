@@ -1,0 +1,12 @@
+  feature/adminUserMnagement[m
+  feature/authentication[m
+  feature/authentication-clean[m
+  feature/authentication1[m
+* [32mfeature/containerManagementAdmin[m
+  feature/containerRegistraion[m
+  feature/customerLogin[m
+  feature/notFound[m
+  feature/operatorLogin[m
+  feature/profiles[m
+  feature/reduxSetup[m
+  main[m

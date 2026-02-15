@@ -21,6 +21,8 @@ import OperatorProfile from "@/pages/operator/OperatorProfile";
 import AdminYardConfiguration from "@/pages/admin/AdminYardConfiguration";
 import AdminUserManagement from "@/pages/admin/AdminUserManagement";
 import AdminShippinglineManagement from "@/pages/admin/AdminShippinglineManagement";
+import AdminContainerManagement from "@/pages/admin/AdminContainerManagement";
+import AdminContainerDetails from "@/pages/admin/AdminContainerDetails";
 
 const AppRoutes = () => {
   return (
@@ -49,7 +51,7 @@ const AppRoutes = () => {
           />
 
           <Route
-            path="admin/profile"
+            path="/admin/profile"
             element={
               <AuthProtectedRoute requiredRole="admin">
                 <AdminProfile />
@@ -58,7 +60,7 @@ const AppRoutes = () => {
           />
 
           <Route
-            path="admin/users"
+            path="/admin/users"
             element={
               <AuthProtectedRoute requiredRole="admin">
                 <AdminUserManagement />
@@ -67,7 +69,7 @@ const AppRoutes = () => {
           />
 
           <Route
-            path="admin/yard"
+            path="/admin/yard"
             element={
               <AuthProtectedRoute requiredRole="admin">
                 <AdminYardConfiguration />
@@ -76,10 +78,28 @@ const AppRoutes = () => {
           />
 
           <Route
-            path="admin/shippingline"
+            path="/admin/shippingline"
             element={
               <AuthProtectedRoute requiredRole="admin">
                 <AdminShippinglineManagement />
+              </AuthProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/containers"
+            element={
+              <AuthProtectedRoute requiredRole="admin">
+                <AdminContainerManagement />
+              </AuthProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/containers/:id"
+            element={
+              <AuthProtectedRoute requiredRole="admin">
+                <AdminContainerDetails />
               </AuthProtectedRoute>
             }
           />

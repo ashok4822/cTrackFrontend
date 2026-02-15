@@ -38,7 +38,7 @@ export interface Container {
   containerNumber: string;
   size: ContainerSize;
   type: ContainerType;
-  movementType: MovementType;
+  movementType?: MovementType;
   status: ContainerStatus;
   shippingLine: string;
   customer?: string;
@@ -50,6 +50,7 @@ export interface Container {
   sealNumber?: string;
   damaged?: boolean;
   damageDetails?: string;
+  blacklisted?: boolean;
 }
 
 export interface YardLocation {
