@@ -16,7 +16,6 @@ import type {
   User,
 } from "@/types";
 
-// Users - Only 3 types: Admin, Operator, Customer
 export const dummyUsers: User[] = [
   {
     id: "1",
@@ -24,6 +23,7 @@ export const dummyUsers: User[] = [
     email: "admin@ctrack.com",
     role: "admin",
     avatar: "",
+    isBlocked: false,
   },
   {
     id: "2",
@@ -31,6 +31,7 @@ export const dummyUsers: User[] = [
     email: "operator@ctrack.com",
     role: "operator",
     avatar: "",
+    isBlocked: false,
   },
   {
     id: "3",
@@ -39,6 +40,7 @@ export const dummyUsers: User[] = [
     role: "customer",
     organization: "ABC Manufacturing",
     avatar: "",
+    isBlocked: false,
   },
 ];
 

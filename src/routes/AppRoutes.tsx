@@ -19,6 +19,7 @@ import AdminProfile from "@/pages/admin/AdminProfile";
 import CustomerProfile from "@/pages/customer/CustomerProfile";
 import OperatorProfile from "@/pages/operator/OperatorProfile";
 import AdminYardConfiguration from "@/pages/admin/AdminYardConfiguration";
+import AdminUserManagement from "@/pages/admin/AdminUserManagement";
 
 const AppRoutes = () => {
   return (
@@ -51,6 +52,15 @@ const AppRoutes = () => {
             element={
               <AuthProtectedRoute requiredRole="admin">
                 <AdminProfile />
+              </AuthProtectedRoute>
+            }
+          />
+
+          <Route
+            path="admin/users"
+            element={
+              <AuthProtectedRoute requiredRole="admin">
+                <AdminUserManagement />
               </AuthProtectedRoute>
             }
           />
