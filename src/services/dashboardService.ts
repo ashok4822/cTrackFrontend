@@ -1,7 +1,7 @@
 import type { KPIData } from "@/types";
 import { dummyKPIData } from "@/data/dummyData";
 
-// In a real scenario, you would import 'api' and make actual calls
+// In a real scenario,  import 'api' and make actual calls
 // import api from "./api";
 
 export const dashboardService = {

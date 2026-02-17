@@ -10,6 +10,7 @@ export interface LoginResponse {
         role: string;
         name?: string;
         profileImage?: string;
+        isBlocked: boolean;
     };
 }
 
@@ -46,6 +47,11 @@ export const authService = {
 
     resetPassword: async (data: { email: string; otp: string; newPassword: string }) => {
         const response = await api.post("/auth/reset-password", data);
+        return response.data;
+    },
+
+    verifyResetOtp: async (data: { email: string; otp: string }) => {
+        const response = await api.post("/auth/verify-reset-otp", data);
         return response.data;
     },
 };

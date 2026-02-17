@@ -25,7 +25,7 @@ const CustomerSignup = () => {
     confirmPassword: "",
     otp: "",
   });
-  const [timeLeft, setTimeLeft] = useState(60); // 60 seconds countdown
+  const [timeLeft, setTimeLeft] = useState(300); // 300 seconds countdown
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -117,7 +117,7 @@ const CustomerSignup = () => {
       const resultAction = await dispatch(initiateSignup(formData.email));
       if (initiateSignup.fulfilled.match(resultAction)) {
         console.log("OTP resent successfully");
-        setTimeLeft(60);
+        setTimeLeft(300);
       } else {
         if (resultAction.payload) {
           setError(resultAction.payload as string);
@@ -138,7 +138,9 @@ const CustomerSignup = () => {
     onSuccess: async (codeResponse) => {
       console.log("Google Signup Success (Code):", codeResponse);
       try {
-        const resultAction = await dispatch(googleLogin(codeResponse.code));
+        const resultAction = await dispatch(
+          googleLogin({ code: codeResponse.code, role: "customer" }),
+        );
         if (googleLogin.fulfilled.match(resultAction)) {
           console.log("Google Signup fulfilled, navigating to dashboard");
           navigate("/customer/dashboard");

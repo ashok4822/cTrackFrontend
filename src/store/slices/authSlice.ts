@@ -47,7 +47,7 @@ export const googleLogin = createAsyncThunk(
   "auth/googleLogin",
   async (
     { code, role }: { code: string; role?: UserRole },
-    { rejectWithValue }
+    { rejectWithValue },
   ) => {
     try {
       return await authService.googleLogin({ code, role });
@@ -129,7 +129,11 @@ export const forgotPassword = createAsyncThunk(
 export const resetPassword = createAsyncThunk(
   "auth/resetPassword",
   async (
-    { email, otp, newPassword }: { email: string; otp: string; newPassword: string },
+    {
+      email,
+      otp,
+      newPassword,
+    }: { email: string; otp: string; newPassword: string },
     { rejectWithValue },
   ) => {
     try {
@@ -140,6 +144,25 @@ export const resetPassword = createAsyncThunk(
         axiosError.response?.data?.message ||
         axiosError.message ||
         "Failed to reset password";
+      return rejectWithValue(message);
+    }
+  },
+);
+
+export const verifyResetOtp = createAsyncThunk(
+  "auth/verifyResetOtp",
+  async (
+    { email, otp }: { email: string; otp: string },
+    { rejectWithValue },
+  ) => {
+    try {
+      return await authService.verifyResetOtp({ email, otp });
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      const message =
+        axiosError.response?.data?.message ||
+        axiosError.message ||
+        "Invalid or expired OTP";
       return rejectWithValue(message);
     }
   },
@@ -183,6 +206,7 @@ const authSlice = createSlice({
             email: userData.email,
             role: userData.role as UserRole,
             profileImage: userData.profileImage,
+            isBlocked: userData.isBlocked,
           };
 
           localStorage.setItem("accessToken", accessToken);
@@ -213,6 +237,7 @@ const authSlice = createSlice({
             email: userData.email,
             role: userData.role as UserRole,
             profileImage: userData.profileImage,
+            isBlocked: userData.isBlocked,
           };
 
           localStorage.setItem("accessToken", accessToken);
@@ -246,14 +271,18 @@ const authSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload as string;
       })
-      .addCase(resetPassword.pending, (state) => {
+      .addCase(resetPassword.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(verifyResetOtp.pending, (state) => {
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(resetPassword.fulfilled, (state) => {
+      .addCase(verifyResetOtp.fulfilled, (state) => {
         state.isLoading = false;
       })
-      .addCase(resetPassword.rejected, (state, action) => {
+      .addCase(verifyResetOtp.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       })
