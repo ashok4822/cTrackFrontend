@@ -1,12 +1,13 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { containerService } from "@/services/containerService";
-import type { Container } from "@/types";
+import type { Container, ContainerHistory } from "@/types";
 import { AxiosError } from "axios";
 
 interface ContainerState {
     containers: Container[];
     currentContainer: Container | null;
+    currentHistory: ContainerHistory[];
     isLoading: boolean;
     error: string | null;
 }
@@ -14,6 +15,7 @@ interface ContainerState {
 const initialState: ContainerState = {
     containers: [],
     currentContainer: null,
+    currentHistory: [],
     isLoading: false,
     error: null,
 };
@@ -96,6 +98,18 @@ export const unblacklistContainer = createAsyncThunk(
     }
 );
 
+export const fetchContainerHistory = createAsyncThunk(
+    "container/fetchHistory",
+    async (id: string, { rejectWithValue }) => {
+        try {
+            return await containerService.getContainerHistory(id);
+        } catch (error) {
+            const axiosError = error as AxiosError<{ message: string }>;
+            return rejectWithValue(axiosError.response?.data?.message || "Failed to fetch container history");
+        }
+    }
+);
+
 const containerSlice = createSlice({
     name: "container",
     initialState,
@@ -172,6 +186,18 @@ const containerSlice = createSlice({
                 if (state.currentContainer && state.currentContainer.id === action.payload.id) {
                     state.currentContainer.blacklisted = false;
                 }
+            })
+            .addCase(fetchContainerHistory.pending, (state) => {
+                state.isLoading = true;
+                state.error = null;
+            })
+            .addCase(fetchContainerHistory.fulfilled, (state, action: PayloadAction<ContainerHistory[]>) => {
+                state.isLoading = false;
+                state.currentHistory = action.payload;
+            })
+            .addCase(fetchContainerHistory.rejected, (state, action) => {
+                state.isLoading = false;
+                state.error = action.payload as string;
             });
     },
 });

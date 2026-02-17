@@ -31,4 +31,10 @@ export const containerService = {
     const response = await api.patch<{ message: string }>(`/containers/${id}/unblacklist`);
     return response.data;
   },
+
+  async getContainerHistory(id: string): Promise<ContainerHistory[]> {
+    const response = await api.get<ContainerHistory[]>(`/containers/${id}/history`);
+    return response.data;
+  },
 };
+import type { ContainerHistory } from "@/types";

@@ -54,6 +54,15 @@ export interface YardLocation {
   block: string;
 }
 
+export interface ContainerHistory {
+  id: string;
+  containerId: string;
+  activity: string;
+  details?: string;
+  performedBy?: string;
+  timestamp: string;
+}
+
 // Yard Types
 export interface YardBlock {
   id: string;
