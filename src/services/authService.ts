@@ -3,7 +3,6 @@ import type { UserRole } from "@/types";
 
 export interface LoginResponse {
     accessToken: string;
-    refreshToken: string;
     user: {
         id: string;
         email: string;

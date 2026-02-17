@@ -90,7 +90,6 @@ api.interceptors.response.use(
         // If refresh fails, clear auth state
         localStorage.removeItem("accessToken");
         localStorage.removeItem("user");
-        localStorage.removeItem("refreshToken");
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

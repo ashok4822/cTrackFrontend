@@ -32,6 +32,8 @@ import {
   Save,
   Upload,
   Loader2,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 export default function CustomerProfile() {
@@ -45,6 +47,9 @@ export default function CustomerProfile() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [prevProfile, setPrevProfile] = useState(profile);
 
@@ -286,11 +291,26 @@ export default function CustomerProfile() {
                       <Shield className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
                         id="currentPassword"
-                        type="password"
+                        type={showCurrentPassword ? "text" : "password"}
                         value={currentPassword}
                         onChange={(e) => setCurrentPassword(e.target.value)}
                         className="pl-10"
                       />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-1/2 -translate-y-1/2 h-full px-3 hover:bg-transparent"
+                        onClick={() =>
+                          setShowCurrentPassword(!showCurrentPassword)
+                        }
+                      >
+                        {showCurrentPassword ? (
+                          <EyeOff className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </Button>
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -299,11 +319,24 @@ export default function CustomerProfile() {
                       <Shield className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
                         id="newPassword"
-                        type="password"
+                        type={showNewPassword ? "text" : "password"}
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                         className="pl-10"
                       />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-1/2 -translate-y-1/2 h-full px-3 hover:bg-transparent"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                      >
+                        {showNewPassword ? (
+                          <EyeOff className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </Button>
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -314,11 +347,26 @@ export default function CustomerProfile() {
                       <Shield className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
                         id="confirmPassword"
-                        type="password"
+                        type={showConfirmPassword ? "text" : "password"}
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         className="pl-10"
                       />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-1/2 -translate-y-1/2 h-full px-3 hover:bg-transparent"
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </Button>
                     </div>
                   </div>
                 </div>

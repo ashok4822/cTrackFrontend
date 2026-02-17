@@ -9,7 +9,6 @@ import { getProfile, updateProfile, updateProfileImage } from "./profileSlice";
 interface AuthState {
   user: User | null;
   accessToken: string | null;
-  refreshToken: string | null;
   isLoading: boolean;
   error: string | null;
 }
@@ -19,7 +18,6 @@ const initialState: AuthState = {
     ? JSON.parse(localStorage.getItem("user")!)
     : null,
   accessToken: localStorage.getItem("accessToken"),
-  refreshToken: localStorage.getItem("refreshToken"),
   isLoading: false,
   error: null,
 };
@@ -175,11 +173,9 @@ const authSlice = createSlice({
     logout: (state) => {
       state.user = null;
       state.accessToken = null;
-      state.refreshToken = null;
       state.error = null;
       localStorage.removeItem("user");
       localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
     },
     clearError: (state) => {
       state.error = null;
@@ -195,10 +191,9 @@ const authSlice = createSlice({
         login.fulfilled,
         (state, action: PayloadAction<LoginResponse>) => {
           state.isLoading = false;
-          const { accessToken, refreshToken, user: userData } = action.payload;
+          const { accessToken, user: userData } = action.payload;
 
           state.accessToken = accessToken;
-          state.refreshToken = refreshToken;
 
           state.user = {
             id: userData.id,
@@ -210,7 +205,6 @@ const authSlice = createSlice({
           };
 
           localStorage.setItem("accessToken", accessToken);
-          localStorage.setItem("refreshToken", refreshToken);
           localStorage.setItem("user", JSON.stringify(state.user));
         },
       )
@@ -226,10 +220,9 @@ const authSlice = createSlice({
         googleLogin.fulfilled,
         (state, action: PayloadAction<LoginResponse>) => {
           state.isLoading = false;
-          const { accessToken, refreshToken, user: userData } = action.payload;
+          const { accessToken, user: userData } = action.payload;
 
           state.accessToken = accessToken;
-          state.refreshToken = refreshToken;
 
           state.user = {
             id: userData.id,
@@ -241,7 +234,6 @@ const authSlice = createSlice({
           };
 
           localStorage.setItem("accessToken", accessToken);
-          localStorage.setItem("refreshToken", refreshToken);
           localStorage.setItem("user", JSON.stringify(state.user));
         },
       )
