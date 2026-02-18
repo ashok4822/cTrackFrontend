@@ -10,7 +10,7 @@ import type {
   Notification,
   KPIData,
   ChartDataPoint,
-  YardBlock,
+  Block,
   User,
 } from "@/types";
 
@@ -199,7 +199,7 @@ export const dummyVehicles: Vehicle[] = [
     type: "trailer",
     status: "active",
     gpsDeviceId: "GPS002",
-    currentLocation: "Yard Block B",
+    currentLocation: "Block B",
   },
   {
     id: "3",
@@ -572,7 +572,7 @@ export const dummyNotifications: Notification[] = [
 ];
 
 // Yard Blocks
-export const dummyYardBlocks: YardBlock[] = [
+export const dummyBlocks: Block[] = [
   { id: "1", name: "Block A", capacity: 200, occupied: 156 },
   { id: "2", name: "Block B", capacity: 200, occupied: 142 },
   { id: "3", name: "Block C", capacity: 150, occupied: 98 },

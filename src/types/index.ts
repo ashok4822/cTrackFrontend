@@ -64,7 +64,7 @@ export interface ContainerHistory {
 }
 
 // Yard Types
-export interface YardBlock {
+export interface Block {
   id: string;
   name: string;
   capacity: number;
@@ -74,7 +74,7 @@ export interface YardBlock {
 export interface Yard {
   id: string;
   name: string;
-  blocks: YardBlock[];
+  blocks: Block[];
   totalCapacity: number;
   currentOccupancy: number;
 }

@@ -2,8 +2,14 @@ import api from "./api";
 import type { Container } from "@/types";
 
 export const containerService = {
-  async getContainers(): Promise<Container[]> {
-    const response = await api.get<Container[]>("/containers");
+  async getContainers(filters?: {
+    containerNumber?: string;
+    size?: string;
+    type?: string;
+    block?: string;
+    status?: string;
+  }): Promise<Container[]> {
+    const response = await api.get<Container[]>("/containers", { params: filters });
     return response.data;
   },
 

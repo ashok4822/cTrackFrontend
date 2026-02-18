@@ -22,9 +22,15 @@ const initialState: ContainerState = {
 
 export const fetchContainers = createAsyncThunk(
     "container/fetchAll",
-    async (_, { rejectWithValue }) => {
+    async (filters: {
+        containerNumber?: string;
+        size?: string;
+        type?: string;
+        block?: string;
+        status?: string;
+    } | undefined, { rejectWithValue }) => {
         try {
-            return await containerService.getContainers();
+            return await containerService.getContainers(filters);
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
             return rejectWithValue(axiosError.response?.data?.message || "Failed to fetch containers");

@@ -25,7 +25,7 @@ import {
   fetchContainerHistory,
 } from "@/store/slices/containerSlice";
 import { fetchShippingLines } from "@/store/slices/shippingLineSlice";
-import { fetchYardBlocks } from "@/store/slices/yardSlice";
+import { fetchBlocks } from "@/store/slices/yardSlice";
 import type {
   Container,
   ContainerSize,
@@ -39,7 +39,7 @@ import {
   Save,
   X,
   Box,
-  MapPin,
+  //   MapPin,
   Truck,
   //   Calendar,
   AlertTriangle,
@@ -73,7 +73,7 @@ export default function ContainerDetails() {
       dispatch(fetchContainerById(id));
       dispatch(fetchContainerHistory(id));
       dispatch(fetchShippingLines());
-      dispatch(fetchYardBlocks());
+      dispatch(fetchBlocks());
     }
     return () => {
       dispatch(clearCurrentContainer());
@@ -367,38 +367,38 @@ export default function ContainerDetails() {
                   {(isEditing
                     ? editData.status === "in-yard"
                     : container.status === "in-yard") && (
-                    <div>
-                      <Label className="text-muted-foreground">
-                        Yard Block
-                      </Label>
-                      {isEditing ? (
-                        <Select
-                          value={editData.yardLocation?.block || ""}
-                          onValueChange={(value) =>
-                            setEditData({
-                              ...editData,
-                              yardLocation: { block: value },
-                            })
-                          }
-                        >
-                          <SelectTrigger className="mt-1">
-                            <SelectValue placeholder="Select block" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {yardBlocks.map((block) => (
-                              <SelectItem key={block.id} value={block.name}>
-                                {block.name} ({block.occupied}/{block.capacity})
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <p className="font-medium">
-                          {container.yardLocation?.block || "Not Assigned"}
-                        </p>
-                      )}
-                    </div>
-                  )}
+                      <div>
+                        <Label className="text-muted-foreground">
+                          Block
+                        </Label>
+                        {isEditing ? (
+                          <Select
+                            value={editData.yardLocation?.block || ""}
+                            onValueChange={(value) =>
+                              setEditData({
+                                ...editData,
+                                yardLocation: { block: value },
+                              })
+                            }
+                          >
+                            <SelectTrigger className="mt-1">
+                              <SelectValue placeholder="Select block" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {yardBlocks.map((block) => (
+                                <SelectItem key={block.id} value={block.name}>
+                                  {block.name} ({block.occupied}/{block.capacity})
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <p className="font-medium">
+                            {container.yardLocation?.block || "Not Assigned"}
+                          </p>
+                        )}
+                      </div>
+                    )}
                   <div>
                     <Label className="text-muted-foreground">Dwell Time</Label>
                     <p className="font-medium">

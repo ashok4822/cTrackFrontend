@@ -95,6 +95,10 @@ api.interceptors.response.use(
         isRefreshing = false;
       }
     }
+    if (error.response?.status === 403) {
+      window.location.href = "/unauthorized";
+      return Promise.reject(error);
+    }
 
     return Promise.reject(error);
   },

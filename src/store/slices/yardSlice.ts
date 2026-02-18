@@ -1,11 +1,11 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { yardService } from "@/services/yardService";
-import type { YardBlock } from "@/types";
+import type { Block } from "@/types";
 import { AxiosError } from "axios";
 
 interface YardState {
-    blocks: YardBlock[];
+    blocks: Block[];
     isLoading: boolean;
     error: string | null;
 }
@@ -16,52 +16,52 @@ const initialState: YardState = {
     error: null,
 };
 
-export const fetchYardBlocks = createAsyncThunk(
+export const fetchBlocks = createAsyncThunk(
     "yard/fetchBlocks",
     async (_, { rejectWithValue }) => {
         try {
-            return await yardService.getYardBlocks();
+            return await yardService.getBlocks();
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
             const message =
                 axiosError.response?.data?.message ||
                 axiosError.message ||
-                "Failed to fetch yard blocks";
+                "Failed to fetch blocks";
             return rejectWithValue(message);
         }
     }
 );
 
-export const createYardBlock = createAsyncThunk(
+export const createBlock = createAsyncThunk(
     "yard/createBlock",
     async ({ name, capacity }: { name: string; capacity: number }, { dispatch, rejectWithValue }) => {
         try {
-            await yardService.createYardBlock({ name, capacity });
-            dispatch(fetchYardBlocks()); // Refresh the list
+            await yardService.createBlock({ name, capacity });
+            dispatch(fetchBlocks()); // Refresh the list
             return { name, capacity };
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
             const message =
                 axiosError.response?.data?.message ||
                 axiosError.message ||
-                "Failed to create yard block";
+                "Failed to create block";
             return rejectWithValue(message);
         }
     }
 );
 
-export const updateYardBlock = createAsyncThunk(
+export const updateBlock = createAsyncThunk(
     "yard/updateBlock",
     async ({ id, name, capacity }: { id: string; name: string; capacity: number }, { rejectWithValue }) => {
         try {
-            await yardService.updateYardBlock(id, { name, capacity });
+            await yardService.updateBlock(id, { name, capacity });
             return { id, name, capacity };
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
             const message =
                 axiosError.response?.data?.message ||
                 axiosError.message ||
-                "Failed to update yard block";
+                "Failed to update block";
             return rejectWithValue(message);
         }
     }
@@ -77,41 +77,41 @@ const yardSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            .addCase(fetchYardBlocks.pending, (state) => {
+            .addCase(fetchBlocks.pending, (state) => {
                 state.isLoading = true;
                 state.error = null;
             })
-            .addCase(fetchYardBlocks.fulfilled, (state, action: PayloadAction<YardBlock[]>) => {
+            .addCase(fetchBlocks.fulfilled, (state, action: PayloadAction<Block[]>) => {
                 state.isLoading = false;
                 state.blocks = action.payload;
             })
-            .addCase(fetchYardBlocks.rejected, (state, action) => {
+            .addCase(fetchBlocks.rejected, (state, action) => {
                 state.isLoading = false;
                 state.error = action.payload as string;
             })
-            .addCase(createYardBlock.pending, (state) => {
+            .addCase(createBlock.pending, (state) => {
                 state.isLoading = true;
                 state.error = null;
             })
-            .addCase(createYardBlock.fulfilled, (state) => {
+            .addCase(createBlock.fulfilled, (state) => {
                 state.isLoading = false;
             })
-            .addCase(createYardBlock.rejected, (state, action) => {
+            .addCase(createBlock.rejected, (state, action) => {
                 state.isLoading = false;
                 state.error = action.payload as string;
             })
-            .addCase(updateYardBlock.pending, (state) => {
+            .addCase(updateBlock.pending, (state) => {
                 state.isLoading = true;
                 state.error = null;
             })
-            .addCase(updateYardBlock.fulfilled, (state, action) => {
+            .addCase(updateBlock.fulfilled, (state, action) => {
                 state.isLoading = false;
                 const index = state.blocks.findIndex((b) => b.id === action.payload.id);
                 if (index !== -1) {
                     state.blocks[index] = { ...state.blocks[index], ...action.payload };
                 }
             })
-            .addCase(updateYardBlock.rejected, (state, action) => {
+            .addCase(updateBlock.rejected, (state, action) => {
                 state.isLoading = false;
                 state.error = action.payload as string;
             });

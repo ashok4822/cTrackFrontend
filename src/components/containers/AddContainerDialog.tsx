@@ -28,7 +28,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
-import { fetchYardBlocks } from "@/store/slices/yardSlice";
+import { fetchBlocks } from "@/store/slices/yardSlice";
 
 const containerSchema = z.object({
   containerNumber: z
@@ -101,7 +101,7 @@ export function AddContainerDialog({
 
   useEffect(() => {
     if (open) {
-      dispatch(fetchYardBlocks());
+      dispatch(fetchBlocks());
     }
   }, [open, dispatch]);
 

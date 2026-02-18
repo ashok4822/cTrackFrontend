@@ -6,6 +6,7 @@ import yardReducer from "./slices/yardSlice";
 import adminReducer from "./slices/adminSlice";
 import shippingLineReducer from "./slices/shippingLineSlice";
 import containerReducer from "./slices/containerSlice";
+import auditLogReducer from "./slices/auditLogSlice";
 
 export const store = configureStore({
   reducer: {
@@ -16,6 +17,7 @@ export const store = configureStore({
     admin: adminReducer,
     shippingLine: shippingLineReducer,
     container: containerReducer,
+    auditLog: auditLogReducer,
   },
 });
 
