@@ -52,6 +52,7 @@ const containerSchema = z.object({
     "damaged",
   ] as const),
   shippingLine: z.string().min(1, "Shipping line is required"),
+  empty: z.boolean().default(true),
   customer: z.string().optional(),
   weight: z
     .union([z.number(), z.string(), z.undefined()])
@@ -92,6 +93,7 @@ export function AddContainerDialog({
       type: "standard",
       status: "pending",
       shippingLine: "",
+      empty: true,
       customer: "",
       weight: undefined,
       sealNumber: "",
@@ -203,6 +205,31 @@ export function AddContainerDialog({
                         <SelectItem value="reefer">Reefer</SelectItem>
                         <SelectItem value="tank">Tank</SelectItem>
                         <SelectItem value="open-top">Open Top</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="empty"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Load Status *</FormLabel>
+                    <Select
+                      onValueChange={(value) => field.onChange(value === "true")}
+                      value={field.value ? "true" : "false"}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="true">Empty</SelectItem>
+                        <SelectItem value="false">Loaded</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />

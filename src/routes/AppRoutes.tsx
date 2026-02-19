@@ -24,6 +24,8 @@ import AdminUserManagement from "@/pages/admin/AdminUserManagement";
 import AdminShippinglineManagement from "@/pages/admin/AdminShippinglineManagement";
 import AdminContainerManagement from "@/pages/admin/AdminContainerManagement";
 import AdminContainerDetails from "@/pages/admin/AdminContainerDetails";
+import AdminGateOperations from "@/pages/admin/AdminGateOperations";
+import AdminVehiclesEquipment from "@/pages/admin/AdminVehiclesEquipment";
 import AdminAuditLogs from "@/pages/admin/AdminAuditLogs";
 import Unauthorized from "@/pages/common/Unauthorized";
 
@@ -103,6 +105,24 @@ const AppRoutes = () => {
             element={
               <AuthProtectedRoute requiredRole="admin">
                 <AdminContainerDetails />
+              </AuthProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/gate"
+            element={
+              <AuthProtectedRoute requiredRole="admin">
+                <AdminGateOperations />
+              </AuthProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/vehicles"
+            element={
+              <AuthProtectedRoute requiredRole="admin">
+                <AdminVehiclesEquipment />
               </AuthProtectedRoute>
             }
           />

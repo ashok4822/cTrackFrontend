@@ -210,6 +210,9 @@ export default function ContainerDetails() {
                     {container.type}
                   </Badge>
                   <Badge variant="outline" className="capitalize">
+                    {container.empty ? "Empty" : "Loaded"}
+                  </Badge>
+                  <Badge variant="outline" className="capitalize">
                     {container.movementType}
                   </Badge>
                   <StatusBadge status={container.status} />
@@ -303,6 +306,32 @@ export default function ContainerDetails() {
                       </Select>
                     ) : (
                       <p className="font-medium capitalize">{container.type}</p>
+                    )}
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground">Load Status</Label>
+                    {isEditing ? (
+                      <Select
+                        value={editData.empty?.toString()}
+                        onValueChange={(value) =>
+                          setEditData({
+                            ...editData,
+                            empty: value === "true",
+                          })
+                        }
+                      >
+                        <SelectTrigger className="mt-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="true">Empty</SelectItem>
+                          <SelectItem value="false">Loaded</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <p className="font-medium">
+                        {container.empty ? "Empty" : "Loaded"}
+                      </p>
                     )}
                   </div>
                   <div>
