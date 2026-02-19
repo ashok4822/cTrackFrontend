@@ -203,6 +203,15 @@ export default function OperatorYardOperations() {
       header: "Type",
       render: (item) => <span className="capitalize">{item.type}</span>,
     },
+    {
+      key: "empty",
+      header: "Load",
+      render: (item) => (
+        <Badge variant="secondary">
+          {item.empty ? "Empty" : "Loaded"}
+        </Badge>
+      ),
+    },
     { key: "shippingLine", header: "Shipping Line" },
     {
       key: "yardLocation",

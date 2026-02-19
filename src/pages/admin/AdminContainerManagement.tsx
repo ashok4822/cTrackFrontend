@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import type { Container } from "@/types";
 import { Plus, Eye, Ban } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
 import { AddContainerDialog } from "@/components/containers/AddContainerDialog";
 import {
     Dialog,
@@ -105,6 +106,16 @@ export default function AdminContainerManagement() {
             header: "Type",
             sortable: true,
             render: (item) => <span className="capitalize">{item.type}</span>,
+        },
+        {
+            key: "empty",
+            header: "Load",
+            sortable: true,
+            render: (item) => (
+                <Badge variant="secondary">
+                    {item.empty ? "Empty" : "Loaded"}
+                </Badge>
+            ),
         },
         {
             key: "status",
