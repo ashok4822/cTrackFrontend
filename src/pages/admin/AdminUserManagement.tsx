@@ -26,7 +26,7 @@ import type { User, UserRole } from "@/types";
 import { Users, Plus, Shield, Pencil, Lock, Unlock } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchAllUsers, toggleUserBlock, adminCreateUser, adminUpdateUser } from "@/store/slices/adminSlice";
-import { toast } from "sonner"; // Assuming sonner is used based on common patterns in this project
+import { toast } from "sonner";
 
 export default function AdminUserManagement() {
   const dispatch = useAppDispatch();
@@ -35,13 +35,14 @@ export default function AdminUserManagement() {
   const [addUserOpen, setAddUserOpen] = useState(false);
   const [editUserOpen, setEditUserOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [userToToggle, setUserToToggle] = useState<User | null>(null);
 
   // New user form state
   const [newUser, setNewUser] = useState({
     name: "",
     email: "",
     role: "operator" as UserRole,
-    password: "", // Added password for creation
     organization: "",
   });
 
@@ -69,7 +70,6 @@ export default function AdminUserManagement() {
         name: "",
         email: "",
         role: "operator",
-        password: "",
         organization: "",
       });
       toast.success("User added successfully");
@@ -104,10 +104,18 @@ export default function AdminUserManagement() {
     }
   };
 
-  const handleToggleBlock = async (userId: string) => {
+  const handleToggleBlock = (user: User) => {
+    setUserToToggle(user);
+    setConfirmDialogOpen(true);
+  };
+
+  const confirmToggleStatus = async () => {
+    if (!userToToggle) return;
     try {
-      await dispatch(toggleUserBlock(userId)).unwrap();
-      toast.success("User status updated");
+      await dispatch(toggleUserBlock(userToToggle.id)).unwrap();
+      toast.success(`User ${userToToggle.isBlocked ? "unblocked" : "blocked"} successfully`);
+      setConfirmDialogOpen(false);
+      setUserToToggle(null);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error || "Failed to update user status");
       toast.error(message);
@@ -170,7 +178,7 @@ export default function AdminUserManagement() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => handleToggleBlock(item.id)}
+            onClick={() => handleToggleBlock(item)}
             className={item.isBlocked ? "text-success hover:text-success" : "text-destructive hover:text-destructive"}
           >
             {item.isBlocked ? (
@@ -306,18 +314,7 @@ export default function AdminUserManagement() {
                 placeholder="Enter email address"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={newUser.password}
-                onChange={(e) =>
-                  setNewUser({ ...newUser, password: e.target.value })
-                }
-                placeholder="Enter password"
-              />
-            </div>
+
             <div className="space-y-2">
               <Label>Role</Label>
               <Select
@@ -354,7 +351,7 @@ export default function AdminUserManagement() {
             </Button>
             <Button
               onClick={handleAddUser}
-              disabled={!newUser.name || !newUser.email || !newUser.password}
+              disabled={!newUser.name || !newUser.email}
             >
               Add User
             </Button>
@@ -425,6 +422,35 @@ export default function AdminUserManagement() {
             </Button>
             <Button onClick={handleUpdateUser} disabled={!editFormData.name}>
               Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirmation Dialog for Block/Unblock */}
+      <Dialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {userToToggle?.isBlocked ? "Unblock User" : "Block User"}
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to {userToToggle?.isBlocked ? "unblock" : "block"}{" "}
+              <span className="font-semibold text-foreground">{userToToggle?.name}</span>?{" "}
+              {userToToggle?.isBlocked
+                ? "This will restore their access to the system."
+                : "This will immediately revoke their access to the system."}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setConfirmDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant={userToToggle?.isBlocked ? "default" : "destructive"}
+              onClick={confirmToggleStatus}
+            >
+              {userToToggle?.isBlocked ? "Confirm Unblock" : "Confirm Block"}
             </Button>
           </DialogFooter>
         </DialogContent>

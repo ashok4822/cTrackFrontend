@@ -38,6 +38,10 @@ interface DataTableProps<T> {
   emptyMessage?: string;
   isLoading?: boolean;
   className?: string;
+  showHeader?: boolean;
+  showFooter?: boolean;
+  showFilters?: boolean;
+  manualPagination?: boolean;
 }
 
 export function DataTable<T extends { id: string }>({
@@ -47,9 +51,14 @@ export function DataTable<T extends { id: string }>({
   searchPlaceholder = "Search...",
   pageSize = 10,
   onRowClick,
+  actions,
   emptyMessage = "No data available",
   isLoading = false,
   className,
+  showHeader = true,
+  showFooter = true,
+  showFilters = false,
+  manualPagination = false,
 }: DataTableProps<T>) {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -66,24 +75,26 @@ export function DataTable<T extends { id: string }>({
   // Sort data
   const sortedData = sortColumn
     ? [...filteredData].sort((a, b) => {
-        const aVal = getValue(a, sortColumn);
-        const bVal = getValue(b, sortColumn);
+      const aVal = getValue(a, sortColumn);
+      const bVal = getValue(b, sortColumn);
 
-        if (aVal === bVal) return 0;
-        if (aVal === null || aVal === undefined) return 1;
-        if (bVal === null || bVal === undefined) return -1;
+      if (aVal === bVal) return 0;
+      if (aVal === null || aVal === undefined) return 1;
+      if (bVal === null || bVal === undefined) return -1;
 
-        const comparison = String(aVal).localeCompare(String(bVal));
-        return sortDirection === "asc" ? comparison : -comparison;
-      })
+      const comparison = String(aVal).localeCompare(String(bVal));
+      return sortDirection === "asc" ? comparison : -comparison;
+    })
     : filteredData;
 
   // Paginate data
   const totalPages = Math.ceil(sortedData.length / pageSize);
-  const paginatedData = sortedData.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize,
-  );
+  const paginatedData = manualPagination
+    ? sortedData
+    : sortedData.slice(
+      (currentPage - 1) * pageSize,
+      currentPage * pageSize,
+    );
 
   const handleSort = (columnKey: string) => {
     if (sortColumn === columnKey) {
@@ -113,28 +124,33 @@ export function DataTable<T extends { id: string }>({
   return (
     <div className={cn("rounded-lg border bg-card", className)}>
       {/* Header */}
-      <div className="flex flex-col gap-4 border-b p-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          {searchable && (
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder={searchPlaceholder}
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setCurrentPage(1);
-                }}
-                className="w-64 pl-9"
-              />
-            </div>
-          )}
-          <Button variant="outline" size="sm" className="gap-2">
-            <Filter className="h-4 w-4" />
-            Filters
-          </Button>
+      {showHeader && (
+        <div className="flex flex-col gap-4 border-b p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            {searchable && (
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder={searchPlaceholder}
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="w-64 pl-9"
+                />
+              </div>
+            )}
+            {showFilters && (
+              <Button variant="outline" size="sm" className="gap-2">
+                <Filter className="h-4 w-4" />
+                Filters
+              </Button>
+            )}
+          </div>
+          {actions && <div className="flex items-center gap-2">{actions}</div>}
         </div>
-      </div>
+      )}
 
       {/* Table */}
       <div className="overflow-x-auto">
@@ -165,8 +181,8 @@ export function DataTable<T extends { id: string }>({
               ))}
             </TableRow>
           </TableHeader>
-          <TableBody>
-            {isLoading ? (
+          <TableBody className="relative">
+            {isLoading && paginatedData.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
@@ -214,56 +230,58 @@ export function DataTable<T extends { id: string }>({
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between border-t px-4 py-3">
-        <div className="text-sm text-muted-foreground">
-          Showing {(currentPage - 1) * pageSize + 1} to{" "}
-          {Math.min(currentPage * pageSize, sortedData.length)} of{" "}
-          {sortedData.length} entries
-        </div>
-        <div className="flex items-center gap-2">
-          <Select
-            value={String(pageSize)}
-            onValueChange={() => {
-              setCurrentPage(1);
-            }}
-          >
-            <SelectTrigger className="h-8 w-[70px]">
-              <SelectValue placeholder={String(pageSize)} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="5">5</SelectItem>
-              <SelectItem value="10">10</SelectItem>
-              <SelectItem value="25">25</SelectItem>
-              <SelectItem value="50">50</SelectItem>
-            </SelectContent>
-          </Select>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-              disabled={currentPage === 1}
+      {showFooter && (
+        <div className="flex items-center justify-between border-t px-4 py-3">
+          <div className="text-sm text-muted-foreground">
+            Showing {(currentPage - 1) * pageSize + 1} to{" "}
+            {Math.min(currentPage * pageSize, sortedData.length)} of{" "}
+            {sortedData.length} entries
+          </div>
+          <div className="flex items-center gap-2">
+            <Select
+              value={String(pageSize)}
+              onValueChange={() => {
+                setCurrentPage(1);
+              }}
             >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <span className="min-w-[80px] text-center text-sm">
-              Page {currentPage} of {totalPages || 1}
-            </span>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(totalPages, prev + 1))
-              }
-              disabled={currentPage === totalPages || totalPages === 0}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
+              <SelectTrigger className="h-8 w-[70px]">
+                <SelectValue placeholder={String(pageSize)} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="5">5</SelectItem>
+                <SelectItem value="10">10</SelectItem>
+                <SelectItem value="25">25</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+              </SelectContent>
+            </Select>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="min-w-[80px] text-center text-sm">
+                Page {currentPage} of {totalPages || 1}
+              </span>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                }
+                disabled={currentPage === totalPages || totalPages === 0}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

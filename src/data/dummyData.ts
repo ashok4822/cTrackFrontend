@@ -2,17 +2,15 @@ import type {
   Container,
   Vehicle,
   Equipment,
-  Survey,
   GateOperation,
   StuffingOperation,
   Bill,
   PreDepositAccount,
-  Approval,
   AuditLog,
   Notification,
   KPIData,
   ChartDataPoint,
-  YardBlock,
+  Block,
   User,
 } from "@/types";
 
@@ -91,7 +89,7 @@ export const dummyContainers: Container[] = [
   {
     id: "4",
     containerNumber: "EITU5432109",
-    size: "45ft",
+    size: "40ft",
     type: "open-top",
     movementType: "import",
     status: "damaged",
@@ -143,7 +141,7 @@ export const dummyContainers: Container[] = [
     id: "8",
     containerNumber: "YMLU4455667",
     size: "20ft",
-    type: "flat-rack",
+    type: "standard",
     movementType: "domestic",
     status: "gate-in",
     shippingLine: "Yang Ming",
@@ -201,7 +199,7 @@ export const dummyVehicles: Vehicle[] = [
     type: "trailer",
     status: "active",
     gpsDeviceId: "GPS002",
-    currentLocation: "Yard Block B",
+    currentLocation: "Block B",
   },
   {
     id: "3",
@@ -261,56 +259,9 @@ export const dummyEquipment: Equipment[] = [
   {
     id: "5",
     name: "SC-001",
-    type: "straddle-carrier",
+    type: "crane",
     status: "down",
     lastMaintenance: "2024-01-01",
-  },
-];
-
-// Surveys
-export const dummySurveys: Survey[] = [
-  {
-    id: "1",
-    containerId: "4",
-    containerNumber: "EITU5432109",
-    surveyorId: "1",
-    surveyorName: "John Admin",
-    status: "pending",
-    priority: "urgent",
-    location: "Block C",
-    createdAt: "2024-01-21T09:00:00Z",
-  },
-  {
-    id: "2",
-    containerId: "1",
-    containerNumber: "MSCU1234567",
-    surveyorId: "1",
-    surveyorName: "John Admin",
-    status: "completed",
-    priority: "normal",
-    location: "Block A",
-    createdAt: "2024-01-20T14:00:00Z",
-    completedAt: "2024-01-20T15:30:00Z",
-    findings: {
-      exteriorCondition: "good",
-      doorCondition: "good",
-      floorCondition: "fair",
-      structuralDamage: false,
-      recommendation: "clear",
-      description: "Minor scratches on exterior, overall good condition",
-      photos: ["photo1.jpg", "photo2.jpg"],
-    },
-  },
-  {
-    id: "3",
-    containerId: "3",
-    containerNumber: "CMAU9876543",
-    surveyorId: "1",
-    surveyorName: "John Admin",
-    status: "in-progress",
-    priority: "normal",
-    location: "Block B",
-    createdAt: "2024-01-21T08:00:00Z",
   },
 ];
 
@@ -319,7 +270,7 @@ export const dummyGateOperations: GateOperation[] = [
   {
     id: "1",
     type: "gate-in",
-    containerId: "8",
+    // containerId: "8",
     containerNumber: "YMLU4455667",
     vehicleNumber: "TN-01-AB-1234",
     driverName: "Ramesh Kumar",
@@ -330,7 +281,7 @@ export const dummyGateOperations: GateOperation[] = [
   {
     id: "2",
     type: "gate-out",
-    containerId: "2",
+    // containerId: "2",
     containerNumber: "HLCU7654321",
     vehicleNumber: "TN-02-CD-5678",
     driverName: "Suresh Patel",
@@ -341,7 +292,7 @@ export const dummyGateOperations: GateOperation[] = [
   {
     id: "3",
     type: "gate-in",
-    containerId: "1",
+    // containerId: "1",
     containerNumber: "MSCU1234567",
     vehicleNumber: "TN-01-AB-1234",
     driverName: "Ramesh Kumar",
@@ -352,7 +303,7 @@ export const dummyGateOperations: GateOperation[] = [
   {
     id: "4",
     type: "gate-out",
-    containerId: "5",
+    // containerId: "5",
     containerNumber: "OOLU3210987",
     vehicleNumber: "TN-03-EF-9012",
     driverName: "Vijay Singh",
@@ -368,7 +319,7 @@ export const dummyStuffingOperations: StuffingOperation[] = [
   {
     id: "1",
     type: "stuffing",
-    containerId: "7",
+    // containerId: "7",
     containerNumber: "KKFU1122334",
     status: "pending",
     location: "terminal",
@@ -377,7 +328,7 @@ export const dummyStuffingOperations: StuffingOperation[] = [
   {
     id: "2",
     type: "destuffing",
-    containerId: "1",
+    // containerId: "1",
     containerNumber: "MSCU1234567",
     status: "in-progress",
     location: "terminal",
@@ -386,7 +337,7 @@ export const dummyStuffingOperations: StuffingOperation[] = [
   {
     id: "3",
     type: "stuffing",
-    containerId: "5",
+    // containerId: "5",
     containerNumber: "OOLU3210987",
     status: "completed",
     location: "factory",
@@ -400,7 +351,7 @@ export const dummyBills: Bill[] = [
   {
     id: "1",
     billNumber: "INV-2024-001",
-    containerId: "1",
+    // containerId: "1",
     containerNumber: "MSCU1234567",
     shippingLine: "Maersk Line",
     customer: "ABC Manufacturing",
@@ -435,7 +386,7 @@ export const dummyBills: Bill[] = [
   {
     id: "2",
     billNumber: "INV-2024-002",
-    containerId: "3",
+    // containerId: "3",
     containerNumber: "CMAU9876543",
     shippingLine: "CMA CGM",
     activities: [
@@ -538,51 +489,6 @@ export const dummyPDAs: PreDepositAccount[] = [
   },
 ];
 
-// Approvals
-export const dummyApprovals: Approval[] = [
-  {
-    id: "1",
-    type: "gate-out",
-    requestId: "2",
-    status: "pending",
-    requestedBy: "Mike Operator",
-    requestedAt: "2024-01-21T10:30:00Z",
-    details: {
-      containerNumber: "HLCU7654321",
-      destination: "Chennai Port",
-      vehicleNumber: "TN-02-CD-5678",
-    },
-  },
-  {
-    id: "2",
-    type: "damage-clearance",
-    requestId: "1",
-    status: "pending",
-    requestedBy: "Mike Operator",
-    requestedAt: "2024-01-21T09:15:00Z",
-    details: {
-      containerNumber: "EITU5432109",
-      damageType: "Roof dent",
-      recommendation: "Minor repair",
-    },
-  },
-  {
-    id: "3",
-    type: "stuffing",
-    requestId: "1",
-    status: "approved",
-    requestedBy: "Mike Operator",
-    requestedAt: "2024-01-20T16:00:00Z",
-    approvedBy: "John Admin",
-    approvedAt: "2024-01-20T17:00:00Z",
-    details: {
-      containerNumber: "KKFU1122334",
-      operation: "Stuffing",
-      location: "Terminal",
-    },
-  },
-];
-
 // Audit Logs
 export const dummyAuditLogs: AuditLog[] = [
   {
@@ -666,7 +572,7 @@ export const dummyNotifications: Notification[] = [
 ];
 
 // Yard Blocks
-export const dummyYardBlocks: YardBlock[] = [
+export const dummyBlocks: Block[] = [
   { id: "1", name: "Block A", capacity: 200, occupied: 156 },
   { id: "2", name: "Block B", capacity: 200, occupied: 142 },
   { id: "3", name: "Block C", capacity: 150, occupied: 98 },

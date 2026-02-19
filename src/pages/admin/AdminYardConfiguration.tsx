@@ -14,24 +14,29 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, Settings, MapPin, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import type { YardBlock } from "@/types";
+import type { Block } from "@/types";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { fetchYardBlocks, createYardBlock, updateYardBlock } from "@/store/slices/yardSlice";
+import { fetchBlocks, createBlock, updateBlock } from "@/store/slices/yardSlice";
+import { fetchContainers } from "@/store/slices/containerSlice";
 
 export default function AdminYardConfiguration() {
   const dispatch = useAppDispatch();
-  const { blocks, isLoading } = useAppSelector((state) => state.yard);
+  const { blocks, isLoading: blocksLoading } = useAppSelector((state) => state.yard);
+  const { containers, isLoading: containersLoading } = useAppSelector((state) => state.container);
+
+  const isLoading = blocksLoading || containersLoading;
 
   const [configDialogOpen, setConfigDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<"add" | "edit">("edit");
-  const [selectedBlock, setSelectedBlock] = useState<YardBlock | null>(null);
+  const [selectedBlock, setSelectedBlock] = useState<Block | null>(null);
   const [configForm, setConfigForm] = useState({
     name: "",
     capacity: 0,
   });
 
   useEffect(() => {
-    dispatch(fetchYardBlocks());
+    dispatch(fetchBlocks());
+    dispatch(fetchContainers());
   }, [dispatch]);
 
   const handleOpenAdd = () => {
@@ -44,7 +49,7 @@ export default function AdminYardConfiguration() {
     setConfigDialogOpen(true);
   };
 
-  const handleOpenConfig = (block: YardBlock) => {
+  const handleOpenConfig = (block: Block) => {
     setDialogMode("edit");
     setSelectedBlock(block);
     setConfigForm({
@@ -58,7 +63,7 @@ export default function AdminYardConfiguration() {
     try {
       if (dialogMode === "edit" && selectedBlock) {
         await dispatch(
-          updateYardBlock({
+          updateBlock({
             id: selectedBlock.id,
             name: configForm.name,
             capacity: configForm.capacity,
@@ -67,7 +72,7 @@ export default function AdminYardConfiguration() {
         toast.success(`${configForm.name} updated successfully`);
       } else {
         await dispatch(
-          createYardBlock({
+          createBlock({
             name: configForm.name,
             capacity: configForm.capacity,
           }),
@@ -81,14 +86,22 @@ export default function AdminYardConfiguration() {
     }
   };
 
+  // Calculate occupancy mapping
+  const blockOccupancy = containers.reduce((acc, container) => {
+    const blockName = container.yardLocation?.block;
+    if (blockName) {
+      acc[blockName] = (acc[blockName] || 0) + 1;
+    }
+    return acc;
+  }, {} as Record<string, number>);
+
   const totalCapacity = blocks.reduce(
-    (acc: number, b: YardBlock) => acc + b.capacity,
+    (acc: number, b: Block) => acc + b.capacity,
     0,
   );
-  const totalOccupied = blocks.reduce(
-    (acc: number, b: YardBlock) => acc + b.occupied,
-    0,
-  );
+
+  const totalOccupied = Object.values(blockOccupancy).reduce((acc, count) => acc + count, 0);
+
   const utilization =
     totalCapacity > 0 ? Math.round((totalOccupied / totalCapacity) * 100) : 0;
 
@@ -174,10 +187,11 @@ export default function AdminYardConfiguration() {
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {blocks.map((block: YardBlock) => {
+          {blocks.map((block: Block) => {
+            const occupied = blockOccupancy[block.name] || 0;
             const percentage =
               block.capacity > 0
-                ? Math.round((block.occupied / block.capacity) * 100)
+                ? Math.round((occupied / block.capacity) * 100)
                 : 0;
             return (
               <Card
@@ -239,7 +253,7 @@ export default function AdminYardConfiguration() {
                     {/* Occupancy */}
                     <div className="flex justify-between items-center pt-2 border-t">
                       <span className="text-sm text-muted-foreground">
-                        {block.occupied} / {block.capacity} slots used
+                        {occupied} / {block.capacity} slots used
                       </span>
                     </div>
                   </div>

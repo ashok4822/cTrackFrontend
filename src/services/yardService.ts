@@ -1,18 +1,18 @@
 import api from "./api";
-import type { YardBlock } from "@/types";
+import type { Block } from "@/types";
 
 export const yardService = {
-    getYardBlocks: async () => {
-        const response = await api.get<YardBlock[]>("/yard");
+    getBlocks: async () => {
+        const response = await api.get<Block[]>("/yard");
         return response.data;
     },
 
-    createYardBlock: async (data: { name: string; capacity: number }) => {
+    createBlock: async (data: { name: string; capacity: number }) => {
         const response = await api.post<{ message: string }>("/yard", data);
         return response.data;
     },
 
-    updateYardBlock: async (id: string, data: { name?: string; capacity?: number }) => {
+    updateBlock: async (id: string, data: { name?: string; capacity?: number }) => {
         const response = await api.put<{ message: string }>(`/yard/${id}`, data);
         return response.data;
     },

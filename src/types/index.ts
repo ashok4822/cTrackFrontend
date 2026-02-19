@@ -24,13 +24,8 @@ export type ContainerStatus =
   | "gate-in"
   | "gate-out";
 
-export type ContainerSize = "20ft" | "40ft" | "45ft";
-export type ContainerType =
-  | "standard"
-  | "reefer"
-  | "tank"
-  | "open-top"
-  | "flat-rack";
+export type ContainerSize = "20ft" | "40ft";
+export type ContainerType = "standard" | "reefer" | "tank" | "open-top";
 export type MovementType = "import" | "export" | "domestic";
 
 export interface Container {
@@ -47,6 +42,8 @@ export interface Container {
   gateOutTime?: string;
   dwellTime?: number;
   weight?: number;
+  cargoWeight?: number;
+  empty?: boolean;
   sealNumber?: string;
   damaged?: boolean;
   damageDetails?: string;
@@ -57,8 +54,17 @@ export interface YardLocation {
   block: string;
 }
 
+export interface ContainerHistory {
+  id: string;
+  containerId: string;
+  activity: string;
+  details?: string;
+  performedBy?: string;
+  timestamp: string;
+}
+
 // Yard Types
-export interface YardBlock {
+export interface Block {
   id: string;
   name: string;
   capacity: number;
@@ -68,7 +74,7 @@ export interface YardBlock {
 export interface Yard {
   id: string;
   name: string;
-  blocks: YardBlock[];
+  blocks: Block[];
   totalCapacity: number;
   currentOccupancy: number;
 }
@@ -89,44 +95,17 @@ export interface Vehicle {
 export interface Equipment {
   id: string;
   name: string;
-  type: "reach-stacker" | "forklift" | "crane" | "straddle-carrier";
+  type: "reach-stacker" | "forklift" | "crane";
   status: "operational" | "maintenance" | "down";
   lastMaintenance?: string;
   nextMaintenance?: string;
   operator?: string;
 }
 
-// Survey Types
-export interface Survey {
-  id: string;
-  containerId: string;
-  containerNumber: string;
-  surveyorId: string;
-  surveyorName: string;
-  status: "pending" | "in-progress" | "completed";
-  priority: "normal" | "urgent";
-  location: string;
-  createdAt: string;
-  completedAt?: string;
-  findings?: SurveyFindings;
-}
-
-export interface SurveyFindings {
-  exteriorCondition: "good" | "fair" | "poor";
-  doorCondition: "good" | "fair" | "poor";
-  floorCondition: "good" | "fair" | "poor";
-  structuralDamage: boolean;
-  damageSeverity?: "minor" | "moderate" | "severe";
-  description?: string;
-  photos?: string[];
-  recommendation: "clear" | "repair-required" | "hold";
-}
-
 // Gate Operation Types
 export interface GateOperation {
   id: string;
   type: "gate-in" | "gate-out";
-  containerId: string;
   containerNumber: string;
   vehicleNumber: string;
   driverName: string;
@@ -141,7 +120,6 @@ export interface GateOperation {
 export interface StuffingOperation {
   id: string;
   type: "stuffing" | "destuffing";
-  containerId: string;
   containerNumber: string;
   status: "pending" | "in-progress" | "completed" | "approved";
   location: "terminal" | "factory";
@@ -154,7 +132,6 @@ export interface StuffingOperation {
 export interface Bill {
   id: string;
   billNumber: string;
-  containerId: string;
   containerNumber: string;
   shippingLine: string;
   customer?: string;
@@ -190,20 +167,6 @@ export interface PDATransaction {
   description: string;
   timestamp: string;
   balanceAfter: number;
-}
-
-// Approval Types
-export interface Approval {
-  id: string;
-  type: "gate-out" | "damage-clearance" | "stuffing" | "destuffing";
-  requestId: string;
-  status: "pending" | "approved" | "rejected";
-  requestedBy: string;
-  requestedAt: string;
-  approvedBy?: string;
-  approvedAt?: string;
-  remarks?: string;
-  details: Record<string, unknown>;
 }
 
 // Report Types

@@ -9,6 +9,14 @@ import type { Container } from "@/types";
 import { Plus, Eye, Ban } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AddContainerDialog } from "@/components/containers/AddContainerDialog";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
@@ -26,6 +34,8 @@ export default function AdminContainerManagement() {
         (state) => state.container,
     );
     const [addDialogOpen, setAddDialogOpen] = useState(false);
+    const [confirmBlacklistOpen, setConfirmBlacklistOpen] = useState(false);
+    const [containerToToggle, setContainerToToggle] = useState<Container | null>(null);
 
     useEffect(() => {
         dispatch(fetchContainers());
@@ -50,15 +60,23 @@ export default function AdminContainerManagement() {
         }
     };
 
-    const handleBlacklistToggle = async (container: Container) => {
+    const handleBlacklistToggle = (container: Container) => {
+        setContainerToToggle(container);
+        setConfirmBlacklistOpen(true);
+    };
+
+    const confirmBlacklistToggle = async () => {
+        if (!containerToToggle) return;
         try {
-            if (container.blacklisted) {
-                await dispatch(unblacklistContainer(container.id)).unwrap();
-                toast.success(`Container ${container.containerNumber} has been unblacklisted`);
+            if (containerToToggle.blacklisted) {
+                await dispatch(unblacklistContainer(containerToToggle.id)).unwrap();
+                toast.success(`Container ${containerToToggle.containerNumber} has been unblacklisted`);
             } else {
-                await dispatch(blacklistContainer(container.id)).unwrap();
-                toast.success(`Container ${container.containerNumber} has been blacklisted`);
+                await dispatch(blacklistContainer(containerToToggle.id)).unwrap();
+                toast.success(`Container ${containerToToggle.containerNumber} has been blacklisted`);
             }
+            setConfirmBlacklistOpen(false);
+            setContainerToToggle(null);
         } catch (err: unknown) {
             const errorMessage =
                 typeof err === "string" ? err : "Failed to update blacklist status";
@@ -169,6 +187,34 @@ export default function AdminContainerManagement() {
                 onOpenChange={setAddDialogOpen}
                 onSubmit={handleAddContainer}
             />
+
+            <Dialog open={confirmBlacklistOpen} onOpenChange={setConfirmBlacklistOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>
+                            {containerToToggle?.blacklisted ? "Unblacklist Container" : "Blacklist Container"}
+                        </DialogTitle>
+                        <DialogDescription>
+                            Are you sure you want to {containerToToggle?.blacklisted ? "unblacklist" : "blacklist"}{" "}
+                            <span className="font-semibold text-foreground">{containerToToggle?.containerNumber}</span>?{" "}
+                            {containerToToggle?.blacklisted
+                                ? "This will allow the container to be used in operations again."
+                                : "This will restrict the container from certain operations."}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button variant="outline" onClick={() => setConfirmBlacklistOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button
+                            variant={containerToToggle?.blacklisted ? "default" : "destructive"}
+                            onClick={confirmBlacklistToggle}
+                        >
+                            {containerToToggle?.blacklisted ? "Confirm Unblacklist" : "Confirm Blacklist"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </DashboardLayout>
     );
 }

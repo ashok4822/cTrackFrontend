@@ -18,11 +18,14 @@ import ResetPassword from "@/pages/common/ResetPassword";
 import AdminProfile from "@/pages/admin/AdminProfile";
 import CustomerProfile from "@/pages/customer/CustomerProfile";
 import OperatorProfile from "@/pages/operator/OperatorProfile";
+import OperatorYardOperations from "@/pages/operator/OperatorYardOperations";
 import AdminYardConfiguration from "@/pages/admin/AdminYardConfiguration";
 import AdminUserManagement from "@/pages/admin/AdminUserManagement";
 import AdminShippinglineManagement from "@/pages/admin/AdminShippinglineManagement";
 import AdminContainerManagement from "@/pages/admin/AdminContainerManagement";
 import AdminContainerDetails from "@/pages/admin/AdminContainerDetails";
+import AdminAuditLogs from "@/pages/admin/AdminAuditLogs";
+import Unauthorized from "@/pages/common/Unauthorized";
 
 const AppRoutes = () => {
   return (
@@ -104,6 +107,15 @@ const AppRoutes = () => {
             }
           />
 
+          <Route
+            path="/admin/audit"
+            element={
+              <AuthProtectedRoute requiredRole="admin">
+                <AdminAuditLogs />
+              </AuthProtectedRoute>
+            }
+          />
+
           {/* Operator Routes */}
           <Route
             path="/operator/dashboard"
@@ -119,6 +131,15 @@ const AppRoutes = () => {
             element={
               <AuthProtectedRoute requiredRole="operator">
                 <OperatorProfile />
+              </AuthProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/operator/yard"
+            element={
+              <AuthProtectedRoute requiredRole="operator">
+                <OperatorYardOperations />
               </AuthProtectedRoute>
             }
           />
@@ -141,6 +162,8 @@ const AppRoutes = () => {
               </AuthProtectedRoute>
             }
           />
+
+          <Route path="/unauthorized" element={<Unauthorized />} />
 
           {/* Catch-all*/}
           <Route path="*" element={<NotFound />} />

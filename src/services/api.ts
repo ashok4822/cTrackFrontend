@@ -90,11 +90,14 @@ api.interceptors.response.use(
         // If refresh fails, clear auth state
         localStorage.removeItem("accessToken");
         localStorage.removeItem("user");
-        localStorage.removeItem("refreshToken");
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
       }
+    }
+    if (error.response?.status === 403) {
+      window.location.href = "/unauthorized";
+      return Promise.reject(error);
     }
 
     return Promise.reject(error);
