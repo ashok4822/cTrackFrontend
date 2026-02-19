@@ -24,11 +24,30 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Vehicle, Equipment } from "@/types";
-import { Truck, Wrench, MapPin, Plus, Edit, Trash2, MoreHorizontal, Loader2 } from "lucide-react";
+import {
+  Truck,
+  Wrench,
+  MapPin,
+  Plus,
+  Edit,
+  Trash2,
+  MoreHorizontal,
+  Loader2,
+} from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { fetchVehicles, addVehicle, updateVehicle, deleteVehicle } from "@/store/slices/vehicleSlice";
-import { fetchEquipment, addEquipment, updateEquipment, deleteEquipment } from "@/store/slices/equipmentSlice";
+import {
+  fetchVehicles,
+  addVehicle,
+  updateVehicle,
+  deleteVehicle,
+} from "@/store/slices/vehicleSlice";
+import {
+  fetchEquipment,
+  addEquipment,
+  updateEquipment,
+  deleteEquipment,
+} from "@/store/slices/equipmentSlice";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
@@ -100,7 +119,9 @@ export default function VehiclesEquipment() {
       header: "Vehicle No.",
       sortable: true,
       render: (item) => (
-        <span className="font-medium text-foreground">{item.vehicleNumber}</span>
+        <span className="font-medium text-foreground">
+          {item.vehicleNumber}
+        </span>
       ),
     },
     {
@@ -250,7 +271,7 @@ export default function VehiclesEquipment() {
     setSelectedItem(equipment);
     setEquipmentForm({
       name: equipment.name,
-      type: equipment.type as any,
+      type: equipment.type,
       status: equipment.status,
       operator: equipment.operator || "",
     });
@@ -269,14 +290,24 @@ export default function VehiclesEquipment() {
     try {
       if (itemToDelete.type === "vehicle") {
         await dispatch(deleteVehicle(itemToDelete.id)).unwrap();
-        toast({ title: "Vehicle Deleted", description: "Vehicle removed successfully" });
+        toast({
+          title: "Vehicle Deleted",
+          description: "Vehicle removed successfully",
+        });
       } else {
         await dispatch(deleteEquipment(itemToDelete.id)).unwrap();
-        toast({ title: "Equipment Deleted", description: "Equipment removed successfully" });
+        toast({
+          title: "Equipment Deleted",
+          description: "Equipment removed successfully",
+        });
       }
       setDeleteDialogOpen(false);
-    } catch (error: any) {
-      toast({ title: "Error", description: error || "Failed to delete item", variant: "destructive" });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: (error as string) || "Failed to delete item",
+        variant: "destructive",
+      });
     }
   };
 
@@ -306,10 +337,10 @@ export default function VehiclesEquipment() {
       }
       setAddDialogOpen(false);
       resetForms();
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error",
-        description: error || "Failed to save vehicle",
+        description: (error as string) || "Failed to save vehicle",
         variant: "destructive",
       });
     }
@@ -341,10 +372,10 @@ export default function VehiclesEquipment() {
       }
       setAddDialogOpen(false);
       resetForms();
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error",
-        description: error || "Failed to save equipment",
+        description: (error as string) || "Failed to save equipment",
         variant: "destructive",
       });
     }
@@ -585,9 +616,9 @@ export default function VehiclesEquipment() {
                 <Label htmlFor="vehicleStatus">Status</Label>
                 <Select
                   value={vehicleForm.status}
-                  onValueChange={(value: "active" | "inactive" | "maintenance") =>
-                    setVehicleForm({ ...vehicleForm, status: value })
-                  }
+                  onValueChange={(
+                    value: "active" | "inactive" | "maintenance",
+                  ) => setVehicleForm({ ...vehicleForm, status: value })}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -685,8 +716,8 @@ export default function VehiclesEquipment() {
               disabled={
                 activeTab === "vehicles"
                   ? !vehicleForm.vehicleNumber ||
-                  !vehicleForm.driverName ||
-                  !vehicleForm.driverPhone
+                    !vehicleForm.driverName ||
+                    !vehicleForm.driverPhone
                   : !equipmentForm.name
               }
             >
