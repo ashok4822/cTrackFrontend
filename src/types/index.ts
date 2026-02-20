@@ -110,7 +110,6 @@ export interface GateOperation {
   vehicleNumber: string;
   driverName: string;
   purpose: "port" | "factory" | "transfer";
-  status: "pending" | "approved" | "completed" | "rejected";
   timestamp: string;
   approvedBy?: string;
   remarks?: string;
