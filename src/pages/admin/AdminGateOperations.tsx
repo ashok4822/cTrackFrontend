@@ -7,7 +7,7 @@ import { adminNavItems } from "@/config/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { GateOperation } from "@/types";
-import { DoorOpen, ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
+import { ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   fetchGateOperations,
@@ -105,7 +105,6 @@ export default function GateOperations() {
 
   const gateIns = operations.filter((op) => op.type === "gate-in");
   const gateOuts = operations.filter((op) => op.type === "gate-out");
-  const pending = operations.filter((op) => op.status === "pending");
 
   const openAddDialog = (type: "gate-in" | "gate-out") => {
     setDefaultType(type);
@@ -165,23 +164,6 @@ export default function GateOperations() {
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/10">
-                <DoorOpen className="h-5 w-5 text-warning" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">
-                  {pending.length}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Pending Approvals
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Tabs */}
@@ -190,7 +172,6 @@ export default function GateOperations() {
           <TabsTrigger value="all">All Operations</TabsTrigger>
           <TabsTrigger value="gate-in">Gate-In</TabsTrigger>
           <TabsTrigger value="gate-out">Gate-Out</TabsTrigger>
-          <TabsTrigger value="pending">Pending Approval</TabsTrigger>
         </TabsList>
 
         <TabsContent value="all">
@@ -217,16 +198,6 @@ export default function GateOperations() {
             isLoading={loading}
             columns={columns}
             searchPlaceholder="Search gate-out operations..."
-          />
-        </TabsContent>
-
-        <TabsContent value="pending">
-          <DataTable
-            data={pending}
-            isLoading={loading}
-            columns={columns}
-            searchPlaceholder="Search pending operations..."
-            emptyMessage="No pending operations"
           />
         </TabsContent>
       </Tabs>

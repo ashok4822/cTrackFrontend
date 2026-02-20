@@ -9,6 +9,15 @@ export interface CreateGateOperationData {
     purpose: "port" | "factory" | "transfer";
     remarks?: string;
     approvedBy?: string;
+    // Additional container fields
+    size?: "20ft" | "40ft";
+    containerType?: "standard" | "reefer" | "tank" | "open-top";
+    shippingLine?: string;
+    weight?: number;
+    cargoWeight?: number;
+    sealNumber?: string;
+    empty?: boolean;
+    movementType?: "import" | "export" | "domestic";
 }
 
 export interface GateOperationFilters {

@@ -34,27 +34,164 @@ import {
   Plus,
   Search,
   Clock,
-  Send,
 } from "lucide-react";
+import { fetchShippingLines } from "@/store/slices/shippingLineSlice";
+import type {
+  GateOperation,
+  ContainerSize,
+  ContainerType,
+  MovementType,
+} from "@/types";
+import { useEffect, useState } from "react";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
-  dummyGateOperations,
-  dummyKPIData,
-  dummyShippingLines,
-} from "@/data/dummyData";
-import type { GateOperation } from "@/types";
-import { useState } from "react";
+  fetchGateOperations,
+  createGateOperation,
+} from "@/store/slices/gateOperationSlice";
+import { fetchKPIData } from "@/store/slices/dashboardSlice";
+import { toast } from "sonner";
+import type { CreateGateOperationData } from "@/services/gateOperationService";
+import api from "@/services/api";
 
 export default function OperatorGateOperations() {
-  const [selectedOperation, setSelectedOperation] =
-    useState<GateOperation | null>(null);
+  const dispatch = useAppDispatch();
+  const {
+    operations,
+    loading,
+    error: reduxError,
+  } = useAppSelector((state) => state.gateOperations);
+  const { kpiData } = useAppSelector((state) => state.dashboard);
+  const { lines: shippingLines } = useAppSelector((state) => state.shippingLine);
+
+  const [isGateInDialogOpen, setIsGateInDialogOpen] = useState(false);
+  const [isGateOutDialogOpen, setIsGateOutDialogOpen] = useState(false);
+  const [isLookupLoading, setIsLookupLoading] = useState(false);
+  const [lookupResult, setLookupResult] = useState<any>(null);
+
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasDamage, setHasDamage] = useState(false);
-  const [requiresApproval, setRequiresApproval] = useState(false);
-  const [approvalReason, setApprovalReason] = useState("");
 
-  const gateIns = dummyGateOperations.filter((op) => op.type === "gate-in");
-  const gateOuts = dummyGateOperations.filter((op) => op.type === "gate-out");
-  const pending = dummyGateOperations.filter((op) => op.status === "pending");
+  const initialGateInData = {
+    containerNumber: "",
+    size: "40ft" as ContainerSize,
+    type: "standard" as ContainerType,
+    shippingLine: "",
+    vehicleNumber: "",
+    driverName: "",
+    purpose: "port" as GateOperation["purpose"],
+    sealNumber: "",
+    weight: "",
+    cargoWeight: "",
+    remarks: "",
+    movementType: "import" as MovementType,
+  };
+
+  const [gateInData, setGateInData] = useState(initialGateInData);
+
+  const initialGateOutData = {
+    containerNumber: "",
+    vehicleNumber: "",
+    driverName: "",
+    purpose: "port" as GateOperation["purpose"],
+    remarks: "",
+  };
+
+  const [gateOutData, setGateOutData] = useState(initialGateOutData);
+
+  useEffect(() => {
+    dispatch(fetchGateOperations({}));
+    dispatch(fetchKPIData());
+    dispatch(fetchShippingLines());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (reduxError) {
+      toast.error(reduxError);
+    }
+  }, [reduxError]);
+
+  const handleContainerLookup = async () => {
+    if (!gateOutData.containerNumber) {
+      toast.error("Please enter a container number");
+      return;
+    }
+
+    setIsLookupLoading(true);
+    try {
+      const response = await api.get(
+        `/containers?containerNumber=${gateOutData.containerNumber}`
+      );
+      const containers = response.data;
+      if (containers && containers.length > 0) {
+        setLookupResult(containers[0]);
+        toast.success("Container found in yard");
+      } else {
+        setLookupResult(null);
+        toast.error("Container not found in yard");
+      }
+    } catch (err) {
+      toast.error("Failed to lookup container");
+    } finally {
+      setIsLookupLoading(false);
+    }
+  };
+
+  const handleGateInSubmit = async () => {
+    try {
+      const payload: CreateGateOperationData = {
+        type: "gate-in",
+        containerNumber: gateInData.containerNumber,
+        vehicleNumber: gateInData.vehicleNumber,
+        driverName: gateInData.driverName,
+        purpose: gateInData.purpose,
+        remarks: gateInData.remarks,
+        size: gateInData.size,
+        containerType: gateInData.type,
+        shippingLine: gateInData.shippingLine,
+        weight: gateInData.weight ? Number(gateInData.weight) : undefined,
+        cargoWeight: gateInData.cargoWeight
+          ? Number(gateInData.cargoWeight)
+          : undefined,
+        sealNumber: gateInData.sealNumber,
+        empty: !isLoaded,
+        movementType: gateInData.movementType,
+      };
+      await dispatch(createGateOperation(payload)).unwrap();
+      toast.success("Gate-In recorded successfully");
+      setIsGateInDialogOpen(false);
+      setGateInData(initialGateInData);
+      setIsLoaded(false);
+      setHasDamage(false);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error(message || "Failed to record Gate-In");
+    }
+  };
+
+  const handleGateOutSubmit = async () => {
+    try {
+      const payload: CreateGateOperationData = {
+        type: "gate-out",
+        containerNumber: gateOutData.containerNumber,
+        vehicleNumber: gateOutData.vehicleNumber,
+        driverName: gateOutData.driverName,
+        purpose: gateOutData.purpose,
+        remarks: gateOutData.remarks,
+      };
+      await dispatch(createGateOperation(payload)).unwrap();
+      toast.success("Gate-Out recorded successfully");
+      setIsGateOutDialogOpen(false);
+      setGateOutData(initialGateOutData);
+      setLookupResult(null);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error(message || "Failed to record Gate-Out");
+    }
+  };
+
+  const gateIns = operations.filter((op) => op.type === "gate-in");
+  const gateOuts = operations.filter((op) => op.type === "gate-out");
+  const pending = operations.filter((op) => op.status === "pending");
 
   const columns: Column<GateOperation>[] = [
     { key: "containerNumber", header: "Container No.", sortable: true },
@@ -95,11 +232,7 @@ export default function OperatorGateOperations() {
       render: (item) => (
         <Dialog>
           <DialogTrigger asChild>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setSelectedOperation(item)}
-            >
+            <Button size="sm" variant="outline">
               Process
             </Button>
           </DialogTrigger>
@@ -160,13 +293,13 @@ export default function OperatorGateOperations() {
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KPICard
           title="Gate-Ins Today"
-          value={dummyKPIData.gateInToday}
+          value={kpiData?.gateInToday || 0}
           icon={ArrowDownToLine}
           variant="success"
         />
         <KPICard
           title="Gate-Outs Today"
-          value={dummyKPIData.gateOutToday}
+          value={kpiData?.gateOutToday || 0}
           icon={ArrowUpFromLine}
           variant="primary"
         />
@@ -185,7 +318,7 @@ export default function OperatorGateOperations() {
 
       {/* Quick Actions */}
       <div className="mb-6 flex flex-wrap gap-3">
-        <Dialog>
+        <Dialog open={isGateInDialogOpen} onOpenChange={setIsGateInDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
@@ -203,18 +336,35 @@ export default function OperatorGateOperations() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="container">Container Number</Label>
-                  <Input id="container" placeholder="e.g., MSCU1234567" />
+                  <Input
+                    id="container"
+                    placeholder="e.g., MSCU1234567"
+                    value={gateInData.containerNumber}
+                    onChange={(e) =>
+                      setGateInData({
+                        ...gateInData,
+                        containerNumber: e.target.value.toUpperCase(),
+                      })
+                    }
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="size">Container Size</Label>
-                  <Select>
+                  <Select
+                    value={gateInData.size}
+                    onValueChange={(value) =>
+                      setGateInData({
+                        ...gateInData,
+                        size: value as ContainerSize,
+                      })
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select size" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="20ft">20ft</SelectItem>
                       <SelectItem value="40ft">40ft</SelectItem>
-                      <SelectItem value="45ft">45ft</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -222,7 +372,15 @@ export default function OperatorGateOperations() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="containerType">Container Type</Label>
-                  <Select>
+                  <Select
+                    value={gateInData.type}
+                    onValueChange={(value) =>
+                      setGateInData({
+                        ...gateInData,
+                        type: value as ContainerType,
+                      })
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
@@ -231,13 +389,20 @@ export default function OperatorGateOperations() {
                       <SelectItem value="reefer">Reefer</SelectItem>
                       <SelectItem value="tank">Tank</SelectItem>
                       <SelectItem value="open-top">Open Top</SelectItem>
-                      <SelectItem value="flat-rack">Flat Rack</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="movementType">Movement Type</Label>
-                  <Select>
+                  <Select
+                    value={gateInData.movementType}
+                    onValueChange={(value) =>
+                      setGateInData({
+                        ...gateInData,
+                        movementType: value as MovementType,
+                      })
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select movement" />
                     </SelectTrigger>
@@ -252,14 +417,19 @@ export default function OperatorGateOperations() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="shippingLine">Shipping Line</Label>
-                  <Select>
+                  <Select
+                    value={gateInData.shippingLine}
+                    onValueChange={(value) =>
+                      setGateInData({ ...gateInData, shippingLine: value })
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select shipping line" />
                     </SelectTrigger>
                     <SelectContent>
-                      {dummyShippingLines.map((line) => (
-                        <SelectItem key={line.id} value={line.id}>
-                          {line.name}
+                      {shippingLines.map((line) => (
+                        <SelectItem key={line.id} value={line.shipping_line_name}>
+                          {line.shipping_line_name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -271,22 +441,52 @@ export default function OperatorGateOperations() {
                     id="tareWeight"
                     type="number"
                     placeholder="e.g., 2200"
+                    value={gateInData.weight}
+                    onChange={(e) => setGateInData({ ...gateInData, weight: e.target.value })}
                   />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="vehicle">Vehicle Number</Label>
-                  <Input id="vehicle" placeholder="e.g., TN01AB1234" />
+                  <Input
+                    id="vehicle"
+                    placeholder="e.g., TN01AB1234"
+                    value={gateInData.vehicleNumber}
+                    onChange={(e) =>
+                      setGateInData({
+                        ...gateInData,
+                        vehicleNumber: e.target.value.toUpperCase(),
+                      })
+                    }
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="driver">Driver Name</Label>
-                  <Input id="driver" placeholder="Enter driver name" />
+                  <Input
+                    id="driver"
+                    placeholder="Enter driver name"
+                    value={gateInData.driverName}
+                    onChange={(e) =>
+                      setGateInData({
+                        ...gateInData,
+                        driverName: e.target.value,
+                      })
+                    }
+                  />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="purpose">Purpose</Label>
-                <Select>
+                <Select
+                  value={gateInData.purpose}
+                  onValueChange={(value) =>
+                    setGateInData({
+                      ...gateInData,
+                      purpose: value as GateOperation["purpose"],
+                    })
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select purpose" />
                   </SelectTrigger>
@@ -331,55 +531,33 @@ export default function OperatorGateOperations() {
                     id="cargoWeight"
                     type="number"
                     placeholder="e.g., 18000"
+                    value={gateInData.cargoWeight}
+                    onChange={(e) => setGateInData({ ...gateInData, cargoWeight: e.target.value })}
                   />
                 </div>
               )}
               <div className="space-y-2">
                 <Label htmlFor="seal">Seal Number</Label>
-                <Input id="seal" placeholder="Enter seal number" />
-              </div>
-              <div className="space-y-3 pt-2 border-t">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="requireApproval"
-                    checked={requiresApproval}
-                    onCheckedChange={(checked) =>
-                      setRequiresApproval(checked === true)
-                    }
-                  />
-                  <Label
-                    htmlFor="requireApproval"
-                    className="cursor-pointer text-primary font-medium"
-                  >
-                    <Send className="h-3 w-3 inline mr-1" />
-                    Request Manager Approval
-                  </Label>
-                </div>
-                {requiresApproval && (
-                  <div className="space-y-2 pl-6">
-                    <Label htmlFor="approvalReason">
-                      Reason for Approval *
-                    </Label>
-                    <Textarea
-                      id="approvalReason"
-                      placeholder="Explain why manager approval is needed..."
-                      value={approvalReason}
-                      onChange={(e) => setApprovalReason(e.target.value)}
-                    />
-                  </div>
-                )}
+                <Input
+                  id="seal"
+                  placeholder="Enter seal number"
+                  value={gateInData.sealNumber}
+                  onChange={(e) =>
+                    setGateInData({ ...gateInData, sealNumber: e.target.value })
+                  }
+                />
               </div>
             </div>
             <DialogFooter>
               <Button variant="outline">Cancel</Button>
-              <Button onClick={() => {}}>
-                {requiresApproval ? "Submit for Approval" : "Process Gate-In"}
+              <Button onClick={handleGateInSubmit} disabled={loading}>
+                {loading ? "Processing..." : "Process Gate-In"}
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
-        <Dialog>
+        <Dialog open={isGateOutDialogOpen} onOpenChange={setIsGateOutDialogOpen}>
           <DialogTrigger asChild>
             <Button variant="outline">
               <Plus className="mr-2 h-4 w-4" />
@@ -397,23 +575,73 @@ export default function OperatorGateOperations() {
               <div className="space-y-2">
                 <Label htmlFor="lookup">Container Lookup</Label>
                 <div className="flex gap-2">
-                  <Input id="lookup" placeholder="Search container..." />
-                  <Button variant="outline" size="icon">
-                    <Search className="h-4 w-4" />
+                  <Input
+                    id="lookup"
+                    placeholder="Search container..."
+                    value={gateOutData.containerNumber}
+                    onChange={(e) =>
+                      setGateOutData({
+                        ...gateOutData,
+                        containerNumber: e.target.value.toUpperCase(),
+                      })
+                    }
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={handleContainerLookup}
+                    disabled={isLookupLoading}
+                  >
+                    <Search className={`h-4 w-4 ${isLookupLoading ? 'animate-spin' : ''}`} />
                   </Button>
                 </div>
               </div>
+              {lookupResult && (
+                <div className="p-3 bg-muted rounded-md space-y-1 text-sm">
+                  <p><span className="font-medium">Shipping Line:</span> {lookupResult.shippingLine}</p>
+                  <p><span className="font-medium">Type:</span> {lookupResult.size} {lookupResult.type}</p>
+                  <p><span className="font-medium">Status:</span> {lookupResult.status}</p>
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="out-vehicle">Vehicle Number</Label>
-                <Input id="out-vehicle" placeholder="e.g., TN01AB1234" />
+                <Input
+                  id="out-vehicle"
+                  placeholder="e.g., TN01AB1234"
+                  value={gateOutData.vehicleNumber}
+                  onChange={(e) =>
+                    setGateOutData({
+                      ...gateOutData,
+                      vehicleNumber: e.target.value.toUpperCase(),
+                    })
+                  }
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="out-driver">Driver Name</Label>
-                <Input id="out-driver" placeholder="Enter driver name" />
+                <Input
+                  id="out-driver"
+                  placeholder="Enter driver name"
+                  value={gateOutData.driverName}
+                  onChange={(e) =>
+                    setGateOutData({
+                      ...gateOutData,
+                      driverName: e.target.value,
+                    })
+                  }
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="destination">Destination</Label>
-                <Select>
+                <Select
+                  value={gateOutData.purpose}
+                  onValueChange={(value) =>
+                    setGateOutData({
+                      ...gateOutData,
+                      purpose: value as GateOperation["purpose"],
+                    })
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select destination" />
                   </SelectTrigger>
@@ -426,8 +654,13 @@ export default function OperatorGateOperations() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline">Cancel</Button>
-              <Button>Process Gate-Out</Button>
+              <Button variant="outline" onClick={() => setIsGateOutDialogOpen(false)}>Cancel</Button>
+              <Button
+                onClick={handleGateOutSubmit}
+                disabled={loading || !lookupResult}
+              >
+                {loading ? "Processing..." : "Process Gate-Out"}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -441,9 +674,7 @@ export default function OperatorGateOperations() {
         <CardContent>
           <Tabs defaultValue="all">
             <TabsList className="mb-4">
-              <TabsTrigger value="all">
-                All ({dummyGateOperations.length})
-              </TabsTrigger>
+              <TabsTrigger value="all">All ({operations.length})</TabsTrigger>
               <TabsTrigger value="gate-in">
                 Gate-In ({gateIns.length})
               </TabsTrigger>
@@ -457,22 +688,34 @@ export default function OperatorGateOperations() {
 
             <TabsContent value="all">
               <DataTable
-                data={dummyGateOperations}
+                data={operations}
                 columns={columns}
+                isLoading={loading}
                 searchable
                 searchPlaceholder="Search operations..."
               />
             </TabsContent>
             <TabsContent value="gate-in">
-              <DataTable data={gateIns} columns={columns} searchable />
+              <DataTable
+                data={gateIns}
+                columns={columns}
+                isLoading={loading}
+                searchable
+              />
             </TabsContent>
             <TabsContent value="gate-out">
-              <DataTable data={gateOuts} columns={columns} searchable />
+              <DataTable
+                data={gateOuts}
+                columns={columns}
+                isLoading={loading}
+                searchable
+              />
             </TabsContent>
             <TabsContent value="pending">
               <DataTable
                 data={pending}
                 columns={columns}
+                isLoading={loading}
                 searchable
                 emptyMessage="No pending operations"
               />
