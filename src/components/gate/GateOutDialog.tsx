@@ -27,20 +27,12 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
-import { Search } from "lucide-react";
 import type { CreateGateOperationData } from "@/services/gateOperationService";
 import api from "@/services/api";
 import { toast } from "sonner";
 
 const gateOutSchema = z.object({
-    containerNumber: z
-        .string()
-        .min(11, "Container number must be at least 11 characters")
-        .max(11, "Container number must be exactly 11 characters")
-        .regex(
-            /^[A-Z]{4}\d{7}$/,
-            "Format: 4 letters + 7 digits (e.g., MSCU1234567)",
-        ),
+    containerNumber: z.string().optional(),
     vehicleNumber: z.string().min(1, "Vehicle number is required"),
     driverName: z.string().min(1, "Driver name is required"),
     purpose: z.enum(["port", "factory", "transfer"] as const),
@@ -54,6 +46,8 @@ interface GateOutDialogProps {
     onOpenChange: (open: boolean) => void;
     onSubmit: (data: CreateGateOperationData) => Promise<void>;
     loading: boolean;
+    vehicle?: any; // Add optional vehicle prop
+    isContainerRequired?: boolean; // New prop to control requirement
 }
 
 export function GateOutDialog({
@@ -61,15 +55,16 @@ export function GateOutDialog({
     onOpenChange,
     onSubmit,
     loading,
+    vehicle,
+    isContainerRequired = false,
 }: GateOutDialogProps) {
-    const [isLookupLoading, setIsLookupLoading] = useState(false);
-    const [lookupResult, setLookupResult] = useState<any>(null);
+    const [isVerifying, setIsVerifying] = useState(false);
 
     const form = useForm<GateOutFormData>({
         resolver: zodResolver(gateOutSchema),
         defaultValues: {
-            containerNumber: "",
             vehicleNumber: "",
+            containerNumber: "",
             driverName: "",
             purpose: "port",
             remarks: "",
@@ -79,55 +74,105 @@ export function GateOutDialog({
     useEffect(() => {
         if (open) {
             form.reset({
-                containerNumber: "",
-                vehicleNumber: "",
-                driverName: "",
+                vehicleNumber: vehicle?.vehicleNumber || "",
+                containerNumber: vehicle?.currentContainer || "",
+                driverName: vehicle?.driverName || "",
                 purpose: "port",
                 remarks: "",
             });
-            setLookupResult(null);
+            setIsVerifying(false);
         }
-    }, [open, form]);
+    }, [open, vehicle, form]);
 
-    const handleContainerLookup = async () => {
-        const containerNumber = form.getValues("containerNumber");
-        if (!containerNumber || containerNumber.length !== 11) {
-            toast.error("Please enter a valid 11-digit container number");
-            return;
-        }
-
-        setIsLookupLoading(true);
-        try {
-            const response = await api.get(`/containers?containerNumber=${containerNumber}`);
-            const containers = response.data;
-            if (containers && containers.length > 0) {
-                setLookupResult(containers[0]);
-                toast.success("Container found in yard");
-            } else {
-                setLookupResult(null);
-                toast.error("Container not found in yard");
-            }
-        } catch (err) {
-            toast.error("Failed to lookup container");
-        } finally {
-            setIsLookupLoading(false);
-        }
-    };
 
     const onFormSubmit = async (data: GateOutFormData) => {
-        if (!lookupResult) {
-            toast.error("Please lookup and verify container before processing gate-out");
-            return;
+        console.group("GateOutDialog: onFormSubmit");
+        setIsVerifying(true);
+        try {
+
+            // 2. Verify container and vehicle status
+            const vNum = data.vehicleNumber.trim();
+            const cNum = data.containerNumber?.trim() || "";
+
+            if (isContainerRequired && !cNum) {
+                form.setError("containerNumber", { message: "Container number is required for this operation." });
+                setIsVerifying(false);
+                return;
+            }
+
+            if (isContainerRequired && cNum.length !== 11) {
+                form.setError("containerNumber", { message: "Container number must be exactly 11 characters." });
+                setIsVerifying(false);
+                return;
+            }
+
+            // Fetch container to check current status if provided
+            if (cNum) {
+                const containerResponse = await api.get("/containers", {
+                    params: { containerNumber: cNum }
+                });
+                const containers = containerResponse.data;
+                const currentContainer = Array.isArray(containers) ? containers[0] : null;
+
+                if (!currentContainer) {
+                    form.setError("containerNumber", { message: "Container not found in system." });
+                    console.groupEnd();
+                    return;
+                }
+
+                const validInStatuses = ["gate-in", "in-yard", "at-port", "at-factory"];
+                if (!validInStatuses.includes(currentContainer.status)) {
+                    form.setError("containerNumber", {
+                        message: `Container status is '${currentContainer.status}'. Only containers currently inside terminal can Gate-Out.`
+                    });
+                    console.groupEnd();
+                    return;
+                }
+            }
+
+            // Fetch vehicle to check current status
+            const vehicleResponse = await api.get("/vehicles", {
+                params: { vehicleNumber: vNum }
+            });
+            const vehicles = vehicleResponse.data;
+            const currentVehicle = Array.isArray(vehicles) ? vehicles[0] : null;
+
+            if (!currentVehicle) {
+                form.setError("vehicleNumber", { message: "Vehicle not found in system." });
+                console.groupEnd();
+                return;
+            }
+
+            if (currentVehicle.status !== "in-yard") {
+                form.setError("vehicleNumber", {
+                    message: `Vehicle status is '${currentVehicle.status}'. Only vehicles currently In-Yard can Gate-Out.`
+                });
+                console.groupEnd();
+                return;
+            }
+
+            // 3. Submit operation
+            await onSubmit({
+                type: "gate-out",
+                vehicleNumber: vNum,
+                containerNumber: cNum || undefined,
+                driverName: data.driverName,
+                purpose: data.purpose,
+                remarks: data.remarks,
+            });
+        } catch (err: any) {
+            console.error("Submission failed:", err);
+            const message = err.response?.data?.message || err.message || "Failed to process Gate-Out";
+
+            if (message.toLowerCase().includes("vehicle")) {
+                form.setError("vehicleNumber", { message });
+            } else {
+                toast.error(message);
+            }
+        } finally {
+            setIsVerifying(false);
+            console.groupEnd();
         }
-        const payload: CreateGateOperationData = {
-            type: "gate-out",
-            containerNumber: data.containerNumber,
-            vehicleNumber: data.vehicleNumber,
-            driverName: data.driverName,
-            purpose: data.purpose,
-            remarks: data.remarks,
-        };
-        await onSubmit(payload);
     };
 
     return (
@@ -135,68 +180,23 @@ export function GateOutDialog({
             <DialogContent className="max-w-md">
                 <DialogHeader>
                     <DialogTitle>New Gate-Out</DialogTitle>
-                    <DialogDescription>Process a container gate-out</DialogDescription>
+                    <DialogDescription>Process vehicle exit from terminal</DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-4">
-                        <div className="space-y-4">
-                            <div className="space-y-2">
-                                <FormLabel>Container Lookup</FormLabel>
-                                <div className="flex gap-2">
-                                    <FormField
-                                        control={form.control}
-                                        name="containerNumber"
-                                        render={({ field }) => (
-                                            <FormItem className="flex-1">
-                                                <FormControl>
-                                                    <Input
-                                                        placeholder="MSCU1234567"
-                                                        {...field}
-                                                        onChange={(e) => field.onChange(e.target.value.toUpperCase())}
-                                                    />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="icon"
-                                        onClick={handleContainerLookup}
-                                        disabled={isLookupLoading}
-                                    >
-                                        <Search className={`h-4 w-4 ${isLookupLoading ? "animate-spin" : ""}`} />
-                                    </Button>
-                                </div>
-                            </div>
 
-                            {lookupResult && (
-                                <div className="p-3 bg-muted rounded-md space-y-1 text-sm border">
-                                    <p>
-                                        <span className="font-medium text-muted-foreground">Shipping Line:</span>{" "}
-                                        {lookupResult.shippingLine}
-                                    </p>
-                                    <p>
-                                        <span className="font-medium text-muted-foreground">Type:</span>{" "}
-                                        {lookupResult.size} {lookupResult.type}
-                                    </p>
-                                    <p>
-                                        <span className="font-medium text-muted-foreground">Status:</span>{" "}
-                                        <span className="capitalize">{lookupResult.status}</span>
-                                    </p>
-                                </div>
-                            )}
-
+                        {isContainerRequired && (
                             <FormField
                                 control={form.control}
-                                name="vehicleNumber"
+                                name="containerNumber"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Vehicle Number</FormLabel>
+                                        <FormLabel>
+                                            Container Number *
+                                        </FormLabel>
                                         <FormControl>
                                             <Input
-                                                placeholder="TN01AB1234"
+                                                placeholder="MSCU1234567"
                                                 {...field}
                                                 onChange={(e) => field.onChange(e.target.value.toUpperCase())}
                                             />
@@ -205,70 +205,88 @@ export function GateOutDialog({
                                     </FormItem>
                                 )}
                             />
+                        )}
 
-                            <FormField
-                                control={form.control}
-                                name="driverName"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Driver Name</FormLabel>
+                        <FormField
+                            control={form.control}
+                            name="vehicleNumber"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Vehicle Number</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            placeholder="TN01AB1234"
+                                            {...field}
+                                            onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="driverName"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Driver Name</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Enter driver name" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="purpose"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Destination</FormLabel>
+                                    <Select onValueChange={field.onChange} value={field.value}>
                                         <FormControl>
-                                            <Input placeholder="Enter driver name" {...field} />
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select destination" />
+                                            </SelectTrigger>
                                         </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                                        <SelectContent>
+                                            <SelectItem value="port">To Port</SelectItem>
+                                            <SelectItem value="factory">To Factory</SelectItem>
+                                            <SelectItem value="transfer">Transfer</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
 
-                            <FormField
-                                control={form.control}
-                                name="purpose"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Destination</FormLabel>
-                                        <Select onValueChange={field.onChange} value={field.value}>
-                                            <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select destination" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                <SelectItem value="port">To Port</SelectItem>
-                                                <SelectItem value="factory">To Factory</SelectItem>
-                                                <SelectItem value="transfer">Transfer</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-
-                            <FormField
-                                control={form.control}
-                                name="remarks"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Remarks</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="Optional remarks" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
+                        <FormField
+                            control={form.control}
+                            name="remarks"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Remarks</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Optional remarks" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
 
                         <DialogFooter>
                             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                                 Cancel
                             </Button>
-                            <Button type="submit" disabled={loading || !lookupResult}>
-                                {loading ? "Processing..." : "Process Gate-Out"}
+                            <Button type="submit" disabled={loading || isVerifying}>
+                                {loading || isVerifying ? (isVerifying ? "Verifying..." : "Processing...") : "Process Gate-Out"}
                             </Button>
                         </DialogFooter>
                     </form>
                 </Form>
             </DialogContent>
-        </Dialog>
+        </Dialog >
     );
 }

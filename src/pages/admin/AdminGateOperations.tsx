@@ -112,8 +112,12 @@ export default function GateOperations() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const gateIns = operations.filter((op) => op.type === "gate-in");
-  const gateOuts = operations.filter((op) => op.type === "gate-out");
+  const containerOperations = operations.filter(
+    (op) => op.containerNumber && op.containerNumber.trim() !== "",
+  );
+
+  const gateIns = containerOperations.filter((op) => op.type === "gate-in");
+  const gateOuts = containerOperations.filter((op) => op.type === "gate-out");
 
   const gateInsToday = gateIns.filter(
     (op) => new Date(op.timestamp) >= today,
@@ -121,14 +125,14 @@ export default function GateOperations() {
   const gateOutsToday = gateOuts.filter(
     (op) => new Date(op.timestamp) >= today,
   ).length;
-  const totalToday = operations.filter(
+  const totalToday = containerOperations.filter(
     (op) => new Date(op.timestamp) >= today,
   ).length;
 
   return (
     <DashboardLayout
       navItems={adminNavItems}
-      pageTitle="Gate Operations"
+      pageTitle="Container Gate Operations"
       pageActions={
         <div className="flex gap-2">
           <Button
@@ -174,12 +178,14 @@ export default function GateOperations() {
       {/* Gate Operations Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Register Gate Operations</CardTitle>
+          <CardTitle>Register Container Gate Operations</CardTitle>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="all">
             <TabsList className="mb-4">
-              <TabsTrigger value="all">All ({operations.length})</TabsTrigger>
+              <TabsTrigger value="all">
+                All ({containerOperations.length})
+              </TabsTrigger>
               <TabsTrigger value="gate-in">
                 Gate-In ({gateIns.length})
               </TabsTrigger>
@@ -190,7 +196,7 @@ export default function GateOperations() {
 
             <TabsContent value="all">
               <DataTable
-                data={operations}
+                data={containerOperations}
                 columns={columns}
                 isLoading={loading}
                 searchable
@@ -230,6 +236,7 @@ export default function GateOperations() {
         onOpenChange={setIsGateOutDialogOpen}
         onSubmit={handleGateOperationSubmit}
         loading={loading}
+        isContainerRequired={true}
       />
     </DashboardLayout>
   );

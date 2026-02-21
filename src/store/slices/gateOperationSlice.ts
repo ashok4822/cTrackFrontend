@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { gateOperationService, GateOperationFilters } from "@/services/gateOperationService";
-import type { CreateGateOperationData } from "@/services/gateOperationService";
+import { gateOperationService } from "@/services/gateOperationService";
+import type { GateOperationFilters, CreateGateOperationData } from "@/services/gateOperationService";
 import type { GateOperation } from "@/types";
 import { AxiosError } from "axios";
 

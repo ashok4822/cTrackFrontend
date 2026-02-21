@@ -30,6 +30,7 @@ import AdminAuditLogs from "@/pages/admin/AdminAuditLogs";
 import OperatorGateOperations from "@/pages/operator/OperatorGateOperations";
 import Unauthorized from "@/pages/common/Unauthorized";
 import OperatorContainerLookup from "@/pages/operator/OperatorContainerLookup";
+import OperatorEquipmentVehicles from "@/pages/operator/OperatorVehiclesEquipment";
 
 const AppRoutes = () => {
   return (
@@ -179,6 +180,14 @@ const AppRoutes = () => {
             element={
               <AuthProtectedRoute requiredRole="operator">
                 <OperatorContainerLookup />
+              </AuthProtectedRoute>
+            }
+          />
+          <Route
+            path="/operator/equipment"
+            element={
+              <AuthProtectedRoute requiredRole="operator">
+                <OperatorEquipmentVehicles />
               </AuthProtectedRoute>
             }
           />

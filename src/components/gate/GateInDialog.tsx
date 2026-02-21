@@ -40,6 +40,8 @@ const gateInSchema = z.object({
     weight: z.string(),
     vehicleNumber: z.string().min(1),
     driverName: z.string().min(1),
+    driverPhone: z.string().min(1),
+    vehicleType: z.enum(["truck", "trailer", "chassis"] as const),
     purpose: z.enum(["port", "factory", "transfer"] as const),
     sealNumber: z.string(),
     cargoWeight: z.string(),
@@ -76,6 +78,8 @@ export function GateInDialog({
             weight: "",
             vehicleNumber: "",
             driverName: "",
+            driverPhone: "",
+            vehicleType: "truck",
             purpose: "port",
             sealNumber: "",
             cargoWeight: "",
@@ -98,6 +102,8 @@ export function GateInDialog({
                 weight: "",
                 vehicleNumber: "",
                 driverName: "",
+                driverPhone: "",
+                vehicleType: "truck",
                 purpose: "port",
                 sealNumber: "",
                 cargoWeight: "",
@@ -106,7 +112,7 @@ export function GateInDialog({
                 hasDamage: false,
             });
         }
-    }, [open, form]);
+    }, [open]);
 
     const onFormSubmit = async (data: GateInFormData) => {
         const payload: CreateGateOperationData = {
@@ -124,6 +130,8 @@ export function GateInDialog({
             sealNumber: data.sealNumber,
             empty: !data.loaded,
             movementType: data.movementType,
+            driverPhone: data.driverPhone,
+            vehicleType: data.vehicleType,
         };
         await onSubmit(payload);
     };
@@ -294,6 +302,44 @@ export function GateInDialog({
                                             <FormControl>
                                                 <Input placeholder="Enter driver name" {...field} />
                                             </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <FormField
+                                    control={form.control}
+                                    name="driverPhone"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Driver Phone</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Enter driver phone" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="vehicleType"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Vehicle Type</FormLabel>
+                                            <Select onValueChange={field.onChange} value={field.value}>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select type" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    <SelectItem value="truck">Truck</SelectItem>
+                                                    <SelectItem value="trailer">Trailer</SelectItem>
+                                                    <SelectItem value="chassis">Chassis</SelectItem>
+                                                </SelectContent>
+                                            </Select>
                                             <FormMessage />
                                         </FormItem>
                                     )}

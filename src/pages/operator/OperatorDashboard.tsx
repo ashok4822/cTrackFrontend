@@ -35,19 +35,19 @@ export default function OperatorDashboard() {
         />
         <KPICard
           title="Gate Movements"
-          value={kpiData.gateInToday + kpiData.gateOutToday}
+          value={(kpiData.gateInToday || 0) + (kpiData.gateOutToday || 0)}
           icon={DoorOpen}
           variant="success"
         />
         <KPICard
           title="Pending Approvals"
-          value={kpiData.pendingApprovals}
+          value={kpiData.pendingApprovals || 0}
           icon={Truck}
           variant="warning"
         />
         <KPICard
           title="Tasks Today"
-          value={kpiData.tasksToday}
+          value={kpiData.tasksToday || 0}
           icon={Loader2}
           variant="default"
         />

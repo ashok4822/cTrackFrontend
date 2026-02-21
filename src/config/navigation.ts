@@ -24,7 +24,7 @@ export const adminNavItems: NavItem[] = [
   { title: "Container Management", href: "/admin/containers", icon: Container },
   { title: "Shipping Line", href: "/admin/shippingline", icon: Anchor },
   { title: "Yard Configuration", href: "/admin/yard", icon: MapPin },
-  { title: "Gate Operations", href: "/admin/gate", icon: DoorOpen },
+  { title: "Container Gate Operations", href: "/admin/gate", icon: DoorOpen },
   { title: "Stuffing / Destuffing", href: "/admin/stuffing", icon: Package },
   { title: "Vehicles & Equipment", href: "/admin/vehicles", icon: Truck },
   { title: "Transit Tracking", href: "/admin/transit", icon: Navigation },

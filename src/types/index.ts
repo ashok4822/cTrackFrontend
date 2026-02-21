@@ -86,7 +86,7 @@ export interface Vehicle {
   driverName: string;
   driverPhone: string;
   type: "truck" | "trailer" | "chassis";
-  status: "active" | "inactive" | "maintenance";
+  status: "in-yard" | "out-of-yard";
   gpsDeviceId?: string;
   currentLocation?: string;
 }
@@ -96,7 +96,7 @@ export interface Equipment {
   id: string;
   name: string;
   type: "reach-stacker" | "forklift" | "crane";
-  status: "operational" | "maintenance" | "down";
+  status: "operational" | "maintenance" | "down" | "idle";
   lastMaintenance?: string;
   nextMaintenance?: string;
   operator?: string;
@@ -106,7 +106,7 @@ export interface Equipment {
 export interface GateOperation {
   id: string;
   type: "gate-in" | "gate-out";
-  containerNumber: string;
+  containerNumber?: string;
   vehicleNumber: string;
   driverName: string;
   purpose: "port" | "factory" | "transfer";

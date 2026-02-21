@@ -187,7 +187,7 @@ export const dummyVehicles: Vehicle[] = [
     driverName: "Ramesh Kumar",
     driverPhone: "+91 98765 43210",
     type: "truck",
-    status: "active",
+    status: "in-yard",
     gpsDeviceId: "GPS001",
     currentLocation: "Gate A",
   },
@@ -197,7 +197,7 @@ export const dummyVehicles: Vehicle[] = [
     driverName: "Suresh Patel",
     driverPhone: "+91 87654 32109",
     type: "trailer",
-    status: "active",
+    status: "in-yard",
     gpsDeviceId: "GPS002",
     currentLocation: "Block B",
   },
@@ -207,7 +207,7 @@ export const dummyVehicles: Vehicle[] = [
     driverName: "Vijay Singh",
     driverPhone: "+91 76543 21098",
     type: "truck",
-    status: "inactive",
+    status: "out-of-yard",
   },
   {
     id: "4",
@@ -215,7 +215,7 @@ export const dummyVehicles: Vehicle[] = [
     driverName: "Anil Sharma",
     driverPhone: "+91 65432 10987",
     type: "chassis",
-    status: "maintenance",
+    status: "out-of-yard",
   },
 ];
 
@@ -275,7 +275,6 @@ export const dummyGateOperations: GateOperation[] = [
     vehicleNumber: "TN-01-AB-1234",
     driverName: "Ramesh Kumar",
     purpose: "factory",
-    status: "completed",
     timestamp: "2024-01-21T08:00:00Z",
   },
   {
@@ -286,7 +285,6 @@ export const dummyGateOperations: GateOperation[] = [
     vehicleNumber: "TN-02-CD-5678",
     driverName: "Suresh Patel",
     purpose: "port",
-    status: "pending",
     timestamp: "2024-01-21T10:30:00Z",
   },
   {
@@ -297,7 +295,6 @@ export const dummyGateOperations: GateOperation[] = [
     vehicleNumber: "TN-01-AB-1234",
     driverName: "Ramesh Kumar",
     purpose: "port",
-    status: "completed",
     timestamp: "2024-01-20T08:30:00Z",
   },
   {
@@ -308,9 +305,7 @@ export const dummyGateOperations: GateOperation[] = [
     vehicleNumber: "TN-03-EF-9012",
     driverName: "Vijay Singh",
     purpose: "factory",
-    status: "approved",
     timestamp: "2024-01-21T11:00:00Z",
-    approvedBy: "John Admin",
   },
 ];
 

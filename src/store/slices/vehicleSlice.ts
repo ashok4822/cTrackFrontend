@@ -22,7 +22,6 @@ export const fetchVehicles = createAsyncThunk(
         filters:
             | {
                 type?: string;
-                status?: string;
                 vehicleNumber?: string;
             }
             | undefined,

@@ -22,6 +22,7 @@ const statusConfig: Record<string, { label: string; className: string }> = {
     'operational': { label: 'Operational', className: 'bg-success/10 text-success border-success/20' },
     'maintenance': { label: 'Maintenance', className: 'bg-warning/10 text-warning border-warning/20' },
     'down': { label: 'Down', className: 'bg-destructive/10 text-destructive border-destructive/20' },
+    'idle': { label: 'Idle', className: 'bg-muted text-muted-foreground border-border' },
     'active': { label: 'Active', className: 'bg-success/10 text-success border-success/20' },
     'inactive': { label: 'Inactive', className: 'bg-muted text-muted-foreground border-border' },
     'paid': { label: 'Paid', className: 'bg-success/10 text-success border-success/20' },
