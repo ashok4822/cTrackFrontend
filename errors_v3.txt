@@ -1,0 +1,31 @@
+src/components/gate/GateInDialog.tsx(134,13): error TS2353: Object literal may only specify known properties, and 'vehicleType' does not exist in type 'CreateGateOperationData'.
+src/components/ui/calendar.tsx(45,9): error TS2353: Object literal may only specify known properties, and 'IconLeft' does not exist in type 'Partial<CustomComponents>'.
+src/components/ui/calendar.tsx(45,20): error TS6133: '_props' is declared but its value is never read.
+src/components/ui/calendar.tsx(46,21): error TS6133: '_props' is declared but its value is never read.
+src/components/ui/chart.tsx(106,7): error TS2339: Property 'payload' does not exist on type 'Omit<Omit<Props<ValueType, NameType>, PropertiesReadFromContext> & { active?: boolean | undefined; allowEscapeViewBox?: AllowInDimension | undefined; ... 24 more ...; wrapperStyle?: CSSProperties | undefined; } & ClassAttributes<...> & HTMLAttributes<...> & { ...; }, "ref">'.
+src/components/ui/chart.tsx(111,7): error TS2339: Property 'label' does not exist on type 'Omit<Omit<Props<ValueType, NameType>, PropertiesReadFromContext> & { active?: boolean | undefined; allowEscapeViewBox?: AllowInDimension | undefined; ... 24 more ...; wrapperStyle?: CSSProperties | undefined; } & ClassAttributes<...> & HTMLAttributes<...> & { ...; }, "ref">'.
+src/components/ui/chart.tsx(163,25): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/components/ui/chart.tsx(163,31): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/components/ui/chart.tsx(233,41): error TS2344: Type '"payload" | "verticalAlign"' does not satisfy the constraint '"string" | "method" | "mode" | "operator" | "name" | "filter" | "fill" | "values" | "type" | "id" | "role" | "children" | "to" | "className" | "suppressHydrationWarning" | "lang" | ... 433 more ... | "onBBoxUpdate"'.
+  Type '"payload"' is not assignable to type '"string" | "method" | "mode" | "operator" | "name" | "filter" | "fill" | "values" | "type" | "id" | "role" | "children" | "to" | "className" | "suppressHydrationWarning" | "lang" | ... 433 more ... | "onBBoxUpdate"'.
+src/components/ui/chart.tsx(240,17): error TS2339: Property 'length' does not exist on type '{}'.
+src/components/ui/chart.tsx(249,16): error TS2339: Property 'map' does not exist on type '{}'.
+src/components/ui/chart.tsx(249,21): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/components/ui/command.tsx(3,45): error TS2307: Cannot find module 'cmdk' or its corresponding type declarations.
+src/components/ui/menubar.tsx(2,35): error TS2307: Cannot find module '@radix-ui/react-menubar' or its corresponding type declarations.
+src/components/ui/navigation-menu.tsx(2,42): error TS2307: Cannot find module '@radix-ui/react-navigation-menu' or its corresponding type declarations.
+src/components/ui/radio-group.tsx(2,38): error TS2307: Cannot find module '@radix-ui/react-radio-group' or its corresponding type declarations.
+src/components/ui/resizable.tsx(2,37): error TS2307: Cannot find module 'react-resizable-panels' or its corresponding type declarations.
+src/components/ui/slider.tsx(2,34): error TS2307: Cannot find module '@radix-ui/react-slider' or its corresponding type declarations.
+src/components/ui/sonner.tsx(1,26): error TS2307: Cannot find module 'next-themes' or its corresponding type declarations.
+src/components/ui/toast.tsx(2,34): error TS2307: Cannot find module '@radix-ui/react-toast' or its corresponding type declarations.
+src/components/ui/toggle-group.tsx(2,39): error TS2307: Cannot find module '@radix-ui/react-toggle-group' or its corresponding type declarations.
+src/components/ui/toggle.tsx(2,34): error TS2307: Cannot find module '@radix-ui/react-toggle' or its corresponding type declarations.
+src/components/ui/tooltip.tsx(2,35): error TS2307: Cannot find module '@radix-ui/react-tooltip' or its corresponding type declarations.
+src/pages/operator/OperatorContainerLookup.tsx(13,3): error TS6133: 'Truck' is declared but its value is never read.
+src/pages/operator/OperatorContainerLookup.tsx(16,3): error TS6133: 'FileText' is declared but its value is never read.
+src/pages/operator/OperatorContainerLookup.tsx(17,3): error TS6133: 'Package' is declared but its value is never read.
+src/pages/operator/OperatorDashboard.tsx(44,11): error TS2322: Type 'number | undefined' is not assignable to type 'string | number'.
+  Type 'undefined' is not assignable to type 'string | number'.
+src/pages/operator/OperatorDashboard.tsx(50,11): error TS2322: Type 'number | undefined' is not assignable to type 'string | number'.
+  Type 'undefined' is not assignable to type 'string | number'.

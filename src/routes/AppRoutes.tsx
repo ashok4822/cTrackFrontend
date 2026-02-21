@@ -27,7 +27,10 @@ import AdminContainerDetails from "@/pages/admin/AdminContainerDetails";
 import AdminGateOperations from "@/pages/admin/AdminGateOperations";
 import AdminVehiclesEquipment from "@/pages/admin/AdminVehiclesEquipment";
 import AdminAuditLogs from "@/pages/admin/AdminAuditLogs";
+import OperatorGateOperations from "@/pages/operator/OperatorGateOperations";
 import Unauthorized from "@/pages/common/Unauthorized";
+import OperatorContainerLookup from "@/pages/operator/OperatorContainerLookup";
+import OperatorEquipmentVehicles from "@/pages/operator/OperatorVehiclesEquipment";
 
 const AppRoutes = () => {
   return (
@@ -160,6 +163,31 @@ const AppRoutes = () => {
             element={
               <AuthProtectedRoute requiredRole="operator">
                 <OperatorYardOperations />
+              </AuthProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/operator/gate"
+            element={
+              <AuthProtectedRoute requiredRole="operator">
+                <OperatorGateOperations />
+              </AuthProtectedRoute>
+            }
+          />
+          <Route
+            path="/operator/lookup"
+            element={
+              <AuthProtectedRoute requiredRole="operator">
+                <OperatorContainerLookup />
+              </AuthProtectedRoute>
+            }
+          />
+          <Route
+            path="/operator/equipment"
+            element={
+              <AuthProtectedRoute requiredRole="operator">
+                <OperatorEquipmentVehicles />
               </AuthProtectedRoute>
             }
           />

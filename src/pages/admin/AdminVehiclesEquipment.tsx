@@ -7,6 +7,10 @@ import { adminNavItems } from "@/config/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { GateOutDialog } from "@/components/gate/GateOutDialog";
+import { createGateOperation } from "@/store/slices/gateOperationSlice";
+import type { CreateGateOperationData } from "@/services/gateOperationService";
+import { AxiosError } from "axios";
 import {
   Dialog,
   DialogContent,
@@ -27,13 +31,14 @@ import type { Vehicle, Equipment } from "@/types";
 import {
   Truck,
   Wrench,
-  MapPin,
   Plus,
   Edit,
   Trash2,
   MoreHorizontal,
   Loader2,
+  LogOut,
 } from "lucide-react";
+import { VehicleDetailsDialog } from "@/components/vehicles/VehicleDetailsDialog";
 import { useToast } from "@/components/ui/use-toast";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
@@ -87,6 +92,8 @@ export default function VehiclesEquipment() {
     type: "vehicle" | "equipment";
   } | null>(null);
 
+  const [isProcessing, setIsProcessing] = useState(false);
+
   useEffect(() => {
     dispatch(fetchVehicles());
     dispatch(fetchEquipment());
@@ -97,21 +104,26 @@ export default function VehiclesEquipment() {
     driverName: "",
     driverPhone: "",
     type: "truck" as "truck" | "trailer" | "chassis",
-    status: "inactive" as "active" | "inactive" | "maintenance",
+    status: "out-of-yard" as "in-yard" | "out-of-yard",
     gpsDeviceId: "",
   });
+
+  const [gateOutOpen, setGateOutOpen] = useState(false);
+  const [selectedVehicleForGateOut, setSelectedVehicleForGateOut] = useState<Vehicle | null>(null);
 
   const [equipmentForm, setEquipmentForm] = useState({
     name: "",
     type: "reach-stacker" as "reach-stacker" | "forklift" | "crane",
-    status: "operational" as "operational" | "maintenance" | "down",
+    status: "operational" as "operational" | "maintenance" | "down" | "idle",
     operator: "",
   });
 
-  const activeVehicles = vehicles.filter((v) => v.status === "active").length;
   const operationalEquipment = equipment.filter(
     (e) => e.status === "operational",
   ).length;
+
+  const vehiclesInYard = vehicles.filter((v) => v.status === "in-yard").length;
+  const vehiclesOutOfYard = vehicles.filter((v) => v.status === "out-of-yard").length;
 
   const vehicleColumns: Column<Vehicle>[] = [
     {
@@ -141,12 +153,7 @@ export default function VehiclesEquipment() {
     {
       key: "status",
       header: "Status",
-      render: (item) => <StatusBadge status={item.status} />,
-    },
-    {
-      key: "currentLocation",
-      header: "Location",
-      render: (item) => item.currentLocation || "-",
+      render: (item) => <StatusBadge status={item.status === 'in-yard' ? 'gate-in' : 'gate-out'} />,
     },
     {
       key: "gpsDeviceId",
@@ -157,26 +164,40 @@ export default function VehiclesEquipment() {
       key: "actions",
       header: "Actions",
       render: (item) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => handleOpenEditVehicle(item)}>
-              <Edit className="mr-2 h-4 w-4" />
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-destructive focus:text-destructive"
-              onClick={() => handleOpenDelete("vehicle", item.id)}
+        <div className="flex gap-2">
+          {item.status === "in-yard" && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8"
+              onClick={() => handleOpenGateOut(item)}
             >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <LogOut className="h-3 w-3 mr-1 text-blue-600" />
+              Gate Out
+            </Button>
+          )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => handleOpenEditVehicle(item)}>
+                <Edit className="mr-2 h-4 w-4" />
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="text-destructive focus:text-destructive"
+                onClick={() => handleOpenDelete("vehicle", item.id)}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <VehicleDetailsDialog vehicle={item} />
+        </div>
       ),
     },
   ];
@@ -284,6 +305,31 @@ export default function VehiclesEquipment() {
     setDeleteDialogOpen(true);
   };
 
+  const handleOpenGateOut = (vehicle: Vehicle) => {
+    setSelectedVehicleForGateOut(vehicle);
+    setGateOutOpen(true);
+  };
+
+  const handleGateOutSubmit = async (data: CreateGateOperationData) => {
+    try {
+      setIsProcessing(true);
+      await dispatch(createGateOperation(data)).unwrap();
+      await dispatch(fetchVehicles()).unwrap(); // Refresh vehicle list
+      toast({
+        title: "Vehicle Gated Out",
+        description: `${data.vehicleNumber} has left the terminal.`,
+      });
+      setGateOutOpen(false);
+    } catch (err: unknown) {
+      if (err instanceof AxiosError) {
+        throw new Error(err.response?.data?.message || "Failed to process gate-out");
+      }
+      throw err; // GateOutDialog will handle showing the error
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const handleConfirmDelete = async () => {
     if (!itemToDelete) return;
 
@@ -389,7 +435,7 @@ export default function VehiclesEquipment() {
       driverName: "",
       driverPhone: "",
       type: "truck",
-      status: "inactive",
+      status: "out-of-yard",
       gpsDeviceId: "",
     });
     setEquipmentForm({
@@ -416,29 +462,14 @@ export default function VehiclesEquipment() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                <Truck className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">
-                  {vehicles.length}
-                </p>
-                <p className="text-sm text-muted-foreground">Total Vehicles</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-success/10">
-                <MapPin className="h-5 w-5 text-success" />
+                <Truck className="h-5 w-5 text-success" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-foreground">
-                  {activeVehicles}
+                  {vehiclesInYard}
                 </p>
-                <p className="text-sm text-muted-foreground">Active Vehicles</p>
+                <p className="text-sm text-muted-foreground">In Yard</p>
               </div>
             </div>
           </CardContent>
@@ -446,8 +477,23 @@ export default function VehiclesEquipment() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/10">
-                <Wrench className="h-5 w-5 text-warning" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted/20">
+                <Truck className="h-5 w-5 text-muted-foreground" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-foreground">
+                  {vehiclesOutOfYard}
+                </p>
+                <p className="text-sm text-muted-foreground">Out of Yard</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                <Wrench className="h-5 w-5 text-primary" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-foreground">
@@ -461,8 +507,8 @@ export default function VehiclesEquipment() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-info/10">
-                <Wrench className="h-5 w-5 text-info" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-success/10">
+                <Wrench className="h-5 w-5 text-success" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-foreground">
@@ -482,8 +528,8 @@ export default function VehiclesEquipment() {
         className="space-y-4"
       >
         <TabsList>
-          <TabsTrigger value="vehicles">External Vehicles</TabsTrigger>
-          <TabsTrigger value="equipment">Internal Equipment</TabsTrigger>
+          <TabsTrigger value="vehicles">Vehicles</TabsTrigger>
+          <TabsTrigger value="equipment">Equipment</TabsTrigger>
         </TabsList>
 
         <TabsContent value="vehicles">
@@ -513,15 +559,16 @@ export default function VehiclesEquipment() {
             />
           )}
         </TabsContent>
-      </Tabs>
+      </Tabs >
 
       {/* Add/Edit Dialog */}
-      <Dialog
+      < Dialog
         open={addDialogOpen}
         onOpenChange={(open) => {
           setAddDialogOpen(open);
           if (!open) resetForms();
-        }}
+        }
+        }
       >
         <DialogContent className="max-w-md">
           <DialogHeader>
@@ -612,24 +659,7 @@ export default function VehiclesEquipment() {
                   }
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="vehicleStatus">Status</Label>
-                <Select
-                  value={vehicleForm.status}
-                  onValueChange={(
-                    value: "active" | "inactive" | "maintenance",
-                  ) => setVehicleForm({ ...vehicleForm, status: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
-                    <SelectItem value="maintenance">Maintenance</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+
             </div>
           ) : (
             <div className="space-y-4 py-4">
@@ -681,7 +711,7 @@ export default function VehiclesEquipment() {
                 <Select
                   value={equipmentForm.status}
                   onValueChange={(
-                    value: "operational" | "maintenance" | "down",
+                    value: "operational" | "maintenance" | "down" | "idle",
                   ) => setEquipmentForm({ ...equipmentForm, status: value })}
                 >
                   <SelectTrigger>
@@ -691,6 +721,7 @@ export default function VehiclesEquipment() {
                     <SelectItem value="operational">Operational</SelectItem>
                     <SelectItem value="maintenance">Maintenance</SelectItem>
                     <SelectItem value="down">Down</SelectItem>
+                    <SelectItem value="idle">Idle</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -716,8 +747,8 @@ export default function VehiclesEquipment() {
               disabled={
                 activeTab === "vehicles"
                   ? !vehicleForm.vehicleNumber ||
-                    !vehicleForm.driverName ||
-                    !vehicleForm.driverPhone
+                  !vehicleForm.driverName ||
+                  !vehicleForm.driverPhone
                   : !equipmentForm.name
               }
             >
@@ -739,10 +770,10 @@ export default function VehiclesEquipment() {
             </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>
+      </Dialog >
 
       {/* Delete Confirmation */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+      < AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen} >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
@@ -761,7 +792,16 @@ export default function VehiclesEquipment() {
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
-      </AlertDialog>
-    </DashboardLayout>
+      </AlertDialog >
+      {/* Gate Out Dialog */}
+      < GateOutDialog
+        open={gateOutOpen}
+        onOpenChange={setGateOutOpen}
+        onSubmit={handleGateOutSubmit}
+        loading={isProcessing}
+        vehicle={selectedVehicleForGateOut}
+        isContainerRequired={false}
+      />
+    </DashboardLayout >
   );
 }

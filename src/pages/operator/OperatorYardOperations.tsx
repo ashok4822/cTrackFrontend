@@ -207,9 +207,7 @@ export default function OperatorYardOperations() {
       key: "empty",
       header: "Load",
       render: (item) => (
-        <Badge variant="secondary">
-          {item.empty ? "Empty" : "Loaded"}
-        </Badge>
+        <Badge variant="secondary">{item.empty ? "Empty" : "Loaded"}</Badge>
       ),
     },
     { key: "shippingLine", header: "Shipping Line" },
@@ -323,12 +321,7 @@ export default function OperatorYardOperations() {
         </Dialog>
 
         <Dialog open={shiftDialogOpen} onOpenChange={setShiftDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="outline">
-              <ArrowRightLeft className="mr-2 h-4 w-4" />
-              Shift Container
-            </Button>
-          </DialogTrigger>
+          <DialogTrigger asChild> </DialogTrigger>
           <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>Shift Container Between Blocks</DialogTitle>
@@ -554,19 +547,19 @@ export default function OperatorYardOperations() {
                     sizeFilter !== "all" ||
                     typeFilter !== "all" ||
                     blockFilter !== "all") && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setContainerSearch("");
-                          setSizeFilter("all");
-                          setTypeFilter("all");
-                          setBlockFilter("all");
-                        }}
-                      >
-                        Reset
-                      </Button>
-                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setContainerSearch("");
+                        setSizeFilter("all");
+                        setTypeFilter("all");
+                        setBlockFilter("all");
+                      }}
+                    >
+                      Reset
+                    </Button>
+                  )}
                 </div>
               </div>
             </CardHeader>
@@ -579,9 +572,9 @@ export default function OperatorYardOperations() {
                 showFilters={false}
                 emptyMessage={
                   containerSearch ||
-                    sizeFilter !== "all" ||
-                    typeFilter !== "all" ||
-                    blockFilter !== "all"
+                  sizeFilter !== "all" ||
+                  typeFilter !== "all" ||
+                  blockFilter !== "all"
                     ? "No containers match your filters"
                     : "No containers in yard"
                 }

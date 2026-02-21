@@ -3,17 +3,30 @@ import type { GateOperation } from "@/types";
 
 export interface CreateGateOperationData {
     type: "gate-in" | "gate-out";
-    containerNumber: string;
+    containerNumber?: string;
     vehicleNumber: string;
     driverName: string;
     purpose: "port" | "factory" | "transfer";
     remarks?: string;
     approvedBy?: string;
+    driverPhone?: string;
+    vehicleType?: string;
+    // Additional container fields
+    size?: "20ft" | "40ft";
+    containerType?: "standard" | "reefer" | "tank" | "open-top";
+    shippingLine?: string;
+    weight?: number;
+    cargoWeight?: number;
+    sealNumber?: string;
+    empty?: boolean;
+    movementType?: "import" | "export" | "domestic";
 }
 
 export interface GateOperationFilters {
     type?: "gate-in" | "gate-out";
     containerNumber?: string;
+    vehicleNumber?: string;
+    limit?: number;
     status?: string;
 }
 
