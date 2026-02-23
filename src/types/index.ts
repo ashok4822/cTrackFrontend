@@ -102,6 +102,15 @@ export interface Equipment {
   operator?: string;
 }
 
+export interface EquipmentHistory {
+  id: string;
+  equipmentId: string;
+  activity: string;
+  details?: string;
+  performedBy?: string;
+  timestamp: string;
+}
+
 // Gate Operation Types
 export interface GateOperation {
   id: string;

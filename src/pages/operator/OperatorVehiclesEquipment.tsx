@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { GateOutDialog } from "@/components/gate/GateOutDialog";
 import { VehicleDetailsDialog } from "@/components/vehicles/VehicleDetailsDialog";
+import { EquipmentDetailsDialog } from "@/components/equipment/EquipmentDetailsDialog";
 import { createGateOperation } from "@/store/slices/gateOperationSlice";
 import type { CreateGateOperationData } from "@/services/gateOperationService";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -32,13 +33,12 @@ import {
 import { Truck, Forklift, RefreshCw, LogIn, LogOut } from "lucide-react";
 import type { Vehicle, Equipment } from "@/types";
 import { useState, useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchVehicles } from "@/store/slices/vehicleSlice";
 import { fetchEquipment, updateEquipment } from "@/store/slices/equipmentSlice";
 
 export default function OperatorEquipmentVehicles() {
-  const { toast } = useToast();
   const dispatch = useAppDispatch();
 
   const { vehicles, isLoading: isVehiclesLoading } = useAppSelector(
@@ -93,16 +93,13 @@ export default function OperatorEquipmentVehicles() {
 
   const handleAssignTask = () => {
     if (!selectedEquipment || !taskForm.taskType || !taskForm.containerId) {
-      toast({
-        title: "Missing Information",
+      toast.error("Missing Information", {
         description: "Please fill in all required fields.",
-        variant: "destructive",
       });
       return;
     }
 
-    toast({
-      title: "Task Assigned",
+    toast.success("Task Assigned", {
       description: `Task assigned to ${selectedEquipment.name} for container ${taskForm.containerId}.`,
     });
     setAssignTaskOpen(false);
@@ -119,10 +116,8 @@ export default function OperatorEquipmentVehicles() {
 
   const handleUpdateStatus = async () => {
     if (!selectedItemForStatus || !statusForm.status) {
-      toast({
-        title: "Missing Information",
+      toast.error("Missing Information", {
         description: "Please select a status.",
-        variant: "destructive",
       });
       return;
     }
@@ -135,8 +130,7 @@ export default function OperatorEquipmentVehicles() {
         }),
       ).unwrap();
 
-      toast({
-        title: "Status Updated",
+      toast.success("Status Updated", {
         description: `Status updated successfully to ${statusForm.status}.`,
       });
       setUpdateStatusOpen(false);
@@ -147,11 +141,13 @@ export default function OperatorEquipmentVehicles() {
       });
     } catch (err: unknown) {
       const message =
-        err instanceof Error ? err.message : "Failed to update status";
-      toast({
-        title: "Update Failed",
+        typeof err === "string"
+          ? err
+          : err instanceof Error
+            ? err.message
+            : "Failed to update status";
+      toast.error("Update Failed", {
         description: message,
-        variant: "destructive",
       });
     }
   };
@@ -173,10 +169,8 @@ export default function OperatorEquipmentVehicles() {
       !newVehicleForm.driverName ||
       !newVehicleForm.driverPhone
     ) {
-      toast({
-        title: "Missing Information",
+      toast.error("Missing Information", {
         description: "Please fill in all required fields.",
-        variant: "destructive",
       });
       return;
     }
@@ -197,8 +191,7 @@ export default function OperatorEquipmentVehicles() {
 
       await dispatch(fetchVehicles()).unwrap();
 
-      toast({
-        title: "Vehicle Gate-In Successful",
+      toast.success("Vehicle Gate-In Successful", {
         description: `${newVehicleForm.vehicleNumber} has entered the terminal.`,
       });
       setNewVehicleGateInOpen(false);
@@ -211,11 +204,13 @@ export default function OperatorEquipmentVehicles() {
       });
     } catch (err: unknown) {
       const message =
-        err instanceof Error ? err.message : "Failed to record vehicle gate-in";
-      toast({
-        title: "Gate-In Failed",
+        typeof err === "string"
+          ? err
+          : err instanceof Error
+            ? err.message
+            : "Failed to record vehicle gate-in";
+      toast.error("Gate-In Failed", {
         description: message,
-        variant: "destructive",
       });
     } finally {
       setIsProcessing(false);
@@ -227,11 +222,20 @@ export default function OperatorEquipmentVehicles() {
       setIsProcessing(true);
       await dispatch(createGateOperation(data)).unwrap();
       await dispatch(fetchVehicles()).unwrap(); // Refresh vehicle list to show "out-of-yard"
-      toast({
-        title: "Vehicle Gated Out",
+      toast.success("Vehicle Gated Out", {
         description: `${data.vehicleNumber} has left the terminal.`,
       });
       setGateOutOpen(false);
+    } catch (err: unknown) {
+      const message =
+        typeof err === "string"
+          ? err
+          : err instanceof Error
+            ? err.message
+            : "Failed to record vehicle gate-out";
+      toast.error("Gate-Out Failed", {
+        description: message,
+      });
     } finally {
       setIsProcessing(false);
     }
@@ -317,6 +321,7 @@ export default function OperatorEquipmentVehicles() {
             <RefreshCw className="h-3 w-3 mr-1" />
             Update Status
           </Button>
+          <EquipmentDetailsDialog equipment={item} />
         </div>
       ),
     },

@@ -7,7 +7,7 @@ export const containerService = {
     size?: string;
     type?: string;
     block?: string;
-    status?: string;
+    status?: string | string[];
   }): Promise<Container[]> {
     const response = await api.get<Container[]>("/containers", { params: filters });
     return response.data;

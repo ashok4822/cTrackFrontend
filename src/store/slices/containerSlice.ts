@@ -27,7 +27,7 @@ export const fetchContainers = createAsyncThunk(
         size?: string;
         type?: string;
         block?: string;
-        status?: string;
+        status?: string | string[];
     } | undefined, { rejectWithValue }) => {
         try {
             return await containerService.getContainers(filters);

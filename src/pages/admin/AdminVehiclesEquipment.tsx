@@ -39,6 +39,7 @@ import {
   ArrowDownToLine,
 } from "lucide-react";
 import { VehicleDetailsDialog } from "@/components/vehicles/VehicleDetailsDialog";
+import { EquipmentDetailsDialog } from "@/components/equipment/EquipmentDetailsDialog";
 import { toast } from "sonner";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
@@ -52,7 +53,6 @@ import {
   updateEquipment,
   deleteEquipment,
 } from "@/store/slices/equipmentSlice";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -254,26 +254,29 @@ export default function VehiclesEquipment() {
       key: "actions",
       header: "Actions",
       render: (item) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => handleOpenEditEquipment(item)}>
-              <Edit className="mr-2 h-4 w-4" />
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-destructive focus:text-destructive"
-              onClick={() => handleOpenDelete("equipment", item.id)}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => handleOpenEditEquipment(item)}>
+                <Edit className="mr-2 h-4 w-4" />
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="text-destructive focus:text-destructive"
+                onClick={() => handleOpenDelete("equipment", item.id)}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <EquipmentDetailsDialog equipment={item} />
+        </div>
       ),
     },
   ];
@@ -568,31 +571,21 @@ export default function VehiclesEquipment() {
         </TabsList>
 
         <TabsContent value="vehicles">
-          {vehiclesLoading ? (
-            <div className="space-y-4">
-              <Skeleton className="h-[400px] w-full" />
-            </div>
-          ) : (
-            <DataTable
-              data={vehicles}
-              columns={vehicleColumns}
-              searchPlaceholder="Search vehicles..."
-            />
-          )}
+          <DataTable
+            data={vehicles}
+            columns={vehicleColumns}
+            isLoading={vehiclesLoading}
+            searchPlaceholder="Search vehicles..."
+          />
         </TabsContent>
 
         <TabsContent value="equipment">
-          {equipmentLoading ? (
-            <div className="space-y-4">
-              <Skeleton className="h-[400px] w-full" />
-            </div>
-          ) : (
-            <DataTable
-              data={equipment}
-              columns={equipmentColumns}
-              searchPlaceholder="Search equipment..."
-            />
-          )}
+          <DataTable
+            data={equipment}
+            columns={equipmentColumns}
+            isLoading={equipmentLoading}
+            searchPlaceholder="Search equipment..."
+          />
         </TabsContent>
       </Tabs>
 
@@ -792,8 +785,8 @@ export default function VehiclesEquipment() {
               disabled={
                 activeTab === "vehicles"
                   ? !vehicleForm.vehicleNumber ||
-                    !vehicleForm.driverName ||
-                    !vehicleForm.driverPhone
+                  !vehicleForm.driverName ||
+                  !vehicleForm.driverPhone
                   : !equipmentForm.name
               }
             >
