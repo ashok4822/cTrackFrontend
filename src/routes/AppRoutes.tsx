@@ -211,6 +211,7 @@ const AppRoutes = () => {
             }
           />
 
+          {/* Unathorized */}
           <Route path="/unauthorized" element={<Unauthorized />} />
 
           {/* Catch-all*/}

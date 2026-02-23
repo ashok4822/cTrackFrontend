@@ -102,22 +102,16 @@ export default function GateOperations() {
       } else {
         setIsGateOutDialogOpen(false);
       }
-    } catch (err: unknown) {
-      toast.error(
-        typeof err === "string" ? err : "Failed to record gate operation",
-      );
+    } catch (err) {
+      throw err; // Re-throw so the dialog can catch it and show the error
     }
   };
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const containerOperations = operations.filter(
-    (op) => op.containerNumber && op.containerNumber.trim() !== "",
-  );
-
-  const gateIns = containerOperations.filter((op) => op.type === "gate-in");
-  const gateOuts = containerOperations.filter((op) => op.type === "gate-out");
+  const gateIns = operations.filter((op) => op.type === "gate-in");
+  const gateOuts = operations.filter((op) => op.type === "gate-out");
 
   const gateInsToday = gateIns.filter(
     (op) => new Date(op.timestamp) >= today,
@@ -125,14 +119,14 @@ export default function GateOperations() {
   const gateOutsToday = gateOuts.filter(
     (op) => new Date(op.timestamp) >= today,
   ).length;
-  const totalToday = containerOperations.filter(
+  const totalToday = operations.filter(
     (op) => new Date(op.timestamp) >= today,
   ).length;
 
   return (
     <DashboardLayout
       navItems={adminNavItems}
-      pageTitle="Container Gate Operations"
+      pageTitle="Gate Operations"
       pageActions={
         <div className="flex gap-2">
           <Button
@@ -178,13 +172,13 @@ export default function GateOperations() {
       {/* Gate Operations Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Register Container Gate Operations</CardTitle>
+          <CardTitle>Container Gate Operations</CardTitle>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="all">
             <TabsList className="mb-4">
               <TabsTrigger value="all">
-                All ({containerOperations.length})
+                All ({operations.length})
               </TabsTrigger>
               <TabsTrigger value="gate-in">
                 Gate-In ({gateIns.length})
@@ -196,7 +190,7 @@ export default function GateOperations() {
 
             <TabsContent value="all">
               <DataTable
-                data={containerOperations}
+                data={operations}
                 columns={columns}
                 isLoading={loading}
                 searchable

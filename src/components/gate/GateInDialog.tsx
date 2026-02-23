@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -115,37 +116,50 @@ export function GateInDialog({
     }, [open]);
 
     const onFormSubmit = async (data: GateInFormData) => {
-        const payload: CreateGateOperationData = {
-            type: "gate-in",
-            containerNumber: data.containerNumber,
-            vehicleNumber: data.vehicleNumber,
-            driverName: data.driverName,
-            purpose: data.purpose,
-            remarks: data.remarks,
-            size: data.size,
-            containerType: data.type,
-            shippingLine: data.shippingLine,
-            weight: data.weight ? Number(data.weight) : undefined,
-            cargoWeight: data.cargoWeight ? Number(data.cargoWeight) : undefined,
-            sealNumber: data.sealNumber,
-            empty: !data.loaded,
-            movementType: data.movementType,
-            driverPhone: data.driverPhone,
-            vehicleType: data.vehicleType,
-        };
-        await onSubmit(payload);
+        try {
+            const payload: CreateGateOperationData = {
+                type: "gate-in",
+                containerNumber: data.containerNumber,
+                vehicleNumber: data.vehicleNumber,
+                driverName: data.driverName,
+                purpose: data.purpose,
+                remarks: data.remarks,
+                size: data.size,
+                containerType: data.type,
+                shippingLine: data.shippingLine,
+                weight: data.weight ? Number(data.weight) : undefined,
+                cargoWeight: data.cargoWeight ? Number(data.cargoWeight) : undefined,
+                sealNumber: data.sealNumber,
+                empty: !data.loaded,
+                movementType: data.movementType,
+                driverPhone: data.driverPhone,
+                vehicleType: data.vehicleType,
+            };
+            await onSubmit(payload);
+        } catch (err: any) {
+            console.error("Gate-in submission failed:", err);
+            const message = typeof err === "string" ? err : err.response?.data?.message || err.message || "Failed to record gate-in";
+
+            if (message.toLowerCase().includes("vehicle")) {
+                form.setError("vehicleNumber", { message });
+            } else if (message.toLowerCase().includes("container")) {
+                form.setError("containerNumber", { message });
+            } else {
+                toast.error(message);
+            }
+        }
     };
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-md">
+            <DialogContent className="max-w-lg flex flex-col max-h-[90vh]">
                 <DialogHeader>
                     <DialogTitle>New Gate-In</DialogTitle>
                     <DialogDescription>Record a new container gate-in</DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-4">
-                        <div className="max-h-[60vh] overflow-y-auto pr-2 space-y-4">
+                    <form onSubmit={form.handleSubmit(onFormSubmit)} className="flex flex-col flex-1 overflow-hidden">
+                        <div className="flex-1 overflow-y-auto px-1 space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <FormField
                                     control={form.control}
@@ -445,7 +459,7 @@ export function GateInDialog({
                             />
                         </div>
 
-                        <DialogFooter>
+                        <DialogFooter className="pt-4">
                             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                                 Cancel
                             </Button>

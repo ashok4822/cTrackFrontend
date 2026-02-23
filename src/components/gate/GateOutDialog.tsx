@@ -162,16 +162,17 @@ export function GateOutDialog({
             });
         } catch (err: any) {
             console.error("Submission failed:", err);
-            const message = err.response?.data?.message || err.message || "Failed to process Gate-Out";
+            const message = typeof err === "string" ? err : err.response?.data?.message || err.message || "Failed to process Gate-Out";
 
             if (message.toLowerCase().includes("vehicle")) {
                 form.setError("vehicleNumber", { message });
+            } else if (message.toLowerCase().includes("container")) {
+                form.setError("containerNumber", { message });
             } else {
                 toast.error(message);
             }
         } finally {
             setIsVerifying(false);
-            console.groupEnd();
         }
     };
 

@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { GateOutDialog } from "@/components/gate/GateOutDialog";
 import { createGateOperation } from "@/store/slices/gateOperationSlice";
 import type { CreateGateOperationData } from "@/services/gateOperationService";
-import { AxiosError } from "axios";
 import {
   Dialog,
   DialogContent,
@@ -37,13 +36,13 @@ import {
   MoreHorizontal,
   Loader2,
   LogOut,
+  ArrowDownToLine,
 } from "lucide-react";
 import { VehicleDetailsDialog } from "@/components/vehicles/VehicleDetailsDialog";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   fetchVehicles,
-  addVehicle,
   updateVehicle,
   deleteVehicle,
 } from "@/store/slices/vehicleSlice";
@@ -72,7 +71,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export default function VehiclesEquipment() {
-  const { toast } = useToast();
+  // const { toast } = useToast(); // Switching to sonner
   const dispatch = useAppDispatch();
   const { vehicles, isLoading: vehiclesLoading } = useAppSelector(
     (state) => state.vehicle,
@@ -104,12 +103,13 @@ export default function VehiclesEquipment() {
     driverName: "",
     driverPhone: "",
     type: "truck" as "truck" | "trailer" | "chassis",
-    status: "out-of-yard" as "in-yard" | "out-of-yard",
+    status: "in-yard" as "in-yard" | "out-of-yard",
     gpsDeviceId: "",
   });
 
   const [gateOutOpen, setGateOutOpen] = useState(false);
-  const [selectedVehicleForGateOut, setSelectedVehicleForGateOut] = useState<Vehicle | null>(null);
+  const [selectedVehicleForGateOut, setSelectedVehicleForGateOut] =
+    useState<Vehicle | null>(null);
 
   const [equipmentForm, setEquipmentForm] = useState({
     name: "",
@@ -123,7 +123,9 @@ export default function VehiclesEquipment() {
   ).length;
 
   const vehiclesInYard = vehicles.filter((v) => v.status === "in-yard").length;
-  const vehiclesOutOfYard = vehicles.filter((v) => v.status === "out-of-yard").length;
+  // const vehiclesOutOfYard = vehicles.filter(
+  //   (v) => v.status === "out-of-yard",
+  // ).length;
 
   const vehicleColumns: Column<Vehicle>[] = [
     {
@@ -153,7 +155,11 @@ export default function VehiclesEquipment() {
     {
       key: "status",
       header: "Status",
-      render: (item) => <StatusBadge status={item.status === 'in-yard' ? 'gate-in' : 'gate-out'} />,
+      render: (item) => (
+        <StatusBadge
+          status={item.status === "in-yard" ? "gate-in" : "gate-out"}
+        />
+      ),
     },
     {
       key: "gpsDeviceId",
@@ -315,16 +321,19 @@ export default function VehiclesEquipment() {
       setIsProcessing(true);
       await dispatch(createGateOperation(data)).unwrap();
       await dispatch(fetchVehicles()).unwrap(); // Refresh vehicle list
-      toast({
-        title: "Vehicle Gated Out",
+      toast.success("Vehicle Gated Out", {
         description: `${data.vehicleNumber} has left the terminal.`,
       });
       setGateOutOpen(false);
-    } catch (err: unknown) {
-      if (err instanceof AxiosError) {
-        throw new Error(err.response?.data?.message || "Failed to process gate-out");
-      }
-      throw err; // GateOutDialog will handle showing the error
+    } catch (err) {
+      console.error("Gate-out error:", err);
+      const message =
+        err instanceof Error
+          ? err.message
+          : typeof err === "string"
+            ? err
+            : "Failed to process gate-out";
+      toast.error(message);
     } finally {
       setIsProcessing(false);
     }
@@ -336,24 +345,25 @@ export default function VehiclesEquipment() {
     try {
       if (itemToDelete.type === "vehicle") {
         await dispatch(deleteVehicle(itemToDelete.id)).unwrap();
-        toast({
-          title: "Vehicle Deleted",
+        toast.success("Vehicle Deleted", {
           description: "Vehicle removed successfully",
         });
       } else {
         await dispatch(deleteEquipment(itemToDelete.id)).unwrap();
-        toast({
-          title: "Equipment Deleted",
+        toast.success("Equipment Deleted", {
           description: "Equipment removed successfully",
         });
       }
       setDeleteDialogOpen(false);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: (error as string) || "Failed to delete item",
-        variant: "destructive",
-      });
+      console.error("Delete error:", error);
+      const message =
+        error instanceof Error
+          ? error.message
+          : typeof error === "string"
+            ? error
+            : "Failed to delete item";
+      toast.error(message);
     }
   };
 
@@ -366,29 +376,36 @@ export default function VehiclesEquipment() {
             data: vehicleForm,
           }),
         ).unwrap();
-        toast({
-          title: "Vehicle Updated",
+        toast.success("Vehicle Updated", {
           description: `Vehicle ${vehicleForm.vehicleNumber} updated successfully.`,
         });
       } else {
         await dispatch(
-          addVehicle({
-            ...vehicleForm,
+          createGateOperation({
+            type: "gate-in",
+            vehicleNumber: vehicleForm.vehicleNumber,
+            driverName: vehicleForm.driverName,
+            driverPhone: vehicleForm.driverPhone,
+            vehicleType: vehicleForm.type,
+            purpose: "port",
           }),
         ).unwrap();
-        toast({
-          title: "Vehicle Added",
-          description: `Vehicle ${vehicleForm.vehicleNumber} added successfully.`,
+        await dispatch(fetchVehicles()).unwrap();
+        toast.success("Vehicle Gated In", {
+          description: `Vehicle ${vehicleForm.vehicleNumber} recorded in yard.`,
         });
       }
       setAddDialogOpen(false);
       resetForms();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: (error as string) || "Failed to save vehicle",
-        variant: "destructive",
-      });
+      console.error("Save vehicle error:", error);
+      const message =
+        error instanceof Error
+          ? error.message
+          : typeof error === "string"
+            ? error
+            : "Failed to save vehicle";
+      toast.error(message);
     }
   };
 
@@ -401,8 +418,7 @@ export default function VehiclesEquipment() {
             data: equipmentForm,
           }),
         ).unwrap();
-        toast({
-          title: "Equipment Updated",
+        toast.success("Equipment Updated", {
           description: `Equipment ${equipmentForm.name} updated successfully.`,
         });
       } else {
@@ -411,19 +427,21 @@ export default function VehiclesEquipment() {
             ...equipmentForm,
           }),
         ).unwrap();
-        toast({
-          title: "Equipment Added",
+        toast.success("Equipment Added", {
           description: `Equipment ${equipmentForm.name} added successfully.`,
         });
       }
       setAddDialogOpen(false);
       resetForms();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: (error as string) || "Failed to save equipment",
-        variant: "destructive",
-      });
+      console.error("Save equipment error:", error);
+      const message =
+        error instanceof Error
+          ? error.message
+          : typeof error === "string"
+            ? error
+            : "Failed to save equipment";
+      toast.error(message);
     }
   };
 
@@ -435,7 +453,7 @@ export default function VehiclesEquipment() {
       driverName: "",
       driverPhone: "",
       type: "truck",
-      status: "out-of-yard",
+      status: "in-yard",
       gpsDeviceId: "",
     });
     setEquipmentForm({
@@ -451,9 +469,24 @@ export default function VehiclesEquipment() {
       navItems={adminNavItems}
       pageTitle="Vehicles & Equipment"
       pageActions={
-        <Button className="gap-2" onClick={() => setAddDialogOpen(true)}>
-          <Plus className="h-4 w-4" />
-          Add New
+        <Button
+          className="gap-2"
+          onClick={() => {
+            resetForms();
+            setAddDialogOpen(true);
+          }}
+        >
+          {activeTab === "vehicles" ? (
+            <>
+              <ArrowDownToLine className="h-4 w-4" />
+              Vehicle Gate-In
+            </>
+          ) : (
+            <>
+              <Plus className="h-4 w-4" />
+              Add New
+            </>
+          )}
         </Button>
       }
     >
@@ -469,12 +502,14 @@ export default function VehiclesEquipment() {
                 <p className="text-2xl font-bold text-foreground">
                   {vehiclesInYard}
                 </p>
-                <p className="text-sm text-muted-foreground">In Yard</p>
+                <p className="text-sm text-muted-foreground">
+                  Vehicles In Yard
+                </p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        {/* <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted/20">
@@ -488,7 +523,7 @@ export default function VehiclesEquipment() {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -559,176 +594,186 @@ export default function VehiclesEquipment() {
             />
           )}
         </TabsContent>
-      </Tabs >
+      </Tabs>
 
       {/* Add/Edit Dialog */}
-      < Dialog
+      <Dialog
         open={addDialogOpen}
         onOpenChange={(open) => {
           setAddDialogOpen(open);
           if (!open) resetForms();
-        }
-        }
+        }}
       >
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-lg flex flex-col max-h-[90vh]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               {isEditMode ? (
                 <Edit className="h-5 w-5" />
+              ) : activeTab === "vehicles" ? (
+                <ArrowDownToLine className="h-5 w-5" />
               ) : (
                 <Plus className="h-5 w-5" />
               )}
-              {isEditMode ? "Edit" : "Add New"}{" "}
-              {activeTab === "vehicles" ? "Vehicle" : "Equipment"}
+              {isEditMode
+                ? `Edit ${activeTab === "vehicles" ? "Vehicle" : "Equipment"}`
+                : activeTab === "vehicles"
+                  ? "Vehicle Gate-In"
+                  : "Add New Equipment"}
             </DialogTitle>
           </DialogHeader>
 
-          {activeTab === "vehicles" ? (
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="vehicleNumber">Vehicle Number *</Label>
-                <Input
-                  id="vehicleNumber"
-                  placeholder="e.g., TRK-001"
-                  value={vehicleForm.vehicleNumber}
-                  onChange={(e) =>
-                    setVehicleForm({
-                      ...vehicleForm,
-                      vehicleNumber: e.target.value,
-                    })
-                  }
-                />
+          <div className="flex-1 overflow-y-auto px-1">
+            {activeTab === "vehicles" ? (
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="vehicleNumber">Vehicle Number *</Label>
+                  <Input
+                    id="vehicleNumber"
+                    placeholder="e.g., TRK-001"
+                    value={vehicleForm.vehicleNumber}
+                    onChange={(e) =>
+                      setVehicleForm({
+                        ...vehicleForm,
+                        vehicleNumber: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="driverName">Driver Name *</Label>
+                  <Input
+                    id="driverName"
+                    placeholder="Enter driver name"
+                    value={vehicleForm.driverName}
+                    onChange={(e) =>
+                      setVehicleForm({
+                        ...vehicleForm,
+                        driverName: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="driverPhone">Driver Phone *</Label>
+                  <Input
+                    id="driverPhone"
+                    placeholder="Enter phone number"
+                    value={vehicleForm.driverPhone}
+                    onChange={(e) =>
+                      setVehicleForm({
+                        ...vehicleForm,
+                        driverPhone: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="vehicleType">Vehicle Type</Label>
+                  <Select
+                    value={vehicleForm.type}
+                    onValueChange={(value: "truck" | "trailer" | "chassis") =>
+                      setVehicleForm({ ...vehicleForm, type: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="truck">Truck</SelectItem>
+                      <SelectItem value="trailer">Trailer</SelectItem>
+                      <SelectItem value="chassis">Chassis</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="gpsDeviceId">GPS Device ID (Optional)</Label>
+                  <Input
+                    id="gpsDeviceId"
+                    placeholder="Enter GPS device ID"
+                    value={vehicleForm.gpsDeviceId}
+                    onChange={(e) =>
+                      setVehicleForm({
+                        ...vehicleForm,
+                        gpsDeviceId: e.target.value,
+                      })
+                    }
+                  />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="driverName">Driver Name *</Label>
-                <Input
-                  id="driverName"
-                  placeholder="Enter driver name"
-                  value={vehicleForm.driverName}
-                  onChange={(e) =>
-                    setVehicleForm({
-                      ...vehicleForm,
-                      driverName: e.target.value,
-                    })
-                  }
-                />
+            ) : (
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="equipmentName">Equipment ID/Name *</Label>
+                  <Input
+                    id="equipmentName"
+                    placeholder="e.g., RS-001"
+                    value={equipmentForm.name}
+                    onChange={(e) =>
+                      setEquipmentForm({
+                        ...equipmentForm,
+                        name: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="equipmentType">Equipment Type</Label>
+                  <Select
+                    value={equipmentForm.type}
+                    onValueChange={(
+                      value: "reach-stacker" | "forklift" | "crane",
+                    ) => setEquipmentForm({ ...equipmentForm, type: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="reach-stacker">
+                        Reach Stacker
+                      </SelectItem>
+                      <SelectItem value="forklift">Forklift</SelectItem>
+                      <SelectItem value="crane">Crane</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="operator">Assigned Operator (Optional)</Label>
+                  <Input
+                    id="operator"
+                    placeholder="Enter operator name"
+                    value={equipmentForm.operator}
+                    onChange={(e) =>
+                      setEquipmentForm({
+                        ...equipmentForm,
+                        operator: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="equipmentStatus">Status</Label>
+                  <Select
+                    value={equipmentForm.status}
+                    onValueChange={(
+                      value: "operational" | "maintenance" | "down" | "idle",
+                    ) => setEquipmentForm({ ...equipmentForm, status: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="operational">Operational</SelectItem>
+                      <SelectItem value="maintenance">Maintenance</SelectItem>
+                      <SelectItem value="down">Down</SelectItem>
+                      <SelectItem value="idle">Idle</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="driverPhone">Driver Phone *</Label>
-                <Input
-                  id="driverPhone"
-                  placeholder="Enter phone number"
-                  value={vehicleForm.driverPhone}
-                  onChange={(e) =>
-                    setVehicleForm({
-                      ...vehicleForm,
-                      driverPhone: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="vehicleType">Vehicle Type</Label>
-                <Select
-                  value={vehicleForm.type}
-                  onValueChange={(value: "truck" | "trailer" | "chassis") =>
-                    setVehicleForm({ ...vehicleForm, type: value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="truck">Truck</SelectItem>
-                    <SelectItem value="trailer">Trailer</SelectItem>
-                    <SelectItem value="chassis">Chassis</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="gpsDeviceId">GPS Device ID (Optional)</Label>
-                <Input
-                  id="gpsDeviceId"
-                  placeholder="Enter GPS device ID"
-                  value={vehicleForm.gpsDeviceId}
-                  onChange={(e) =>
-                    setVehicleForm({
-                      ...vehicleForm,
-                      gpsDeviceId: e.target.value,
-                    })
-                  }
-                />
-              </div>
+            )}
+          </div>
 
-            </div>
-          ) : (
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="equipmentName">Equipment ID/Name *</Label>
-                <Input
-                  id="equipmentName"
-                  placeholder="e.g., RS-001"
-                  value={equipmentForm.name}
-                  onChange={(e) =>
-                    setEquipmentForm({ ...equipmentForm, name: e.target.value })
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="equipmentType">Equipment Type</Label>
-                <Select
-                  value={equipmentForm.type}
-                  onValueChange={(
-                    value: "reach-stacker" | "forklift" | "crane",
-                  ) => setEquipmentForm({ ...equipmentForm, type: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="reach-stacker">Reach Stacker</SelectItem>
-                    <SelectItem value="forklift">Forklift</SelectItem>
-                    <SelectItem value="crane">Crane</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="operator">Assigned Operator (Optional)</Label>
-                <Input
-                  id="operator"
-                  placeholder="Enter operator name"
-                  value={equipmentForm.operator}
-                  onChange={(e) =>
-                    setEquipmentForm({
-                      ...equipmentForm,
-                      operator: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="equipmentStatus">Status</Label>
-                <Select
-                  value={equipmentForm.status}
-                  onValueChange={(
-                    value: "operational" | "maintenance" | "down" | "idle",
-                  ) => setEquipmentForm({ ...equipmentForm, status: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="operational">Operational</SelectItem>
-                    <SelectItem value="maintenance">Maintenance</SelectItem>
-                    <SelectItem value="down">Down</SelectItem>
-                    <SelectItem value="idle">Idle</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          )}
-
-          <DialogFooter>
+          <DialogFooter className="pt-2">
             <Button
               variant="outline"
               onClick={() => {
@@ -747,8 +792,8 @@ export default function VehiclesEquipment() {
               disabled={
                 activeTab === "vehicles"
                   ? !vehicleForm.vehicleNumber ||
-                  !vehicleForm.driverName ||
-                  !vehicleForm.driverPhone
+                    !vehicleForm.driverName ||
+                    !vehicleForm.driverPhone
                   : !equipmentForm.name
               }
             >
@@ -770,10 +815,10 @@ export default function VehiclesEquipment() {
             </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog >
+      </Dialog>
 
       {/* Delete Confirmation */}
-      < AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen} >
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
@@ -792,9 +837,9 @@ export default function VehiclesEquipment() {
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
-      </AlertDialog >
+      </AlertDialog>
       {/* Gate Out Dialog */}
-      < GateOutDialog
+      <GateOutDialog
         open={gateOutOpen}
         onOpenChange={setGateOutOpen}
         onSubmit={handleGateOutSubmit}
@@ -802,6 +847,6 @@ export default function VehiclesEquipment() {
         vehicle={selectedVehicleForGateOut}
         isContainerRequired={false}
       />
-    </DashboardLayout >
+    </DashboardLayout>
   );
 }

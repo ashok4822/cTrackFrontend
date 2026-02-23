@@ -124,7 +124,7 @@ export function Header({ onMenuToggle, isSidebarOpen }: HeaderProps) {
       </Button>
 
       {/* Notifications */}
-      <DropdownMenu>
+      {/* <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" className="relative">
             <Bell className="h-5 w-5" />
@@ -165,7 +165,7 @@ export function Header({ onMenuToggle, isSidebarOpen }: HeaderProps) {
             View all notifications
           </DropdownMenuItem>
         </DropdownMenuContent>
-      </DropdownMenu>
+      </DropdownMenu> */}
 
       {/* User Menu */}
       <DropdownMenu>
@@ -213,7 +213,10 @@ export function Header({ onMenuToggle, isSidebarOpen }: HeaderProps) {
             Profile Settings
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+          <DropdownMenuItem
+            onClick={handleLogout}
+            className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+          >
             <LogOut className="mr-2 h-4 w-4" />
             Log out
           </DropdownMenuItem>
