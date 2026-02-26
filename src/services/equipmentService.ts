@@ -25,4 +25,9 @@ export const equipmentService = {
         const response = await api.delete<{ message: string }>(`/equipment/${id}`);
         return response.data;
     },
+
+    async getEquipmentHistory(id: string): Promise<any[]> {
+        const response = await api.get<any[]>(`/equipment/${id}/history`);
+        return response.data;
+    },
 };

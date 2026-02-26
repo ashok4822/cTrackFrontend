@@ -40,6 +40,7 @@ import { useState, useEffect } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchBlocks } from "@/store/slices/yardSlice";
+import { fetchEquipment } from "@/store/slices/equipmentSlice";
 import {
   fetchContainers,
   updateContainer,
@@ -54,6 +55,7 @@ export default function OperatorYardOperations() {
   const { containers, isLoading: containerLoading } = useAppSelector(
     (state) => state.container,
   );
+  const { equipment } = useAppSelector((state) => state.equipment);
 
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
   const [shiftDialogOpen, setShiftDialogOpen] = useState(false);
@@ -72,6 +74,7 @@ export default function OperatorYardOperations() {
   const [assignForm, setAssignForm] = useState({
     containerNumber: "",
     block: "",
+    equipment: "",
   });
 
   // Form states for shift
@@ -85,6 +88,7 @@ export default function OperatorYardOperations() {
 
   useEffect(() => {
     dispatch(fetchBlocks());
+    dispatch(fetchEquipment());
   }, [dispatch]);
 
   useEffect(() => {
@@ -94,7 +98,7 @@ export default function OperatorYardOperations() {
         size: sizeFilter === "all" ? undefined : sizeFilter,
         type: typeFilter === "all" ? undefined : typeFilter,
         block: blockFilter === "all" ? undefined : blockFilter,
-        status: "in-yard",
+        status: ["in-yard", "gate-in"],
       }),
     );
   }, [dispatch, debouncedSearch, sizeFilter, typeFilter, blockFilter]);
@@ -124,16 +128,50 @@ export default function OperatorYardOperations() {
     totalCapacity > 0 ? Math.round((totalOccupied / totalCapacity) * 100) : 0;
 
   const handleAssignContainer = async () => {
-    if (!assignForm.containerNumber || !assignForm.block) {
-      toast.error("Please fill in all fields");
+    if (!assignForm.containerNumber || !assignForm.block || !assignForm.equipment) {
+      toast.error("Please fill in all fields including equipment");
       return;
     }
 
-    const container = containers.find(
+    let container = containers.find(
       (c) => c.containerNumber === assignForm.containerNumber,
     );
+
+    // If not found in current list (could be filtered out), fetch from server
     if (!container) {
-      toast.error("Container not found");
+      try {
+        const fetchedContainers = await dispatch(
+          fetchContainers({ containerNumber: assignForm.containerNumber }),
+        ).unwrap();
+        container = fetchedContainers.find(
+          (c) =>
+            c.containerNumber.toLowerCase() ===
+            assignForm.containerNumber.toLowerCase(),
+        );
+      } catch (error) {
+        toast.error("Error searching for container");
+        return;
+      }
+    }
+
+    if (!container) {
+      toast.error("Container not found in terminal");
+      return;
+    }
+
+    // Status validation
+    const allowedStatuses = ["gate-in", "in-yard", "damaged"];
+    if (!allowedStatuses.includes(container.status)) {
+      toast.error(
+        `Container ${container.containerNumber} cannot be assigned to a block (Status: ${container.status})`,
+      );
+      return;
+    }
+
+    if (container.yardLocation?.block) {
+      toast.error(
+        `Container ${container.containerNumber} is already in block ${container.yardLocation.block}. Use 'Shift' to move it.`,
+      );
       return;
     }
 
@@ -141,12 +179,16 @@ export default function OperatorYardOperations() {
       await dispatch(
         updateContainer({
           id: container.id,
-          data: { yardLocation: { block: assignForm.block } },
+          data: {
+            yardLocation: { block: assignForm.block },
+            status: "in-yard",
+            equipment: assignForm.equipment
+          },
         }),
       ).unwrap();
       toast.success("Container assigned successfully");
       setAssignDialogOpen(false);
-      setAssignForm({ containerNumber: "", block: "" });
+      setAssignForm({ containerNumber: "", block: "", equipment: "" });
       dispatch(fetchBlocks()); // Refresh blocks for updated occupancy
       dispatch(
         fetchContainers({
@@ -154,7 +196,7 @@ export default function OperatorYardOperations() {
           size: sizeFilter === "all" ? undefined : sizeFilter,
           type: typeFilter === "all" ? undefined : typeFilter,
           block: blockFilter === "all" ? undefined : blockFilter,
-          status: "in-yard",
+          status: ["in-yard", "gate-in"],
         }),
       );
     } catch (error) {
@@ -170,11 +212,20 @@ export default function OperatorYardOperations() {
       return;
     }
 
+    if (!shiftForm.equipment) {
+      toast.error("Please select equipment for the move");
+      return;
+    }
+
     try {
       await dispatch(
         updateContainer({
           id: shiftForm.id,
-          data: { yardLocation: { block: shiftForm.toBlock } },
+          data: {
+            yardLocation: { block: shiftForm.toBlock },
+            status: "in-yard",
+            equipment: shiftForm.equipment,
+          },
         }),
       ).unwrap();
       toast.success("Container shifted successfully");
@@ -187,7 +238,15 @@ export default function OperatorYardOperations() {
         equipment: "",
       });
       dispatch(fetchBlocks());
-      dispatch(fetchContainers());
+      dispatch(
+        fetchContainers({
+          containerNumber: containerSearch,
+          size: sizeFilter === "all" ? undefined : sizeFilter,
+          type: typeFilter === "all" ? undefined : typeFilter,
+          block: blockFilter === "all" ? undefined : blockFilter,
+          status: ["in-yard", "gate-in"],
+        }),
+      );
     } catch (error) {
       toast.error(
         typeof error === "string" ? error : "Failed to shift container",
@@ -307,6 +366,28 @@ export default function OperatorYardOperations() {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="space-y-2">
+                <Label>Equipment *</Label>
+                <Select
+                  value={assignForm.equipment}
+                  onValueChange={(v) =>
+                    setAssignForm({ ...assignForm, equipment: v })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select equipment" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {equipment
+                      .filter((e) => e.status === "operational")
+                      .map((e) => (
+                        <SelectItem key={e.id} value={e.name}>
+                          {e.name} - {e.type.replace("-", " ")}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <DialogFooter>
               <Button
@@ -364,7 +445,7 @@ export default function OperatorYardOperations() {
               </div>
 
               <div className="space-y-2">
-                <Label>Equipment (Optional)</Label>
+                <Label>Equipment *</Label>
                 <Select
                   value={shiftForm.equipment}
                   onValueChange={(v) =>
@@ -375,12 +456,13 @@ export default function OperatorYardOperations() {
                     <SelectValue placeholder="Select equipment for move" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="rs-001">Reach Stacker RS-001</SelectItem>
-                    <SelectItem value="rs-002">Reach Stacker RS-002</SelectItem>
-                    <SelectItem value="fl-001">Forklift FL-001</SelectItem>
-                    <SelectItem value="sc-001">
-                      Straddle Carrier SC-001
-                    </SelectItem>
+                    {equipment
+                      .filter((e) => e.status === "operational")
+                      .map((e) => (
+                        <SelectItem key={e.id} value={e.name}>
+                          {e.name} - {e.type.replace("-", " ")}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -547,19 +629,19 @@ export default function OperatorYardOperations() {
                     sizeFilter !== "all" ||
                     typeFilter !== "all" ||
                     blockFilter !== "all") && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setContainerSearch("");
-                        setSizeFilter("all");
-                        setTypeFilter("all");
-                        setBlockFilter("all");
-                      }}
-                    >
-                      Reset
-                    </Button>
-                  )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setContainerSearch("");
+                          setSizeFilter("all");
+                          setTypeFilter("all");
+                          setBlockFilter("all");
+                        }}
+                      >
+                        Reset
+                      </Button>
+                    )}
                 </div>
               </div>
             </CardHeader>
@@ -572,9 +654,9 @@ export default function OperatorYardOperations() {
                 showFilters={false}
                 emptyMessage={
                   containerSearch ||
-                  sizeFilter !== "all" ||
-                  typeFilter !== "all" ||
-                  blockFilter !== "all"
+                    sizeFilter !== "all" ||
+                    typeFilter !== "all" ||
+                    blockFilter !== "all"
                     ? "No containers match your filters"
                     : "No containers in yard"
                 }
@@ -583,6 +665,6 @@ export default function OperatorYardOperations() {
           </Card>
         </TabsContent>
       </Tabs>
-    </DashboardLayout>
+    </DashboardLayout >
   );
 }

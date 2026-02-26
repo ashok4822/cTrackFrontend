@@ -102,10 +102,8 @@ export default function GateOperations() {
       } else {
         setIsGateOutDialogOpen(false);
       }
-    } catch (err: unknown) {
-      toast.error(
-        typeof err === "string" ? err : "Failed to record gate operation",
-      );
+    } catch (err) {
+      throw err; // Re-throw so the dialog can catch it and show the error
     }
   };
 
@@ -132,7 +130,7 @@ export default function GateOperations() {
   return (
     <DashboardLayout
       navItems={adminNavItems}
-      pageTitle="Container Gate Operations"
+      pageTitle="Gate Operations"
       pageActions={
         <div className="flex gap-2">
           <Button
@@ -178,7 +176,7 @@ export default function GateOperations() {
       {/* Gate Operations Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Register Container Gate Operations</CardTitle>
+          <CardTitle>Container Gate Operations</CardTitle>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="all">

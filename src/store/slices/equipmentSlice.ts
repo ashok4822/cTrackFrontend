@@ -1,18 +1,22 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { equipmentService } from "@/services/equipmentService";
-import type { Equipment } from "@/types";
+import type { Equipment, EquipmentHistory } from "@/types";
 import { AxiosError } from "axios";
 
 interface EquipmentState {
     equipment: Equipment[];
+    selectedEquipmentHistory: EquipmentHistory[];
     isLoading: boolean;
+    isHistoryLoading: boolean;
     error: string | null;
 }
 
 const initialState: EquipmentState = {
     equipment: [],
+    selectedEquipmentHistory: [],
     isLoading: false,
+    isHistoryLoading: false,
     error: null,
 };
 
@@ -34,6 +38,20 @@ export const fetchEquipment = createAsyncThunk(
             const axiosError = error as AxiosError<{ message: string }>;
             return rejectWithValue(
                 axiosError.response?.data?.message || "Failed to fetch equipment"
+            );
+        }
+    }
+);
+
+export const fetchEquipmentHistory = createAsyncThunk(
+    "equipment/fetchHistory",
+    async (id: string, { rejectWithValue }) => {
+        try {
+            return await equipmentService.getEquipmentHistory(id);
+        } catch (error) {
+            const axiosError = error as AxiosError<{ message: string }>;
+            return rejectWithValue(
+                axiosError.response?.data?.message || "Failed to fetch equipment history"
             );
         }
     }
@@ -110,6 +128,18 @@ const equipmentSlice = createSlice({
             })
             .addCase(fetchEquipment.rejected, (state, action) => {
                 state.isLoading = false;
+                state.error = action.payload as string;
+            })
+            .addCase(fetchEquipmentHistory.pending, (state) => {
+                state.isHistoryLoading = true;
+                state.error = null;
+            })
+            .addCase(fetchEquipmentHistory.fulfilled, (state, action: PayloadAction<EquipmentHistory[]>) => {
+                state.isHistoryLoading = false;
+                state.selectedEquipmentHistory = action.payload;
+            })
+            .addCase(fetchEquipmentHistory.rejected, (state, action) => {
+                state.isHistoryLoading = false;
                 state.error = action.payload as string;
             })
             .addCase(addEquipment.pending, (state) => {

@@ -2,25 +2,27 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import { operatorNavItems } from "@/config/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { DataTable } from "@/components/common/DataTable";
+import type { Column } from "@/components/common/DataTable";
+import { Badge } from "@/components/ui/badge";
 import {
-  Search,
   Container,
   MapPin,
   Calendar,
   Clock,
   ArrowLeft,
   History as HistoryIcon,
+  Eye,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchContainers, fetchContainerHistory } from "@/store/slices/containerSlice";
-import { Loader2, AlertCircle } from "lucide-react";
 import type { Container as ContainerType } from "@/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
 
 export default function OperatorContainerLookup() {
   const dispatch = useAppDispatch();
@@ -28,11 +30,8 @@ export default function OperatorContainerLookup() {
     (state) => state.container,
   );
 
-  const [searchQuery, setSearchQuery] = useState("");
   const [selectedContainer, setSelectedContainer] =
     useState<ContainerType | null>(null);
-  const [searchResults, setSearchResults] = useState<ContainerType[]>([]);
-  const [hasSearched, setHasSearched] = useState(false);
 
   useEffect(() => {
     dispatch(fetchContainers());
@@ -44,114 +43,95 @@ export default function OperatorContainerLookup() {
     }
   }, [selectedContainer, dispatch]);
 
-  const handleSearch = () => {
-    if (!searchQuery.trim()) {
-      setSearchResults([]);
-      setHasSearched(false);
-      setSelectedContainer(null);
-      return;
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
     }
-
-    const results = containers.filter((c) =>
-      c.containerNumber.toLowerCase().includes(searchQuery.toLowerCase()),
-    );
-    setSearchResults(results);
-    setHasSearched(true);
-
-    if (results.length === 1) {
-      setSelectedContainer(results[0]);
-    } else {
-      setSelectedContainer(null);
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleSearch();
-    }
-  };
+  }, [error]);
 
   const handleBack = () => {
     setSelectedContainer(null);
-    setSearchQuery("");
-    setSearchResults([]);
-    setHasSearched(false);
   };
+
+  const columns: Column<ContainerType>[] = [
+    {
+      key: "containerNumber",
+      header: "Container No.",
+      sortable: true,
+      render: (item) => (
+        <span className="font-medium text-foreground">
+          {item.containerNumber}
+        </span>
+      ),
+    },
+    {
+      key: "size",
+      header: "Size",
+      sortable: true,
+    },
+    {
+      key: "type",
+      header: "Type",
+      sortable: true,
+      render: (item) => <span className="capitalize">{item.type}</span>,
+    },
+    {
+      key: "empty",
+      header: "Load",
+      sortable: true,
+      render: (item) => (
+        <Badge variant="secondary">
+          {item.empty ? "Empty" : "Loaded"}
+        </Badge>
+      ),
+    },
+    {
+      key: "status",
+      header: "Status",
+      sortable: true,
+      render: (item) => <StatusBadge status={item.status} />,
+    },
+    {
+      key: "shippingLine",
+      header: "Shipping Line",
+      sortable: true,
+    },
+    {
+      key: "yardLocation",
+      header: "Location",
+      render: (item) => (item.yardLocation ? item.yardLocation.block : "-"),
+    },
+    {
+      key: "dwellTime",
+      header: "Dwell (days)",
+      sortable: true,
+      render: (item) => item.dwellTime ?? "-",
+    },
+    {
+      key: "actions",
+      header: "Actions",
+      render: (item) => (
+        <div
+          className="flex items-center gap-2"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSelectedContainer(item)}
+          >
+            <Eye className="h-4 w-4 mr-1" />
+            View
+          </Button>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <DashboardLayout navItems={operatorNavItems} pageTitle="Container Lookup">
-      {/* Search Section */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Search className="h-5 w-5" />
-            Search Container
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-3 max-w-xl">
-            <Input
-              placeholder="Enter container number (e.g., MSCU1234567)"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyPress={handleKeyPress}
-              className="flex-1"
-            />
-            <Button onClick={handleSearch}>
-              <Search className="mr-2 h-4 w-4" />
-              Search
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Search Results */}
-      {hasSearched && searchResults.length > 1 && !selectedContainer && (
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Search Results ({searchResults.length})</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {searchResults.map((container) => (
-                <div
-                  key={container.id}
-                  className="flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50 cursor-pointer"
-                  onClick={() => setSelectedContainer(container)}
-                >
-                  <div className="flex items-center gap-3">
-                    <Container className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <p className="font-medium">{container.containerNumber}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {container.size} • {container.type} •{" "}
-                        {container.shippingLine}
-                      </p>
-                    </div>
-                  </div>
-                  <StatusBadge status={container.status} />
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* No Results */}
-      {hasSearched && searchResults.length === 0 && (
-        <Card className="mb-6">
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Container className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold">No Container Found</h3>
-            <p className="text-muted-foreground">
-              No container matches "{searchQuery}"
-            </p>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Container Details */}
-      {selectedContainer && (
+      {selectedContainer ? (
         <div className="space-y-6">
           <Button
             variant="ghost"
@@ -355,79 +335,14 @@ export default function OperatorContainerLookup() {
             </TabsContent>
           </Tabs>
         </div>
-      )}
-
-      {/* Container Lookups */}
-      {!hasSearched && !selectedContainer && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Containers List</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex flex-col items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
-                <p className="text-muted-foreground">Loading containers...</p>
-              </div>
-            ) : error ? (
-              <div className="flex flex-col items-center justify-center py-12 text-destructive">
-                <AlertCircle className="h-8 w-8 mb-2" />
-                <p>{error}</p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => dispatch(fetchContainers())}
-                  className="mt-4"
-                >
-                  Try Again
-                </Button>
-              </div>
-            ) : containers.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12">
-                <Container className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold">No Containers Found</h3>
-                <p className="text-muted-foreground">
-                  There are no containers in the system.
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {containers.slice(0, 10).map((container) => (
-                  <div
-                    key={container.id}
-                    className="flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50 cursor-pointer"
-                    onClick={() => {
-                      setSelectedContainer(container);
-                      setSearchQuery(container.containerNumber);
-                      setHasSearched(true);
-                      setSearchResults([container]);
-                    }}
-                  >
-                    <div className="flex items-center gap-3">
-                      <Container className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="font-medium">
-                          {container.containerNumber}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {container.size} • {container.type} •{" "}
-                          {container.shippingLine}
-                        </p>
-                      </div>
-                    </div>
-                    <StatusBadge status={container.status} />
-                  </div>
-                ))}
-                {containers.length > 10 && (
-                  <p className="text-center text-sm text-muted-foreground mt-4">
-                    Showing first 10 containers. Use search to find specific
-                    ones.
-                  </p>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+      ) : (
+        <DataTable
+          data={containers}
+          isLoading={isLoading}
+          columns={columns}
+          searchPlaceholder="Search containers..."
+          onRowClick={(item) => setSelectedContainer(item)}
+        />
       )}
     </DashboardLayout>
   );

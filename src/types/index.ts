@@ -48,6 +48,7 @@ export interface Container {
   damaged?: boolean;
   damageDetails?: string;
   blacklisted?: boolean;
+  equipment?: string;
 }
 
 export interface YardLocation {
@@ -100,6 +101,15 @@ export interface Equipment {
   lastMaintenance?: string;
   nextMaintenance?: string;
   operator?: string;
+}
+
+export interface EquipmentHistory {
+  id: string;
+  equipmentId: string;
+  activity: string;
+  details?: string;
+  performedBy?: string;
+  timestamp: string;
 }
 
 // Gate Operation Types
