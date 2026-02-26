@@ -74,6 +74,7 @@ export default function OperatorYardOperations() {
   const [assignForm, setAssignForm] = useState({
     containerNumber: "",
     block: "",
+    equipment: "",
   });
 
   // Form states for shift
@@ -127,8 +128,8 @@ export default function OperatorYardOperations() {
     totalCapacity > 0 ? Math.round((totalOccupied / totalCapacity) * 100) : 0;
 
   const handleAssignContainer = async () => {
-    if (!assignForm.containerNumber || !assignForm.block) {
-      toast.error("Please fill in all fields");
+    if (!assignForm.containerNumber || !assignForm.block || !assignForm.equipment) {
+      toast.error("Please fill in all fields including equipment");
       return;
     }
 
@@ -167,19 +168,27 @@ export default function OperatorYardOperations() {
       return;
     }
 
+    if (container.yardLocation?.block) {
+      toast.error(
+        `Container ${container.containerNumber} is already in block ${container.yardLocation.block}. Use 'Shift' to move it.`,
+      );
+      return;
+    }
+
     try {
       await dispatch(
         updateContainer({
           id: container.id,
           data: {
             yardLocation: { block: assignForm.block },
-            status: "in-yard"
+            status: "in-yard",
+            equipment: assignForm.equipment
           },
         }),
       ).unwrap();
       toast.success("Container assigned successfully");
       setAssignDialogOpen(false);
-      setAssignForm({ containerNumber: "", block: "" });
+      setAssignForm({ containerNumber: "", block: "", equipment: "" });
       dispatch(fetchBlocks()); // Refresh blocks for updated occupancy
       dispatch(
         fetchContainers({
@@ -354,6 +363,28 @@ export default function OperatorYardOperations() {
                         {block.name} ({block.capacity - block.occupied} free)
                       </SelectItem>
                     ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Equipment *</Label>
+                <Select
+                  value={assignForm.equipment}
+                  onValueChange={(v) =>
+                    setAssignForm({ ...assignForm, equipment: v })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select equipment" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {equipment
+                      .filter((e) => e.status === "operational")
+                      .map((e) => (
+                        <SelectItem key={e.id} value={e.name}>
+                          {e.name} - {e.type.replace("-", " ")}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -634,6 +665,6 @@ export default function OperatorYardOperations() {
           </Card>
         </TabsContent>
       </Tabs>
-    </DashboardLayout>
+    </DashboardLayout >
   );
 }

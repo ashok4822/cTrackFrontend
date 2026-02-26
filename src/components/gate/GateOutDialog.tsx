@@ -120,6 +120,14 @@ export function GateOutDialog({
                     return;
                 }
 
+                if (currentContainer.blacklisted) {
+                    form.setError("containerNumber", {
+                        message: `Container ${cNum} is blacklisted and cannot perform gate operations.`
+                    });
+                    console.groupEnd();
+                    return;
+                }
+
                 const validInStatuses = ["gate-in", "in-yard", "at-port", "at-factory"];
                 if (!validInStatuses.includes(currentContainer.status)) {
                     form.setError("containerNumber", {

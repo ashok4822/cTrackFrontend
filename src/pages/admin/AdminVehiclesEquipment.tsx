@@ -235,22 +235,6 @@ export default function VehiclesEquipment() {
       render: (item) => item.operator || "-",
     },
     {
-      key: "lastMaintenance",
-      header: "Last Maintenance",
-      render: (item) =>
-        item.lastMaintenance
-          ? new Date(item.lastMaintenance).toLocaleDateString()
-          : "-",
-    },
-    {
-      key: "nextMaintenance",
-      header: "Next Maintenance",
-      render: (item) =>
-        item.nextMaintenance
-          ? new Date(item.nextMaintenance).toLocaleDateString()
-          : "-",
-    },
-    {
       key: "actions",
       header: "Actions",
       render: (item) => (
@@ -785,8 +769,8 @@ export default function VehiclesEquipment() {
               disabled={
                 activeTab === "vehicles"
                   ? !vehicleForm.vehicleNumber ||
-                  !vehicleForm.driverName ||
-                  !vehicleForm.driverPhone
+                    !vehicleForm.driverName ||
+                    !vehicleForm.driverPhone
                   : !equipmentForm.name
               }
             >

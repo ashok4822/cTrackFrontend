@@ -274,7 +274,6 @@ export default function ContainerDetails() {
                         <SelectContent>
                           <SelectItem value="20ft">20ft</SelectItem>
                           <SelectItem value="40ft">40ft</SelectItem>
-                          <SelectItem value="45ft">45ft</SelectItem>
                         </SelectContent>
                       </Select>
                     ) : (
@@ -301,7 +300,6 @@ export default function ContainerDetails() {
                           <SelectItem value="reefer">Reefer</SelectItem>
                           <SelectItem value="tank">Tank</SelectItem>
                           <SelectItem value="open-top">Open Top</SelectItem>
-                          <SelectItem value="flat-rack">Flat Rack</SelectItem>
                         </SelectContent>
                       </Select>
                     ) : (
@@ -566,10 +564,10 @@ export default function ContainerDetails() {
               </CardContent>
             </Card>
           </div>
-        </TabsContent>
+        </TabsContent >
 
         {/* History Tab */}
-        <TabsContent value="history">
+        < TabsContent value="history" >
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -610,49 +608,51 @@ export default function ContainerDetails() {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
+        </TabsContent >
 
         {/* Damage Tab */}
-        {container.damaged && (
-          <TabsContent value="damage">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-destructive">
-                  <AlertTriangle className="h-5 w-5" />
-                  Damage Report
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <Label className="text-muted-foreground">
-                      Damage Details
-                    </Label>
-                    {isEditing ? (
-                      <Textarea
-                        className="mt-1"
-                        value={editData.damageDetails || ""}
-                        onChange={(e) =>
-                          setEditData({
-                            ...editData,
-                            damageDetails: e.target.value,
-                          })
-                        }
-                        placeholder="Describe the damage..."
-                        rows={4}
-                      />
-                    ) : (
-                      <p className="font-medium mt-1">
-                        {container.damageDetails || "No details provided"}
-                      </p>
-                    )}
+        {
+          container.damaged && (
+            <TabsContent value="damage">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-destructive">
+                    <AlertTriangle className="h-5 w-5" />
+                    Damage Report
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-muted-foreground">
+                        Damage Details
+                      </Label>
+                      {isEditing ? (
+                        <Textarea
+                          className="mt-1"
+                          value={editData.damageDetails || ""}
+                          onChange={(e) =>
+                            setEditData({
+                              ...editData,
+                              damageDetails: e.target.value,
+                            })
+                          }
+                          placeholder="Describe the damage..."
+                          rows={4}
+                        />
+                      ) : (
+                        <p className="font-medium mt-1">
+                          {container.damageDetails || "No details provided"}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        )}
-      </Tabs>
-    </DashboardLayout>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )
+        }
+      </Tabs >
+    </DashboardLayout >
   );
 }

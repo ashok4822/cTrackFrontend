@@ -48,6 +48,7 @@ export interface Container {
   damaged?: boolean;
   damageDetails?: string;
   blacklisted?: boolean;
+  equipment?: string;
 }
 
 export interface YardLocation {
