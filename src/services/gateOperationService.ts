@@ -17,9 +17,12 @@ export interface CreateGateOperationData {
     shippingLine?: string;
     weight?: number;
     cargoWeight?: number;
+    cargoDescription?: string;
+    hazardousClassification?: boolean;
     sealNumber?: string;
     empty?: boolean;
     movementType?: "import" | "export" | "domestic";
+    customer?: string;
 }
 
 export interface GateOperationFilters {
