@@ -1,6 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import api from "@/services/api";
 import { toast } from "sonner";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
@@ -29,6 +30,7 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import { type CreateGateOperationData } from "@/services/gateOperationService";
 import type { ShippingLine } from "@/types";
 
@@ -48,6 +50,9 @@ const gateInSchema = z.object({
     cargoWeight: z.string(),
     remarks: z.string(),
     loaded: z.boolean(),
+    customer: z.string().optional(),
+    cargoDescription: z.string().optional(),
+    hazardousClassification: z.boolean().optional(),
     hasDamage: z.boolean(),
 });
 
@@ -86,11 +91,18 @@ export function GateInDialog({
             cargoWeight: "",
             remarks: "",
             loaded: false,
+            customer: "",
+            cargoDescription: "",
+            hazardousClassification: false,
             hasDamage: false,
         },
     });
 
-    const isLoaded = form.watch("loaded");
+    const isLoaded = useWatch({
+        control: form.control,
+        name: "loaded",
+        defaultValue: false,
+    });
 
     useEffect(() => {
         if (open) {
@@ -110,6 +122,9 @@ export function GateInDialog({
                 cargoWeight: "",
                 remarks: "",
                 loaded: false,
+                customer: "",
+                cargoDescription: "",
+                hazardousClassification: false,
                 hasDamage: false,
             });
         }
@@ -134,6 +149,9 @@ export function GateInDialog({
                 movementType: data.movementType,
                 driverPhone: data.driverPhone,
                 vehicleType: data.vehicleType,
+                customer: data.customer,
+                cargoDescription: data.cargoDescription,
+                hazardousClassification: data.hazardousClassification,
             };
             await onSubmit(payload);
         } catch (err: any) {
@@ -149,6 +167,21 @@ export function GateInDialog({
             }
         }
     };
+
+    const [customers, setCustomers] = useState<string[]>([]);
+
+    useEffect(() => {
+        const fetchCustomers = async () => {
+            try {
+                const response = await api.get("/users");
+                const customerUsers = response.data.filter((u: any) => u.role === "customer");
+                setCustomers(customerUsers.map((u: any) => u.name || u.email));
+            } catch (error) {
+                console.error("Failed to fetch customers:", error);
+            }
+        };
+        if (open) fetchCustomers();
+    }, [open]);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -390,7 +423,10 @@ export function GateInDialog({
                                     render={({ field }) => (
                                         <FormItem className="flex flex-row items-start space-x-3 space-y-0 pt-4">
                                             <FormControl>
-                                                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                                                <Checkbox
+                                                    checked={field.value}
+                                                    onCheckedChange={(checked) => field.onChange(!!checked)}
+                                                />
                                             </FormControl>
                                             <div className="space-y-1 leading-none">
                                                 <FormLabel>Loaded Container</FormLabel>
@@ -417,6 +453,39 @@ export function GateInDialog({
                             {isLoaded && (
                                 <FormField
                                     control={form.control}
+                                    name="customer"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Assign to Customer</FormLabel>
+                                            <Select onValueChange={field.onChange} value={field.value}>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select customer" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {customers.length === 0 ? (
+                                                        <SelectItem value="none" disabled>
+                                                            No customers found
+                                                        </SelectItem>
+                                                    ) : (
+                                                        customers.map((customer: string) => (
+                                                            <SelectItem key={customer} value={customer}>
+                                                                {customer}
+                                                            </SelectItem>
+                                                        ))
+                                                    )}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            )}
+
+                            {isLoaded && (
+                                <FormField
+                                    control={form.control}
                                     name="cargoWeight"
                                     render={({ field }) => (
                                         <FormItem>
@@ -428,6 +497,45 @@ export function GateInDialog({
                                         </FormItem>
                                     )}
                                 />
+                            )}
+
+                            {isLoaded && (
+                                <div className="grid grid-cols-1 gap-4">
+                                    <FormField
+                                        control={form.control}
+                                        name="hazardousClassification"
+                                        render={({ field }) => (
+                                            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                                <FormControl>
+                                                    <Checkbox
+                                                        checked={field.value}
+                                                        onCheckedChange={field.onChange}
+                                                    />
+                                                </FormControl>
+                                                <div className="space-y-1 leading-none">
+                                                    <FormLabel>Is Hazardous</FormLabel>
+                                                </div>
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="cargoDescription"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Cargo Description</FormLabel>
+                                                <FormControl>
+                                                    <Textarea
+                                                        placeholder="Enter cargo description"
+                                                        className="resize-none"
+                                                        {...field}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
                             )}
 
                             <FormField

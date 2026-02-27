@@ -31,6 +31,9 @@ import OperatorGateOperations from "@/pages/operator/OperatorGateOperations";
 import Unauthorized from "@/pages/common/Unauthorized";
 import OperatorContainerLookup from "@/pages/operator/OperatorContainerLookup";
 import OperatorEquipmentVehicles from "@/pages/operator/OperatorVehiclesEquipment";
+import CustomerRequestContainer from "@/pages/customer/CustomerRequestContainer";
+import CustomerRequestsListing from "@/pages/customer/CustomerRequestsListing";
+import OperatorCargoRequests from "@/pages/operator/OperatorCargoRequests";
 
 const AppRoutes = () => {
   return (
@@ -191,6 +194,14 @@ const AppRoutes = () => {
               </AuthProtectedRoute>
             }
           />
+          <Route
+            path="/operator/cargo-requests"
+            element={
+              <AuthProtectedRoute requiredRole="operator">
+                <OperatorCargoRequests />
+              </AuthProtectedRoute>
+            }
+          />
 
           {/* Customer Routes */}
           <Route
@@ -207,6 +218,24 @@ const AppRoutes = () => {
             element={
               <AuthProtectedRoute requiredRole="customer">
                 <CustomerProfile />
+              </AuthProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/customer/request-container"
+            element={
+              <AuthProtectedRoute requiredRole="customer">
+                <CustomerRequestContainer />
+              </AuthProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/customer/requests"
+            element={
+              <AuthProtectedRoute requiredRole="customer">
+                <CustomerRequestsListing />
               </AuthProtectedRoute>
             }
           />

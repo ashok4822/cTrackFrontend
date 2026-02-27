@@ -30,6 +30,7 @@ export type MovementType = "import" | "export" | "domestic";
 
 export interface Container {
   id: string;
+  _id?: string;
   containerNumber: string;
   size: ContainerSize;
   type: ContainerType;
@@ -43,6 +44,8 @@ export interface Container {
   dwellTime?: number;
   weight?: number;
   cargoWeight?: number;
+  cargoDescription?: string;
+  hazardousClassification?: boolean;
   empty?: boolean;
   sealNumber?: string;
   damaged?: boolean;
