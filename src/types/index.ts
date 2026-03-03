@@ -133,7 +133,16 @@ export interface StuffingOperation {
   id: string;
   type: "stuffing" | "destuffing";
   containerNumber: string;
-  status: "pending" | "ready-for-dispatch" | "in-transit" | "at-factory" | "operation-completed" | "cancelled" | "in-progress" | "completed" | "approved";
+  status:
+    | "pending"
+    | "ready-for-dispatch"
+    | "in-transit"
+    | "at-factory"
+    | "operation-completed"
+    | "cancelled"
+    | "in-progress"
+    | "completed"
+    | "approved";
   location: "terminal" | "factory";
   scheduledDate: string;
   completedDate?: string;
@@ -166,7 +175,7 @@ export interface BillActivity {
 // Pre-Deposit Account Types
 export interface PreDepositAccount {
   id: string;
-  shippingLine: string;
+  customer: string;
   balance: number;
   lastUpdated: string;
   transactions: PDATransaction[];
@@ -270,7 +279,17 @@ export interface ContainerRequest {
   unNumber?: string;
   packingGroup?: string;
   preferredDate: string;
-  status: "pending" | "approved" | "rejected" | "in-progress" | "completed" | "ready-for-dispatch" | "in-transit" | "at-factory" | "operation-completed" | "cancelled";
+  status:
+    | "pending"
+    | "approved"
+    | "rejected"
+    | "in-progress"
+    | "completed"
+    | "ready-for-dispatch"
+    | "in-transit"
+    | "at-factory"
+    | "operation-completed"
+    | "cancelled";
   createdAt: string;
   remarks?: string;
   checkpoints?: Checkpoint[];

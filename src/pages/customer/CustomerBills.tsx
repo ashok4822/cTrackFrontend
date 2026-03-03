@@ -27,15 +27,17 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { billingService, type BillRecord } from "@/services/billingService";
+import { generateBillPDF } from "@/utils/pdfGenerator";
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 export default function CustomerBills() {
   const [bills, setBills] = useState<BillRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedBill, setSelectedBill] = useState<BillRecord | null>(null);
-  const [paymentProcessing, setPaymentProcessing] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const fetchBills = useCallback(async () => {
     setLoading(true);
@@ -63,32 +65,6 @@ export default function CustomerBills() {
 
   const totalPending = pendingBills.reduce((sum, b) => sum + b.totalAmount, 0);
   const totalPaid = paidBills.reduce((sum, b) => sum + b.totalAmount, 0);
-
-  const handleSimulatePayment = async (billId: string) => {
-    setPaymentProcessing(true);
-    try {
-      // Simulate gateway delay
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // Reusing markBillPaid instead of a real gateway for now
-      await billingService.markBillPaid(billId);
-
-      toast({
-        title: "Payment Successful",
-        description: `Your payment has been processed.`,
-      });
-      setSelectedBill(null);
-      fetchBills();
-    } catch {
-      toast({
-        title: "Payment Failed",
-        description: "There was an error processing your payment.",
-        variant: "destructive",
-      });
-    } finally {
-      setPaymentProcessing(false);
-    }
-  };
 
   const columns: Column<BillRecord>[] = [
     { key: "billNumber", header: "Bill No.", sortable: true },
@@ -200,18 +176,21 @@ export default function CustomerBills() {
               </div>
             </div>
             <DialogFooter className="gap-2 sm:gap-0 mt-4">
-              <Button variant="outline" className="w-full sm:w-auto">
+              <Button
+                variant="outline"
+                className="w-full sm:w-auto"
+                onClick={() => generateBillPDF(item)}
+              >
                 <Printer className="mr-2 h-4 w-4" />
                 Download PDF
               </Button>
               {item.status !== "paid" && (
                 <Button
                   className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700"
-                  onClick={() => handleSimulatePayment(item.id)}
-                  disabled={paymentProcessing}
+                  onClick={() => navigate(`/customer/payment/${item.id}`)}
                 >
                   <CreditCard className="mr-2 h-4 w-4" />
-                  {paymentProcessing ? "Processing..." : "Pay Now"}
+                  Pay Now
                 </Button>
               )}
             </DialogFooter>

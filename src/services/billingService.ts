@@ -108,4 +108,14 @@ export const billingService = {
         const response = await api.post<BillRecord>("/billing/bills", billData);
         return response.data;
     },
+
+    async payBill(id: string): Promise<BillRecord> {
+        const response = await api.post<{ message: string; bill: BillRecord }>(`/billing/bills/${id}/pay`);
+        return response.data.bill;
+    },
+
+    async fetchBillById(id: string): Promise<BillRecord> {
+        const response = await api.get<BillRecord>(`/billing/bills/${id}`);
+        return response.data;
+    },
 };

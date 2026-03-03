@@ -43,6 +43,7 @@ import {
 import { billingService, type BillRecord } from "@/services/billingService";
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { generateBillPDF } from "@/utils/pdfGenerator";
 
 interface MiscLineItem {
   id: string;
@@ -356,9 +357,12 @@ export default function OperatorBilling() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline">
+              <Button
+                variant="outline"
+                onClick={() => generateBillPDF(item)}
+              >
                 <Printer className="mr-2 h-4 w-4" />
-                Print
+                Download PDF
               </Button>
               {item.status === "pending" && (
                 <Button onClick={() => handleMarkPaid(item)}>

@@ -71,5 +71,6 @@ export const customerNavItems: NavItem[] = [
   { title: "Transit Tracking", href: "/customer/transit", icon: Navigation },
   { title: "Movements", href: "/customer/movements", icon: Truck },
   { title: "Bills", href: "/customer/bills", icon: Receipt },
+  { title: "PDA View", href: "/customer/pda", icon: FileText },
   { title: "Profile", href: "/customer/profile", icon: UserCircle },
 ];
