@@ -38,6 +38,18 @@ export const fetchContainers = createAsyncThunk(
     }
 );
 
+export const fetchCustomerContainers = createAsyncThunk(
+    "container/fetchCustomer",
+    async (_, { rejectWithValue }) => {
+        try {
+            return await containerService.getCustomerContainers();
+        } catch (error) {
+            const axiosError = error as AxiosError<{ message: string }>;
+            return rejectWithValue(axiosError.response?.data?.message || "Failed to fetch your containers");
+        }
+    }
+);
+
 export const fetchContainerById = createAsyncThunk(
     "container/fetchById",
     async (id: string, { rejectWithValue }) => {
@@ -138,6 +150,18 @@ const containerSlice = createSlice({
                 state.containers = action.payload;
             })
             .addCase(fetchContainers.rejected, (state, action) => {
+                state.isLoading = false;
+                state.error = action.payload as string;
+            })
+            .addCase(fetchCustomerContainers.pending, (state) => {
+                state.isLoading = true;
+                state.error = null;
+            })
+            .addCase(fetchCustomerContainers.fulfilled, (state, action: PayloadAction<Container[]>) => {
+                state.isLoading = false;
+                state.containers = action.payload;
+            })
+            .addCase(fetchCustomerContainers.rejected, (state, action) => {
                 state.isLoading = false;
                 state.error = action.payload as string;
             })

@@ -2,7 +2,7 @@ import api from "./api";
 
 export interface ContainerRequestData {
     type: "stuffing" | "destuffing";
-    status?: "pending" | "approved" | "rejected" | "completed";
+    status?: "pending" | "approved" | "rejected" | "completed" | "ready-for-dispatch" | "in-transit" | "at-factory" | "operation-completed" | "cancelled";
     containerSize?: string;
     containerType?: string;
     cargoDescription?: string;
@@ -16,6 +16,7 @@ export interface ContainerRequestData {
     containerId?: string;
     containerNumber?: string;
     remarks?: string;
+    checkpoints?: Array<{ location: string, timestamp: string, status: string, remarks?: string }>;
 }
 
 export const containerRequestService = {

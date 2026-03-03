@@ -148,7 +148,7 @@ export default function OperatorYardOperations() {
             c.containerNumber.toLowerCase() ===
             assignForm.containerNumber.toLowerCase(),
         );
-      } catch (error) {
+      } catch {
         toast.error("Error searching for container");
         return;
       }
@@ -199,10 +199,8 @@ export default function OperatorYardOperations() {
           status: ["in-yard", "gate-in"],
         }),
       );
-    } catch (error) {
-      toast.error(
-        typeof error === "string" ? error : "Failed to assign container",
-      );
+    } catch {
+      toast.error("Failed to assign container");
     }
   };
 
@@ -247,10 +245,8 @@ export default function OperatorYardOperations() {
           status: ["in-yard", "gate-in"],
         }),
       );
-    } catch (error) {
-      toast.error(
-        typeof error === "string" ? error : "Failed to shift container",
-      );
+    } catch {
+      toast.error("Failed to shift container");
     }
   };
 

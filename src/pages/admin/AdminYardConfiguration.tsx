@@ -81,8 +81,8 @@ export default function AdminYardConfiguration() {
       }
 
       setConfigDialogOpen(false);
-    } catch (error) {
-      toast.error(error as string);
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : String(error));
     }
   };
 

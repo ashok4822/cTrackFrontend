@@ -314,7 +314,6 @@ export const dummyStuffingOperations: StuffingOperation[] = [
   {
     id: "1",
     type: "stuffing",
-    // containerId: "7",
     containerNumber: "KKFU1122334",
     status: "pending",
     location: "terminal",
@@ -323,21 +322,35 @@ export const dummyStuffingOperations: StuffingOperation[] = [
   {
     id: "2",
     type: "destuffing",
-    // containerId: "1",
     containerNumber: "MSCU1234567",
-    status: "in-progress",
+    status: "ready-for-dispatch",
     location: "terminal",
     scheduledDate: "2024-01-21T14:00:00Z",
   },
   {
     id: "3",
     type: "stuffing",
-    // containerId: "5",
     containerNumber: "OOLU3210987",
-    status: "completed",
+    status: "operation-completed",
     location: "factory",
     scheduledDate: "2024-01-20T10:00:00Z",
     completedDate: "2024-01-20T16:00:00Z",
+  },
+  {
+    id: "4",
+    type: "stuffing",
+    containerNumber: "NYKU8765432",
+    status: "in-transit",
+    location: "terminal",
+    scheduledDate: "2024-01-23T08:00:00Z",
+  },
+  {
+    id: "5",
+    type: "destuffing",
+    containerNumber: "CMAU9876543",
+    status: "at-factory",
+    location: "factory",
+    scheduledDate: "2024-01-23T11:00:00Z",
   },
 ];
 

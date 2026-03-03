@@ -13,6 +13,11 @@ export const containerService = {
     return response.data;
   },
 
+  async getCustomerContainers(): Promise<Container[]> {
+    const response = await api.get<Container[]>("/containers/my-containers");
+    return response.data;
+  },
+
   async getContainerById(id: string): Promise<Container> {
     const response = await api.get<Container>(`/containers/${id}`);
     return response.data;

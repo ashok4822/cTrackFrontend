@@ -30,6 +30,9 @@ const statusConfig: Record<string, { label: string; className: string }> = {
     'urgent': { label: 'Urgent', className: 'bg-destructive/10 text-destructive border-destructive/20' },
     'normal': { label: 'Normal', className: 'bg-muted text-muted-foreground border-border' },
     'nominated': { label: 'Nominated', className: 'bg-primary/10 text-primary border-primary/20' },
+    'ready-for-dispatch': { label: 'Ready for Dispatch', className: 'bg-purple-100 text-purple-700 border-purple-200' },
+    'operation-completed': { label: 'Operation Completed', className: 'bg-success/10 text-success border-success/20' },
+    'cancelled': { label: 'Cancelled', className: 'bg-destructive/10 text-destructive border-destructive/20' },
 };
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {

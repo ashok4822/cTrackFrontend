@@ -72,8 +72,8 @@ export default function AdminProfile() {
     try {
       await dispatch(updateProfileImage(file)).unwrap();
       toast.success("Profile image updated successfully");
-    } catch (error) {
-      toast.error(error as string);
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : String(error));
     }
   };
 
@@ -81,8 +81,8 @@ export default function AdminProfile() {
     try {
       await dispatch(updateProfile({ name, phone })).unwrap();
       toast.success("Profile updated successfully");
-    } catch (error) {
-      toast.error(error as string);
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : String(error));
     }
   };
 
@@ -95,8 +95,8 @@ export default function AdminProfile() {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-    } catch (error) {
-      toast.error(error as string);
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : String(error));
     }
   };
 

@@ -168,14 +168,17 @@ export function GateInDialog({
         }
     };
 
-    const [customers, setCustomers] = useState<string[]>([]);
+    const [customers, setCustomers] = useState<{ id: string; name: string }[]>([]);
 
     useEffect(() => {
         const fetchCustomers = async () => {
             try {
                 const response = await api.get("/users");
                 const customerUsers = response.data.filter((u: any) => u.role === "customer");
-                setCustomers(customerUsers.map((u: any) => u.name || u.email));
+                setCustomers(customerUsers.map((u: any) => ({
+                    id: u._id,
+                    name: u.companyName || u.name || u.email
+                })));
             } catch (error) {
                 console.error("Failed to fetch customers:", error);
             }
@@ -469,9 +472,9 @@ export function GateInDialog({
                                                             No customers found
                                                         </SelectItem>
                                                     ) : (
-                                                        customers.map((customer: string) => (
-                                                            <SelectItem key={customer} value={customer}>
-                                                                {customer}
+                                                        customers.map((customer) => (
+                                                            <SelectItem key={customer.id} value={customer.id}>
+                                                                {customer.name}
                                                             </SelectItem>
                                                         ))
                                                     )}
