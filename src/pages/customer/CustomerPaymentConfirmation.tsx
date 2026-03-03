@@ -10,10 +10,10 @@ import {
   Receipt,
   ArrowRight,
   Download,
-  Printer,
   Loader2,
 } from "lucide-react";
 import { billingService, type BillRecord } from "@/services/billingService";
+import { generateBillPDF } from "@/utils/pdfGenerator";
 import { useState, useEffect } from "react";
 
 export default function CustomerPaymentConfirmation() {
@@ -110,13 +110,14 @@ export default function CustomerPaymentConfirmation() {
                 )}
 
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <Button variant="outline" className="gap-2">
+                  <Button
+                    variant="outline"
+                    className="gap-2"
+                    onClick={() => bill && generateBillPDF(bill)}
+                    disabled={!bill}
+                  >
                     <Download className="h-4 w-4" />
                     Download Receipt
-                  </Button>
-                  <Button variant="outline" className="gap-2">
-                    <Printer className="h-4 w-4" />
-                    Print Receipt
                   </Button>
                   <Button
                     onClick={() => navigate("/customer/bills")}
