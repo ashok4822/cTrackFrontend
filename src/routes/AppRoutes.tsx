@@ -34,6 +34,18 @@ import OperatorEquipmentVehicles from "@/pages/operator/OperatorVehiclesEquipmen
 import CustomerRequestContainer from "@/pages/customer/CustomerRequestContainer";
 import CustomerRequestsListing from "@/pages/customer/CustomerRequestsListing";
 import OperatorCargoRequests from "@/pages/operator/OperatorCargoRequests";
+import OperatorStuffingDestuffing from "@/pages/operator/OperatorStuffingDestuffing";
+import OperatorTransitTracking from "@/pages/operator/OperatorTransitTracking";
+import CustomerTransitTracking from "@/pages/customer/CustomerTransitTracking";
+import CustomerMyContainers from "@/pages/customer/CustomerMyContainers";
+import CustomerStuffingDestuffing from "@/pages/customer/CustomerStuffingDestuffing";
+import AdminStuffingDestuffing from "@/pages/admin/AdminStuffingDestuffing";
+import AdminTransitTracking from "@/pages/admin/AdminTransitTracking";
+import AdminActivitiesCharges from "@/pages/admin/AdminActivitiesCharges";
+import OperatorBilling from "@/pages/operator/OperatorBilling";
+import CustomerBills from "@/pages/customer/CustomerBills";
+import CustomerPayment from "@/pages/customer/CustomerPayment";
+import CustomerPaymentConfirmation from "@/pages/customer/CustomerPaymentConfirmation";
 
 const AppRoutes = () => {
   return (
@@ -141,6 +153,30 @@ const AppRoutes = () => {
               </AuthProtectedRoute>
             }
           />
+          <Route
+            path="/admin/stuffing"
+            element={
+              <AuthProtectedRoute requiredRole="admin">
+                <AdminStuffingDestuffing />
+              </AuthProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/transit"
+            element={
+              <AuthProtectedRoute requiredRole="admin">
+                <AdminTransitTracking />
+              </AuthProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/charges"
+            element={
+              <AuthProtectedRoute requiredRole="admin">
+                <AdminActivitiesCharges />
+              </AuthProtectedRoute>
+            }
+          />
 
           {/* Operator Routes */}
           <Route
@@ -202,6 +238,30 @@ const AppRoutes = () => {
               </AuthProtectedRoute>
             }
           />
+          <Route
+            path="/operator/stuffing"
+            element={
+              <AuthProtectedRoute requiredRole="operator">
+                <OperatorStuffingDestuffing />
+              </AuthProtectedRoute>
+            }
+          />
+          <Route
+            path="/operator/transit"
+            element={
+              <AuthProtectedRoute requiredRole="operator">
+                <OperatorTransitTracking />
+              </AuthProtectedRoute>
+            }
+          />
+          <Route
+            path="/operator/billing"
+            element={
+              <AuthProtectedRoute requiredRole="operator">
+                <OperatorBilling />
+              </AuthProtectedRoute>
+            }
+          />
 
           {/* Customer Routes */}
           <Route
@@ -236,6 +296,54 @@ const AppRoutes = () => {
             element={
               <AuthProtectedRoute requiredRole="customer">
                 <CustomerRequestsListing />
+              </AuthProtectedRoute>
+            }
+          />
+          <Route
+            path="/customer/stuffing"
+            element={
+              <AuthProtectedRoute requiredRole="customer">
+                <CustomerStuffingDestuffing />
+              </AuthProtectedRoute>
+            }
+          />
+          <Route
+            path="/customer/transit"
+            element={
+              <AuthProtectedRoute requiredRole="customer">
+                <CustomerTransitTracking />
+              </AuthProtectedRoute>
+            }
+          />
+          <Route
+            path="/customer/containers"
+            element={
+              <AuthProtectedRoute requiredRole="customer">
+                <CustomerMyContainers />
+              </AuthProtectedRoute>
+            }
+          />
+          <Route
+            path="/customer/bills"
+            element={
+              <AuthProtectedRoute requiredRole="customer">
+                <CustomerBills />
+              </AuthProtectedRoute>
+            }
+          />
+          <Route
+            path="/customer/payment/:billId"
+            element={
+              <AuthProtectedRoute requiredRole="customer">
+                <CustomerPayment />
+              </AuthProtectedRoute>
+            }
+          />
+          <Route
+            path="/customer/payment-confirmation/:billId"
+            element={
+              <AuthProtectedRoute requiredRole="customer">
+                <CustomerPaymentConfirmation />
               </AuthProtectedRoute>
             }
           />

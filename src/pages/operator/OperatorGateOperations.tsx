@@ -51,19 +51,14 @@ export default function OperatorGateOperations() {
   }, [reduxError]);
 
   const handleGateOperationSubmit = async (data: CreateGateOperationData) => {
-    try {
-      await dispatch(createGateOperation(data)).unwrap();
-      toast.success(
-        `Gate-${data.type === "gate-in" ? "In" : "Out"} recorded successfully`,
-      );
-      if (data.type === "gate-in") {
-        setIsGateInDialogOpen(false);
-      } else {
-        setIsGateOutDialogOpen(false);
-      }
-    } catch (err: any) {
-      // Re-throw so the dialog's onFormSubmit can catch and show field-specific errors
-      throw err;
+    await dispatch(createGateOperation(data)).unwrap();
+    toast.success(
+      `Gate-${data.type === "gate-in" ? "In" : "Out"} recorded successfully`,
+    );
+    if (data.type === "gate-in") {
+      setIsGateInDialogOpen(false);
+    } else {
+      setIsGateOutDialogOpen(false);
     }
   };
 

@@ -133,7 +133,7 @@ export interface StuffingOperation {
   id: string;
   type: "stuffing" | "destuffing";
   containerNumber: string;
-  status: "pending" | "in-progress" | "completed" | "approved";
+  status: "pending" | "ready-for-dispatch" | "in-transit" | "at-factory" | "operation-completed" | "cancelled" | "in-progress" | "completed" | "approved";
   location: "terminal" | "factory";
   scheduledDate: string;
   completedDate?: string;
@@ -247,6 +247,13 @@ export interface TransitCheckpoint {
 }
 
 // Container Request Types
+export interface Checkpoint {
+  location: string;
+  timestamp: string;
+  status: string;
+  remarks?: string;
+}
+
 export interface ContainerRequest {
   id: string;
   type: "stuffing" | "destuffing";
@@ -263,9 +270,10 @@ export interface ContainerRequest {
   unNumber?: string;
   packingGroup?: string;
   preferredDate: string;
-  status: "pending" | "approved" | "rejected" | "in-progress" | "completed";
+  status: "pending" | "approved" | "rejected" | "in-progress" | "completed" | "ready-for-dispatch" | "in-transit" | "at-factory" | "operation-completed" | "cancelled";
   createdAt: string;
   remarks?: string;
+  checkpoints?: Checkpoint[];
 }
 
 // Navigation Types

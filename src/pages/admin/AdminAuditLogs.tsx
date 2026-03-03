@@ -41,7 +41,7 @@ export default function AdminAuditLogs() {
 
     const loadAuditLogs = (customFilters?: typeof filters) => {
         const filtersToUse = customFilters || filters;
-        const cleanFilters: any = { ...filtersToUse };
+        const cleanFilters: Record<string, string | number> = { ...filtersToUse };
 
         // Remove empty filters
         Object.keys(cleanFilters).forEach(key => {

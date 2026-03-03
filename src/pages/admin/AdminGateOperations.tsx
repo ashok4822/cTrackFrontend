@@ -92,18 +92,14 @@ export default function GateOperations() {
   }, [error]);
 
   const handleGateOperationSubmit = async (data: CreateGateOperationData) => {
-    try {
-      await dispatch(createGateOperation(data)).unwrap();
-      toast.success(
-        `Gate ${data.type === "gate-in" ? "In" : "Out"} recorded successfully`,
-      );
-      if (data.type === "gate-in") {
-        setIsGateInDialogOpen(false);
-      } else {
-        setIsGateOutDialogOpen(false);
-      }
-    } catch (err) {
-      throw err; // Re-throw so the dialog can catch it and show the error
+    await dispatch(createGateOperation(data)).unwrap();
+    toast.success(
+      `Gate ${data.type === "gate-in" ? "In" : "Out"} recorded successfully`,
+    );
+    if (data.type === "gate-in") {
+      setIsGateInDialogOpen(false);
+    } else {
+      setIsGateOutDialogOpen(false);
     }
   };
 
