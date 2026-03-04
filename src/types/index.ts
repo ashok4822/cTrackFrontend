@@ -38,6 +38,7 @@ export interface Container {
   status: ContainerStatus;
   shippingLine: string;
   customer?: string;
+  customerName?: string;
   yardLocation?: YardLocation;
   gateInTime?: string;
   gateOutTime?: string;
@@ -134,15 +135,15 @@ export interface StuffingOperation {
   type: "stuffing" | "destuffing";
   containerNumber: string;
   status:
-    | "pending"
-    | "ready-for-dispatch"
-    | "in-transit"
-    | "at-factory"
-    | "operation-completed"
-    | "cancelled"
-    | "in-progress"
-    | "completed"
-    | "approved";
+  | "pending"
+  | "ready-for-dispatch"
+  | "in-transit"
+  | "at-factory"
+  | "operation-completed"
+  | "cancelled"
+  | "in-progress"
+  | "completed"
+  | "approved";
   location: "terminal" | "factory";
   scheduledDate: string;
   completedDate?: string;
@@ -280,16 +281,16 @@ export interface ContainerRequest {
   packingGroup?: string;
   preferredDate: string;
   status:
-    | "pending"
-    | "approved"
-    | "rejected"
-    | "in-progress"
-    | "completed"
-    | "ready-for-dispatch"
-    | "in-transit"
-    | "at-factory"
-    | "operation-completed"
-    | "cancelled";
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "in-progress"
+  | "completed"
+  | "ready-for-dispatch"
+  | "in-transit"
+  | "at-factory"
+  | "operation-completed"
+  | "cancelled";
   createdAt: string;
   remarks?: string;
   checkpoints?: Checkpoint[];

@@ -16,6 +16,7 @@ export interface ContainerRequestData {
     containerId?: string;
     containerNumber?: string;
     remarks?: string;
+    equipmentId?: string;
     checkpoints?: Array<{ location: string, timestamp: string, status: string, remarks?: string }>;
 }
 

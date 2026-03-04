@@ -96,6 +96,13 @@ export default function CustomerRequestContainer() {
     (c) => c.id === selectedContainer || c._id === selectedContainer,
   );
 
+  // Only loaded (non-empty), gate-in or in-yard containers are eligible for destuffing
+  const destuffingEligibleContainers = myContainers.filter(
+    (c) =>
+      c.empty === false &&
+      (c.status === "gate-in" || c.status === "in-yard"),
+  );
+
   const handleStuffingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -398,12 +405,12 @@ export default function CustomerRequestContainer() {
                       />
                     </SelectTrigger>
                     <SelectContent>
-                      {myContainers.length === 0 && !isFetchingContainers ? (
+                      {destuffingEligibleContainers.length === 0 && !isFetchingContainers ? (
                         <div className="p-4 text-center text-sm text-muted-foreground">
                           No loaded containers found in your inventory.
                         </div>
                       ) : (
-                        myContainers.map((container, index) => (
+                        destuffingEligibleContainers.map((container, index) => (
                           <SelectItem
                             key={container.id || container._id || index}
                             value={container.id || container._id || ""}

@@ -14,6 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogFooter,
+  DialogClose,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import {
@@ -108,6 +109,7 @@ export default function OperatorStuffingDestuffing() {
     try {
       await containerRequestService.updateRequest(selectedRequest.id, {
         status: "ready-for-dispatch",
+        equipmentId: dispatchForm.equipmentId,
       });
 
       toast({
@@ -261,7 +263,9 @@ export default function OperatorStuffingDestuffing() {
                 )}
               </div>
               <DialogFooter>
-                <Button variant="outline">Close</Button>
+                <DialogClose asChild>
+                  <Button variant="outline">Close</Button>
+                </DialogClose>
               </DialogFooter>
             </DialogContent>
           </Dialog>

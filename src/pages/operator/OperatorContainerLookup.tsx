@@ -200,7 +200,7 @@ export default function OperatorContainerLookup() {
                       <div>
                         <Label className="text-muted-foreground">Customer</Label>
                         <p className="font-medium">
-                          {selectedContainer.customer || "N/A"}
+                          {selectedContainer.customerName || selectedContainer.customer || "N/A"}
                         </p>
                       </div>
                       <div>

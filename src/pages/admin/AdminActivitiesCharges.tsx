@@ -36,8 +36,9 @@ const AdminActivitiesCharges = () => {
   const [loading, setLoading] = useState(true);
   const [editingCharge, setEditingCharge] = useState<Charge | null>(null);
   const [newRate, setNewRate] = useState("");
-  const [effectiveDate] = useState(new Date().toISOString().split("T")[0]);
+  const [effectiveDate, setEffectiveDate] = useState(new Date().toISOString().split("T")[0]);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isUpdateRateOpen, setIsUpdateRateOpen] = useState(false);
   const [isNewActivityOpen, setIsNewActivityOpen] = useState(false);
   const [isEditActivityOpen, setIsEditActivityOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
@@ -90,6 +91,7 @@ const AdminActivitiesCharges = () => {
       await billingService.updateChargeRate(editingCharge.id, parseFloat(newRate), effectiveDate);
       toast.success("Charge rate updated successfully");
       setEditingCharge(null);
+      setIsUpdateRateOpen(false);
       fetchData();
     } catch (_error) {
       toast.error("Failed to update charge rate");
@@ -235,7 +237,7 @@ const AdminActivitiesCharges = () => {
       ),
     },
     {
-      key: "actions",
+      key: "chargeRates",
       header: "Charge Rates",
       render: (item) => {
         const activityCharges = charges.filter((c) => c.activityId === item.id);
@@ -390,78 +392,19 @@ const AdminActivitiesCharges = () => {
       key: "actions",
       header: "Actions",
       render: (item) => (
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setEditingCharge(item);
-                setNewRate(item.rate.toString());
-              }}
-            >
-              <Edit className="h-4 w-4 mr-1" />
-              Update Rate
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Update Charge Rate</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-muted-foreground">Activity</Label>
-                  <p className="font-medium">{item.activityName}</p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">
-                    Container Size
-                  </Label>
-                  <p className="capitalize">
-                    {item.containerSize === "all"
-                      ? "All Sizes"
-                      : item.containerSize}
-                  </p>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="currentRate">
-                  Current Rate ({item.currency})
-                </Label>
-                <Input id="currentRate" value={item.rate.toFixed(2)} disabled />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="newRate">New Rate ({item.currency})</Label>
-                <Input
-                  id="newRate"
-                  type="number"
-                  step="0.01"
-                  value={newRate}
-                  onChange={(e) => setNewRate(e.target.value)}
-                  placeholder="Enter new rate"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="effectiveDate">Effective From</Label>
-                <Input
-                  id="effectiveDate"
-                  type="date"
-                  defaultValue={new Date().toISOString().split("T")[0]}
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setEditingCharge(null)}>
-                Cancel
-              </Button>
-              <Button onClick={handleUpdateRate} disabled={isUpdating}>
-                {isUpdating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                Update Rate
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            setEditingCharge(item);
+            setNewRate(item.rate.toString());
+            setEffectiveDate(new Date().toISOString().split("T")[0]);
+            setIsUpdateRateOpen(true);
+          }}
+        >
+          <Edit className="h-4 w-4 mr-1" />
+          Update Rate
+        </Button>
       ),
     },
   ];
@@ -735,6 +678,68 @@ const AdminActivitiesCharges = () => {
             </Tabs>
           </CardContent>
         </Card>
+
+        {/* Update Rate Dialog */}
+        <Dialog open={isUpdateRateOpen} onOpenChange={setIsUpdateRateOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Update Charge Rate</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-muted-foreground">Activity</Label>
+                  <p className="font-medium">{editingCharge?.activityName}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">
+                    Container Size
+                  </Label>
+                  <p className="capitalize">
+                    {editingCharge?.containerSize === "all"
+                      ? "All Sizes"
+                      : editingCharge?.containerSize}
+                  </p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="currentRate">
+                  Current Rate ({editingCharge?.currency})
+                </Label>
+                <Input id="currentRate" value={editingCharge?.rate.toFixed(2) || "0.00"} disabled />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="newRate">New Rate ({editingCharge?.currency})</Label>
+                <Input
+                  id="newRate"
+                  type="number"
+                  step="0.01"
+                  value={newRate}
+                  onChange={(e) => setNewRate(e.target.value)}
+                  placeholder="Enter new rate"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="updateEffectiveDate">Effective From</Label>
+                <Input
+                  id="updateEffectiveDate"
+                  type="date"
+                  value={effectiveDate}
+                  onChange={(e) => setEffectiveDate(e.target.value)}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsUpdateRateOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleUpdateRate} disabled={isUpdating}>
+                {isUpdating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                Update Rate
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Add Rate Dialog */}
         <Dialog open={isAddRateOpen} onOpenChange={setIsAddRateOpen}>
