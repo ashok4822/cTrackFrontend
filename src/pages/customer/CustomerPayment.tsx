@@ -28,23 +28,60 @@ import {
   CreditCard,
   CheckCircle,
   AlertCircle,
+  Loader2,
 } from "lucide-react";
-import { dummyBills, dummyPDAs } from "@/data/dummyData";
-import { toast } from "@/hooks/use-toast";
+import { billingService, type BillRecord } from "@/services/billingService";
+import { pdaService } from "@/services/pdaService";
+import { useToast } from "@/hooks/use-toast";
+import { useEffect, useCallback } from "react";
 
 export default function CustomerPayment() {
   const { billId } = useParams();
   const navigate = useNavigate();
   const [paymentMethod, setPaymentMethod] = useState<string>("pda");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [bill, setBill] = useState<BillRecord | null>(null);
+  const [pdaBalance, setPdaBalance] = useState<number>(0);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
-  // Find the bill
-  const bill = dummyBills.find((b) => b.id === billId);
+  const fetchData = useCallback(async () => {
+    if (!billId) return;
+    setLoading(true);
+    try {
+      const [billData, pdaData] = await Promise.all([
+        billingService.fetchBillById(billId),
+        pdaService.getPDA(),
+      ]);
+      setBill(billData);
+      setPdaBalance(pdaData.balance);
+    } catch {
+      toast({
+        title: "Error",
+        description: "Failed to load payment details",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [billId, toast]);
 
-  // Get PDA balance (using first PDA for demo)
-  const pdaAccount = dummyPDAs[0];
-  const pdaBalance = pdaAccount?.balance || 0;
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
   const hasSufficientBalance = pdaBalance >= (bill?.totalAmount || 0);
+
+  if (loading) {
+    return (
+      <DashboardLayout navItems={customerNavItems} pageTitle="Payment">
+        <div className="flex flex-col items-center justify-center py-32">
+          <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+          <p className="text-muted-foreground">Loading payment details...</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   if (!bill) {
     return (
@@ -96,13 +133,33 @@ export default function CustomerPayment() {
 
     setIsProcessing(true);
 
-    // Simulate payment processing
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      if (paymentMethod === "pda") {
+        if (!billId) throw new Error("Bill ID is missing");
+        await billingService.payBill(billId);
+      } else {
+        // Simulate online payment for now
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      }
 
-    // Navigate to confirmation page
-    navigate(
-      `/customer/payment-confirmation/${billId}?status=success&method=${paymentMethod}`,
-    );
+      toast({
+        title: "Payment Successful",
+        description: "Your payment has been processed successfully.",
+      });
+
+      // Navigate to confirmation page
+      navigate(
+        `/customer/payment-confirmation/${billId}?status=success&method=${paymentMethod}`,
+      );
+    } catch (error: any) {
+      toast({
+        title: "Payment Failed",
+        description: error.response?.data?.message || "There was an error processing your payment.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -152,9 +209,9 @@ export default function CustomerPayment() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {bill.activities.map((activity) => (
-                  <TableRow key={activity.id}>
-                    <TableCell>{activity.name}</TableCell>
+                {bill.lineItems.map((activity, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell>{activity.activityName}</TableCell>
                     <TableCell className="text-right">
                       {activity.quantity}
                     </TableCell>
@@ -193,11 +250,10 @@ export default function CustomerPayment() {
             <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
               {/* PDA Option */}
               <div
-                className={`relative flex items-start gap-4 p-4 rounded-lg border-2 transition-colors ${
-                  paymentMethod === "pda"
-                    ? "border-primary bg-primary/5"
-                    : "border-border"
-                }`}
+                className={`relative flex items-start gap-4 p-4 rounded-lg border-2 transition-colors ${paymentMethod === "pda"
+                  ? "border-primary bg-primary/5"
+                  : "border-border"
+                  }`}
               >
                 <RadioGroupItem value="pda" id="pda" className="mt-1" />
                 <div className="flex-1">
@@ -232,11 +288,10 @@ export default function CustomerPayment() {
 
               {/* Online Payment Option */}
               <div
-                className={`relative flex items-start gap-4 p-4 rounded-lg border-2 transition-colors ${
-                  paymentMethod === "online"
-                    ? "border-primary bg-primary/5"
-                    : "border-border"
-                }`}
+                className={`relative flex items-start gap-4 p-4 rounded-lg border-2 transition-colors ${paymentMethod === "online"
+                  ? "border-primary bg-primary/5"
+                  : "border-border"
+                  }`}
               >
                 <RadioGroupItem value="online" id="online" className="mt-1" />
                 <div className="flex-1">

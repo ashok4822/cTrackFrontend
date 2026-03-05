@@ -10,9 +10,11 @@ import {
   Receipt,
   ArrowRight,
   Download,
-  Printer,
+  Loader2,
 } from "lucide-react";
-import { dummyBills } from "@/data/dummyData";
+import { billingService, type BillRecord } from "@/services/billingService";
+import { generateBillPDF } from "@/utils/pdfGenerator";
+import { useState, useEffect } from "react";
 
 export default function CustomerPaymentConfirmation() {
   const { billId } = useParams();
@@ -22,8 +24,17 @@ export default function CustomerPaymentConfirmation() {
   const status = searchParams.get("status") || "success";
   const method = searchParams.get("method") || "pda";
   const isSuccess = status === "success";
+  const [bill, setBill] = useState<BillRecord | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const bill = dummyBills.find((b) => b.id === billId);
+  useEffect(() => {
+    if (billId) {
+      billingService.fetchBillById(billId)
+        .then(setBill)
+        .catch(console.error)
+        .finally(() => setLoading(false));
+    }
+  }, [billId]);
 
   const transactionId = useMemo(() => `TXN${Date.now()}`, []);
   const transactionDate = useMemo(() => new Date().toLocaleString(), []);
@@ -36,7 +47,12 @@ export default function CustomerPaymentConfirmation() {
       <div className="max-w-2xl mx-auto">
         <Card>
           <CardContent className="py-12">
-            {isSuccess ? (
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+                <p className="text-muted-foreground">Fetching transaction details...</p>
+              </div>
+            ) : isSuccess ? (
               <div className="text-center">
                 <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-success/10 flex items-center justify-center">
                   <CheckCircle className="h-12 w-12 text-success" />
@@ -94,13 +110,14 @@ export default function CustomerPaymentConfirmation() {
                 )}
 
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <Button variant="outline" className="gap-2">
+                  <Button
+                    variant="outline"
+                    className="gap-2"
+                    onClick={() => bill && generateBillPDF(bill)}
+                    disabled={!bill}
+                  >
                     <Download className="h-4 w-4" />
                     Download Receipt
-                  </Button>
-                  <Button variant="outline" className="gap-2">
-                    <Printer className="h-4 w-4" />
-                    Print Receipt
                   </Button>
                   <Button
                     onClick={() => navigate("/customer/bills")}

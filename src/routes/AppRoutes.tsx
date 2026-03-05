@@ -46,6 +46,8 @@ import OperatorBilling from "@/pages/operator/OperatorBilling";
 import CustomerBills from "@/pages/customer/CustomerBills";
 import CustomerPayment from "@/pages/customer/CustomerPayment";
 import CustomerPaymentConfirmation from "@/pages/customer/CustomerPaymentConfirmation";
+import OperatorPDAView from "@/pages/operator/OperatorPDAView";
+import CustomerPDA from "@/pages/customer/CustomerPDA";
 
 const AppRoutes = () => {
   return (
@@ -262,6 +264,14 @@ const AppRoutes = () => {
               </AuthProtectedRoute>
             }
           />
+          <Route
+            path="/operator/pda"
+            element={
+              <AuthProtectedRoute requiredRole="operator">
+                <OperatorPDAView />
+              </AuthProtectedRoute>
+            }
+          />
 
           {/* Customer Routes */}
           <Route
@@ -328,6 +338,14 @@ const AppRoutes = () => {
             element={
               <AuthProtectedRoute requiredRole="customer">
                 <CustomerBills />
+              </AuthProtectedRoute>
+            }
+          />
+          <Route
+            path="/customer/pda"
+            element={
+              <AuthProtectedRoute requiredRole="customer">
+                <CustomerPDA />
               </AuthProtectedRoute>
             }
           />

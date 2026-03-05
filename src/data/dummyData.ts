@@ -425,7 +425,7 @@ export const dummyBills: Bill[] = [
 export const dummyPDAs: PreDepositAccount[] = [
   {
     id: "1",
-    shippingLine: "Maersk Line",
+    customer: "Reliable Logistics",
     balance: 500000,
     lastUpdated: "2024-01-21T10:00:00Z",
     transactions: [
@@ -457,7 +457,7 @@ export const dummyPDAs: PreDepositAccount[] = [
   },
   {
     id: "2",
-    shippingLine: "Hapag-Lloyd",
+    customer: "Alliance Logistics",
     balance: 350000,
     lastUpdated: "2024-01-20T14:00:00Z",
     transactions: [
@@ -481,7 +481,7 @@ export const dummyPDAs: PreDepositAccount[] = [
   },
   {
     id: "3",
-    shippingLine: "CMA CGM",
+    customer: "R & Y Logistics",
     balance: 275000,
     lastUpdated: "2024-01-21T08:00:00Z",
     transactions: [

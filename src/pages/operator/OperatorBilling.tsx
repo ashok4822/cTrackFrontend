@@ -40,13 +40,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { billingService, type BillRecord } from "@/services/billingService";
+import { billingService, type BillRecord, type Charge } from "@/services/billingService";
+import { containerService } from "@/services/containerService";
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { generateBillPDF } from "@/utils/pdfGenerator";
 
 interface MiscLineItem {
   id: string;
   description: string;
+  activityCode: string;
   quantity: number;
   unitPrice: number;
   amount: number;
@@ -57,29 +60,25 @@ interface CustomerOption {
   name: string;
 }
 
-interface CustomerUser {
-  _id: string;
-  role: string;
-  name?: string;
-  companyName?: string;
-  email?: string;
-}
+
 
 export default function OperatorBilling() {
   const [bills, setBills] = useState<BillRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [miscBillOpen, setMiscBillOpen] = useState(false);
   const [customers, setCustomers] = useState<CustomerOption[]>([]);
+  const [charges, setCharges] = useState<Charge[]>([]);
   const { toast } = useToast();
 
   // Miscellaneous bill form state
   const [miscForm, setMiscForm] = useState({
     customer: "",
     containerNumber: "",
+    shippingLine: "",
     remarks: "",
   });
   const [lineItems, setLineItems] = useState<MiscLineItem[]>([
-    { id: "1", description: "", quantity: 1, unitPrice: 0, amount: 0 },
+    { id: "1", description: "", activityCode: "MISC", quantity: 1, unitPrice: 0, amount: 0 },
   ]);
 
   const fetchBills = useCallback(async () => {
@@ -101,12 +100,15 @@ export default function OperatorBilling() {
   const fetchCustomers = useCallback(async () => {
     try {
       const response = await api.get("/users");
-      const customerUsers = response.data.filter(
-        (u: CustomerUser) => u.role === "customer",
+      const data = Array.isArray(response.data) ? response.data :
+        (response.data?.users && Array.isArray(response.data.users)) ? response.data.users : [];
+
+      const customerUsers = data.filter(
+        (u: any) => u.role?.toLowerCase() === "customer",
       );
       setCustomers(
-        customerUsers.map((u: CustomerUser) => ({
-          id: u._id,
+        customerUsers.map((u: any) => ({
+          id: u.id || u._id,
           name: u.companyName || u.name || u.email || "Unknown",
         })),
       );
@@ -115,10 +117,45 @@ export default function OperatorBilling() {
     }
   }, []);
 
+  const fetchCharges = useCallback(async () => {
+    try {
+      const data = await billingService.fetchCharges();
+      setCharges(data.filter((c) => c.active).map(c => ({
+        ...c,
+        id: c.id || c.activityId // Ensure every charge has an id
+      })));
+    } catch (error) {
+      console.error("Failed to fetch charges:", error);
+    }
+  }, []);
+
   useEffect(() => {
     fetchBills();
     fetchCustomers();
-  }, [fetchBills, fetchCustomers]);
+    fetchCharges();
+  }, [fetchBills, fetchCustomers, fetchCharges]);
+
+  // Auto-fetch container details (shipping line) when container number is entered
+  useEffect(() => {
+    const fetchContainerDetails = async () => {
+      if (miscForm.containerNumber.length === 11) {
+        try {
+          const containers = await containerService.getContainers({
+            containerNumber: miscForm.containerNumber,
+          });
+          if (containers && containers.length > 0) {
+            setMiscForm((prev) => ({
+              ...prev,
+              shippingLine: containers[0].shippingLine,
+            }));
+          }
+        } catch (error) {
+          console.error("Failed to fetch container details:", error);
+        }
+      }
+    };
+    fetchContainerDetails();
+  }, [miscForm.containerNumber]);
 
   const pendingBills = bills.filter((b) => b.status === "pending");
   const paidBills = bills.filter((b) => b.status === "paid");
@@ -133,6 +170,7 @@ export default function OperatorBilling() {
       {
         id: Date.now().toString(),
         description: "",
+        activityCode: "MISC",
         quantity: 1,
         unitPrice: 0,
         amount: 0,
@@ -154,7 +192,20 @@ export default function OperatorBilling() {
     setLineItems(
       lineItems.map((item) => {
         if (item.id === id) {
-          const updated = { ...item, [field]: value };
+          let updated = { ...item, [field]: value };
+          if (field === "description") {
+            // Find the charge to get the price
+            const selectedCharge = charges.find((c) => c.id === value);
+            if (selectedCharge) {
+              updated = {
+                ...updated,
+                description: `${selectedCharge.activityName} - ${selectedCharge.containerSize} (${selectedCharge.containerType})`,
+                activityCode: selectedCharge.activityId, // Or selectedCharge.activityCode if available in Charge
+                unitPrice: selectedCharge.rate,
+                amount: item.quantity * selectedCharge.rate,
+              };
+            }
+          }
           if (field === "quantity" || field === "unitPrice") {
             updated.amount = updated.quantity * updated.unitPrice;
           }
@@ -169,7 +220,16 @@ export default function OperatorBilling() {
     lineItems.reduce((sum, item) => sum + item.amount, 0);
 
   const handleGenerateMiscBill = async () => {
-    if (lineItems.some((item) => !item.description || item.unitPrice <= 0)) {
+    if (!miscForm.customer || miscForm.customer === "none" || !miscForm.containerNumber) {
+      toast({
+        title: "Error",
+        description: "Customer and Container Number are mandatory",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (lineItems.some((item) => !item.description || item.unitPrice < 0)) {
       toast({
         title: "Error",
         description: "Please fill all line items with valid amounts",
@@ -182,9 +242,10 @@ export default function OperatorBilling() {
       const payload = {
         customer: miscForm.customer, // This is now an ID
         containerNumber: miscForm.containerNumber,
+        shippingLine: miscForm.shippingLine || "N/A",
         remarks: miscForm.remarks,
         lineItems: lineItems.map((item) => ({
-          activityCode: "MISC",
+          activityCode: item.activityCode || "MISC",
           activityName: item.description,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
@@ -204,10 +265,11 @@ export default function OperatorBilling() {
       setMiscForm({
         customer: "",
         containerNumber: "",
+        shippingLine: "",
         remarks: "",
       });
       setLineItems([
-        { id: "1", description: "", quantity: 1, unitPrice: 0, amount: 0 },
+        { id: "1", description: "", activityCode: "MISC", quantity: 1, unitPrice: 0, amount: 0 },
       ]);
       setMiscBillOpen(false);
       fetchBills();
@@ -356,9 +418,12 @@ export default function OperatorBilling() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline">
+              <Button
+                variant="outline"
+                onClick={() => generateBillPDF(item)}
+              >
                 <Printer className="mr-2 h-4 w-4" />
-                Print
+                Download PDF
               </Button>
               {item.status === "pending" && (
                 <Button onClick={() => handleMarkPaid(item)}>
@@ -425,7 +490,7 @@ export default function OperatorBilling() {
               {/* Bill Info */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Customer</Label>
+                  <Label>Customer <span className="text-destructive">*</span></Label>
                   <Select
                     value={miscForm.customer}
                     onValueChange={(value) =>
@@ -436,23 +501,42 @@ export default function OperatorBilling() {
                       <SelectValue placeholder="Select customer" />
                     </SelectTrigger>
                     <SelectContent>
-                      {customers.map((c) => (
-                        <SelectItem key={c.id} value={c.id}>
-                          {c.name}
+                      {customers.length === 0 ? (
+                        <SelectItem value="none" disabled>
+                          No customers found
                         </SelectItem>
-                      ))}
+                      ) : (
+                        customers.map((c) => (
+                          <SelectItem key={c.id} value={c.id}>
+                            {c.name}
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Container Number </Label>
+                  <Label>Container Number <span className="text-destructive">*</span></Label>
                   <Input
                     placeholder="e.g., MSCU1234567"
                     value={miscForm.containerNumber}
                     onChange={(e) =>
                       setMiscForm({
                         ...miscForm,
-                        containerNumber: e.target.value,
+                        containerNumber: e.target.value.toUpperCase(),
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Shipping Line</Label>
+                  <Input
+                    placeholder="Auto-fetched or enter manually"
+                    value={miscForm.shippingLine}
+                    onChange={(e) =>
+                      setMiscForm({
+                        ...miscForm,
+                        shippingLine: e.target.value,
                       })
                     }
                   />
@@ -488,17 +572,25 @@ export default function OperatorBilling() {
                             Description
                           </Label>
                         )}
-                        <Input
-                          placeholder="Charge description"
-                          value={item.description}
-                          onChange={(e) =>
-                            updateLineItem(
-                              item.id,
-                              "description",
-                              e.target.value,
-                            )
+                        <Select
+                          value={charges.some(c => `${c.activityName} - ${c.containerSize} (${c.containerType})` === item.description)
+                            ? charges.find(c => `${c.activityName} - ${c.containerSize} (${c.containerType})` === item.description)?.id
+                            : ""}
+                          onValueChange={(value) =>
+                            updateLineItem(item.id, "description", value)
                           }
-                        />
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select activity" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {charges.map((c) => (
+                              <SelectItem key={c.id} value={c.id!}>
+                                {c.activityName} - {c.containerSize} ({c.containerType})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div className="col-span-2 space-y-1">
                         {index === 0 && (
@@ -529,14 +621,9 @@ export default function OperatorBilling() {
                           type="number"
                           min="0"
                           placeholder="₹0"
-                          value={item.unitPrice || ""}
-                          onChange={(e) =>
-                            updateLineItem(
-                              item.id,
-                              "unitPrice",
-                              parseFloat(e.target.value) || 0,
-                            )
-                          }
+                          value={item.unitPrice || 0}
+                          readOnly
+                          className="bg-muted cursor-not-allowed"
                         />
                       </div>
                       <div className="col-span-2 space-y-1">
