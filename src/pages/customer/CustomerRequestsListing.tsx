@@ -6,7 +6,6 @@ import { StatusBadge } from "@/components/common/StatusBadge";
 import { KPICard } from "@/components/common/KPICard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -14,6 +13,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   FileText,
   Clock,
@@ -51,6 +57,7 @@ export default function CustomerRequestsListing() {
   const [selectedRequest, setSelectedRequest] =
     useState<ContainerRequest | null>(null);
   const [requests, setRequests] = useState<ContainerRequest[]>([]);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -82,6 +89,10 @@ export default function CustomerRequestsListing() {
   const rejectedRequests = requests.filter(
     (r) => r.status === "rejected",
   ).length;
+
+  const filteredRequests = statusFilter === "all"
+    ? requests
+    : requests.filter((r) => r.status === statusFilter);
 
   const columns: Column<ContainerRequest>[] = [
     {
@@ -236,62 +247,36 @@ export default function CustomerRequestsListing() {
 
       {/* Requests Table */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <CardTitle>My Container Requests</CardTitle>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">Filter status:</span>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Requests</SelectItem>
+                <SelectItem value="pending">Pending ({pendingRequests})</SelectItem>
+                <SelectItem value="approved">Approved ({approvedRequests})</SelectItem>
+                <SelectItem value="rejected">Rejected ({rejectedRequests})</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="all">
-            <TabsList className="mb-4">
-              <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="pending">
-                Pending ({pendingRequests})
-              </TabsTrigger>
-              <TabsTrigger value="approved">
-                Approved ({approvedRequests})
-              </TabsTrigger>
-              <TabsTrigger value="rejected">
-                Rejected ({rejectedRequests})
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="all">
-              <DataTable
-                data={requests}
-                columns={columns}
-                searchable
-                searchPlaceholder="Search by cargo description..."
-                onRowClick={setSelectedRequest}
-                emptyMessage="No requests found"
-              />
-            </TabsContent>
-
-            <TabsContent value="pending">
-              <DataTable
-                data={requests.filter((r) => r.status === "pending")}
-                columns={columns}
-                onRowClick={setSelectedRequest}
-                emptyMessage="No pending requests"
-              />
-            </TabsContent>
-
-            <TabsContent value="approved">
-              <DataTable
-                data={requests.filter((r) => r.status === "approved")}
-                columns={columns}
-                onRowClick={setSelectedRequest}
-                emptyMessage="No approved requests"
-              />
-            </TabsContent>
-
-            <TabsContent value="rejected">
-              <DataTable
-                data={requests.filter((r) => r.status === "rejected")}
-                columns={columns}
-                onRowClick={setSelectedRequest}
-                emptyMessage="No rejected requests"
-              />
-            </TabsContent>
-          </Tabs>
+          <DataTable
+            data={filteredRequests}
+            columns={columns}
+            searchable
+            searchPlaceholder="Search by cargo description..."
+            onRowClick={setSelectedRequest}
+            emptyMessage={
+              statusFilter === "all"
+                ? "No requests found"
+                : `No ${statusFilter} requests found`
+            }
+          />
         </CardContent>
       </Card>
 
@@ -337,8 +322,8 @@ export default function CustomerRequestsListing() {
                   <p className="font-medium">
                     {selectedRequest.preferredDate
                       ? new Date(
-                          selectedRequest.preferredDate,
-                        ).toLocaleDateString()
+                        selectedRequest.preferredDate,
+                      ).toLocaleDateString()
                       : "N/A"}
                   </p>
                 </div>
