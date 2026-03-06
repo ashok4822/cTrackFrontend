@@ -1,4 +1,5 @@
 import api from "./api";
+import { API_ENDPOINTS } from "@/constants/apiEndpoints";
 
 export interface ContainerRequestData {
     type: "stuffing" | "destuffing";
@@ -24,28 +25,27 @@ export interface ContainerRequestData {
 
 export const containerRequestService = {
     createRequest: async (data: ContainerRequestData) => {
-        const response = await api.post("/container-requests", data);
+        const response = await api.post(API_ENDPOINTS.CONTAINER_REQUESTS.CREATE, data);
         return response.data;
     },
 
     getMyRequests: async () => {
-        const response = await api.get("/container-requests/my-requests");
+        const response = await api.get(API_ENDPOINTS.CONTAINER_REQUESTS.MY_REQUESTS);
         return response.data;
     },
 
     getCustomerContainers: async () => {
-        // This will call the containers endpoint with a filter for the logged-in customer
-        const response = await api.get("/containers/my-containers");
+        const response = await api.get(API_ENDPOINTS.CONTAINERS.MY_CONTAINERS);
         return response.data;
     },
 
     getAllRequests: async () => {
-        const response = await api.get("/container-requests");
+        const response = await api.get(API_ENDPOINTS.CONTAINER_REQUESTS.GET_ALL);
         return response.data;
     },
 
     updateRequest: async (id: string, data: Partial<ContainerRequestData>) => {
-        const response = await api.put(`/container-requests/${id}`, data);
+        const response = await api.put(API_ENDPOINTS.CONTAINER_REQUESTS.UPDATE(id), data);
         return response.data;
     }
 };

@@ -1,4 +1,5 @@
 import api from "./api";
+import { API_ENDPOINTS } from "@/constants/apiEndpoints";
 
 export interface AuditLog {
     id: string;
@@ -44,7 +45,7 @@ const auditLogService = {
         if (filters?.page) params.append('page', filters.page.toString());
         if (filters?.limit) params.append('limit', filters.limit.toString());
 
-        const response = await api.get(`/users/audit-logs?${params.toString()}`);
+        const response = await api.get(`${API_ENDPOINTS.USERS.AUDIT_LOGS}?${params.toString()}`);
         return response.data;
     }
 };

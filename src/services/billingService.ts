@@ -1,4 +1,5 @@
 import api from "./api";
+import { API_ENDPOINTS } from "@/constants/apiEndpoints";
 
 export interface Activity {
     id?: string;
@@ -70,77 +71,77 @@ export interface BillRecord {
 
 export const billingService = {
     async fetchActivities(): Promise<Activity[]> {
-        const response = await api.get<Activity[]>("/billing/activities");
+        const response = await api.get<Activity[]>(API_ENDPOINTS.BILLING.ACTIVITIES);
         return response.data;
     },
 
     async addActivity(activityData: Partial<Activity>): Promise<Activity> {
-        const response = await api.post<Activity>("/billing/activities", activityData);
+        const response = await api.post<Activity>(API_ENDPOINTS.BILLING.ACTIVITIES, activityData);
         return response.data;
     },
 
     async updateActivity(id: string, activityData: Partial<Activity>): Promise<Activity> {
-        const response = await api.patch<Activity>(`/billing/activities/${id}`, activityData);
+        const response = await api.patch<Activity>(API_ENDPOINTS.BILLING.ACTIVITY_BY_ID(id), activityData);
         return response.data;
     },
 
     async fetchCharges(): Promise<Charge[]> {
-        const response = await api.get<Charge[]>("/billing/charges");
+        const response = await api.get<Charge[]>(API_ENDPOINTS.BILLING.CHARGES);
         return response.data;
     },
 
     async addCharge(chargeData: Partial<Charge>): Promise<Charge> {
-        const response = await api.post<Charge>("/billing/charges", chargeData);
+        const response = await api.post<Charge>(API_ENDPOINTS.BILLING.CHARGES, chargeData);
         return response.data;
     },
 
     async updateChargeRate(id: string, rate: number, effectiveFrom?: string): Promise<Charge> {
-        const response = await api.patch<Charge>(`/billing/charges/${id}`, { rate, effectiveFrom });
+        const response = await api.patch<Charge>(API_ENDPOINTS.BILLING.CHARGE_BY_ID(id), { rate, effectiveFrom });
         return response.data;
     },
 
     async fetchChargeHistory(): Promise<ChargeHistory[]> {
-        const response = await api.get<ChargeHistory[]>("/billing/charges/history");
+        const response = await api.get<ChargeHistory[]>(API_ENDPOINTS.BILLING.CHARGE_HISTORY);
         return response.data;
     },
 
     async fetchCargoCategories(): Promise<CargoCategory[]> {
-        const response = await api.get<CargoCategory[]>("/billing/cargo-categories");
+        const response = await api.get<CargoCategory[]>(API_ENDPOINTS.BILLING.CARGO_CATEGORIES);
         return response.data;
     },
 
     async addCargoCategory(categoryData: Partial<CargoCategory>): Promise<CargoCategory> {
-        const response = await api.post<CargoCategory>("/billing/cargo-categories", categoryData);
+        const response = await api.post<CargoCategory>(API_ENDPOINTS.BILLING.CARGO_CATEGORIES, categoryData);
         return response.data;
     },
 
     async updateCargoCategory(id: string, categoryData: Partial<CargoCategory>): Promise<CargoCategory> {
-        const response = await api.patch<CargoCategory>(`/billing/cargo-categories/${id}`, categoryData);
+        const response = await api.patch<CargoCategory>(API_ENDPOINTS.BILLING.CARGO_CATEGORY_BY_ID(id), categoryData);
         return response.data;
     },
 
     async fetchBills(): Promise<BillRecord[]> {
-        const response = await api.get<BillRecord[]>("/billing/bills");
+        const response = await api.get<BillRecord[]>(API_ENDPOINTS.BILLING.BILLS);
         return response.data;
     },
 
     async markBillPaid(id: string): Promise<BillRecord> {
-        const response = await api.patch<{ message: string; bill: BillRecord }>(`/billing/bills/${id}/paid`);
+        const response = await api.patch<{ message: string; bill: BillRecord }>(API_ENDPOINTS.BILLING.BILL_MARK_PAID(id));
         return response.data.bill;
     },
 
     async createBill(billData: any): Promise<BillRecord> {
-        const response = await api.post<BillRecord>("/billing/bills", billData);
+        const response = await api.post<BillRecord>(API_ENDPOINTS.BILLING.BILLS, billData);
         return response.data;
     },
 
     async payBill(id: string): Promise<BillRecord> {
-        const response = await api.post<{ message: string; bill: BillRecord }>(`/billing/bills/${id}/pay`);
+        const response = await api.post<{ message: string; bill: BillRecord }>(API_ENDPOINTS.BILLING.BILL_PAY(id));
         return response.data.bill;
     },
 
     async fetchBillById(id: string): Promise<BillRecord> {
-        const response = await api.get<BillRecord>(`/billing/bills/${id}`);
+        const response = await api.get<BillRecord>(API_ENDPOINTS.BILLING.BILL_BY_ID(id));
         return response.data;
     },
 };
