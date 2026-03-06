@@ -225,49 +225,71 @@ export default function CustomerTransitTracking() {
               <div className="relative">
                 <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-border" />
 
-                {selectedRequest.checkpoints && selectedRequest.checkpoints.length > 0 ? (
-                  <div className="space-y-6">
-                    {([...(selectedRequest.checkpoints || [])].reverse()).map((checkpoint, index) => (
-                      <div key={index} className="relative pl-10">
-                        <div
-                          className={`absolute left-2 top-1 h-5 w-5 rounded-full border-2 flex items-center justify-center bg-primary border-primary`}
-                        >
-                          <CheckCircle className="h-3 w-3 text-primary-foreground" />
-                        </div>
+                {(() => {
+                  const checkpoints = selectedRequest.checkpoints || [];
+                  const allEvents = [...checkpoints];
 
-                        <Card>
-                          <CardContent className="p-4">
-                            <div className="flex items-start justify-between mb-2">
-                              <div>
-                                <h4 className="font-semibold">
-                                  {checkpoint.location}
-                                </h4>
-                                <p className="text-sm text-muted-foreground flex items-center gap-1">
-                                  <Clock className="h-3 w-3" />
-                                  {new Date(checkpoint.timestamp).toLocaleString()}
-                                </p>
+                  // Always ensure there's a "Request Created" event at the start
+                  const hasCreationEvent = allEvents.some(cp =>
+                    cp.status === "pending" ||
+                    cp.status === "Request Created" ||
+                    cp.remarks?.toLowerCase().includes("submitted")
+                  );
+
+                  if (!hasCreationEvent) {
+                    allEvents.push({
+                      status: "Request Created",
+                      location: "Customer Portal",
+                      timestamp: (selectedRequest as any).createdAt || new Date().toISOString(),
+                      remarks: `Initial ${selectedRequest.type} request submitted`,
+                    });
+                  }
+
+                  const sortedEvents = allEvents.sort((a, b) =>
+                    new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+                  );
+
+                  return (
+                    <div className="space-y-6">
+                      {sortedEvents.map((checkpoint, index) => (
+                        <div key={index} className="relative pl-10">
+                          <div
+                            className="absolute left-2 top-1 h-5 w-5 rounded-full border-2 flex items-center justify-center bg-primary border-primary"
+                          >
+                            <CheckCircle className="h-3 w-3 text-primary-foreground" />
+                          </div>
+
+                          <Card>
+                            <CardContent className="p-4">
+                              <div className="flex items-start justify-between mb-2">
+                                <div>
+                                  <h4 className="font-semibold capitalize">
+                                    {(checkpoint.status || "Update").replace(/-/g, " ")}
+                                  </h4>
+                                  <div className="flex flex-col gap-1 mt-1">
+                                    <p className="text-sm font-medium">
+                                      {checkpoint.location}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                      <Clock className="h-3 w-3" />
+                                      {new Date(checkpoint.timestamp).toLocaleString()}
+                                    </p>
+                                  </div>
+                                </div>
                               </div>
-                            </div>
 
-                            {checkpoint.remarks && (
-                              <p className="mt-2 text-sm text-muted-foreground border-t pt-2">
-                                {checkpoint.remarks}
-                              </p>
-                            )}
-                          </CardContent>
-                        </Card>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="pl-10 py-8 text-center text-muted-foreground">
-                    <Truck className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                    <p>No checkpoint data available yet.</p>
-                    <p className="text-sm">
-                      Tracking will begin once the container is dispatched.
-                    </p>
-                  </div>
-                )}
+                              {checkpoint.remarks && (
+                                <p className="mt-2 text-sm text-muted-foreground border-t pt-2 italic">
+                                  {checkpoint.remarks}
+                                </p>
+                              )}
+                            </CardContent>
+                          </Card>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           )}
