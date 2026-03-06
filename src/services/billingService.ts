@@ -10,6 +10,14 @@ export interface Activity {
     active: boolean;
 }
 
+export interface CargoCategory {
+    id?: string;
+    name: string;
+    description?: string;
+    chargePerTon: number;
+    active: boolean;
+}
+
 export interface Charge {
     id?: string;
     activityId: string;
@@ -18,6 +26,8 @@ export interface Charge {
     containerType: string;
     rate: number;
     currency: string;
+    cargoCategoryId?: string;
+    cargoCategoryName?: string;
     effectiveFrom: string;
     active: boolean;
 }
@@ -91,6 +101,21 @@ export const billingService = {
 
     async fetchChargeHistory(): Promise<ChargeHistory[]> {
         const response = await api.get<ChargeHistory[]>("/billing/charges/history");
+        return response.data;
+    },
+
+    async fetchCargoCategories(): Promise<CargoCategory[]> {
+        const response = await api.get<CargoCategory[]>("/billing/cargo-categories");
+        return response.data;
+    },
+
+    async addCargoCategory(categoryData: Partial<CargoCategory>): Promise<CargoCategory> {
+        const response = await api.post<CargoCategory>("/billing/cargo-categories", categoryData);
+        return response.data;
+    },
+
+    async updateCargoCategory(id: string, categoryData: Partial<CargoCategory>): Promise<CargoCategory> {
+        const response = await api.patch<CargoCategory>(`/billing/cargo-categories/${id}`, categoryData);
         return response.data;
     },
 

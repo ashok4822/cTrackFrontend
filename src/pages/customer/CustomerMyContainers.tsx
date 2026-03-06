@@ -11,6 +11,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { useState, useEffect } from "react";
 import type { Container as ContainerType } from "@/types";
@@ -157,6 +158,9 @@ export default function CustomerMyContainers() {
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Container Details</DialogTitle>
+            <DialogDescription>
+              Detailed information about container {selectedContainer?.containerNumber}
+            </DialogDescription>
           </DialogHeader>
           {selectedContainer && (
             <div className="space-y-4">

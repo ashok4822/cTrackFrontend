@@ -10,6 +10,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
@@ -26,13 +27,14 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Receipt, DollarSign, Edit, Plus, Package, Clock, Loader2 } from "lucide-react";
 import { adminNavItems } from "@/config/navigation";
-import { billingService, type Activity, type Charge, type ChargeHistory } from "@/services/billingService";
+import { billingService, type Activity, type Charge, type ChargeHistory, type CargoCategory } from "@/services/billingService";
 import { toast } from "sonner";
 
 const AdminActivitiesCharges = () => {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [charges, setCharges] = useState<Charge[]>([]);
   const [history, setHistory] = useState<ChargeHistory[]>([]);
+  const [cargoCategories, setCargoCategories] = useState<CargoCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingCharge, setEditingCharge] = useState<Charge | null>(null);
   const [newRate, setNewRate] = useState("");
@@ -41,14 +43,22 @@ const AdminActivitiesCharges = () => {
   const [isUpdateRateOpen, setIsUpdateRateOpen] = useState(false);
   const [isNewActivityOpen, setIsNewActivityOpen] = useState(false);
   const [isEditActivityOpen, setIsEditActivityOpen] = useState(false);
+  const [isNewCategoryOpen, setIsNewCategoryOpen] = useState(false);
+  const [isEditCategoryOpen, setIsEditCategoryOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
+  const [editingCategory, setEditingCategory] = useState<CargoCategory | null>(null);
   const [newActivity, setNewActivity] = useState<Partial<Activity>>({
     code: "",
     name: "",
     description: "",
     category: "handling",
     unitType: "per-container",
+  });
+  const [newCategory, setNewCategory] = useState<Partial<CargoCategory>>({
+    name: "",
+    description: "",
+    chargePerTon: 0,
   });
   const [isAddRateOpen, setIsAddRateOpen] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
@@ -57,6 +67,7 @@ const AdminActivitiesCharges = () => {
     containerType: "all",
     rate: 0,
     currency: "INR",
+    cargoCategoryId: "none",
   });
 
   useEffect(() => {
@@ -66,14 +77,16 @@ const AdminActivitiesCharges = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [activitiesData, chargesData, historyData] = await Promise.all([
+      const [activitiesData, chargesData, historyData, categoriesData] = await Promise.all([
         billingService.fetchActivities(),
         billingService.fetchCharges(),
         billingService.fetchChargeHistory(),
+        billingService.fetchCargoCategories(),
       ]);
       setActivities(activitiesData);
       setCharges(chargesData);
       setHistory(historyData);
+      setCargoCategories(categoriesData);
     } catch (error: unknown) {
       console.error("Failed to fetch billing data:", error);
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
@@ -160,6 +173,57 @@ const AdminActivitiesCharges = () => {
       fetchData();
     } catch (error: unknown) {
       const message = (error as any)?.response?.data?.message || (error instanceof Error ? error.message : "Failed to add charge rate");
+      toast.error(message);
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleCreateCategory = async () => {
+    if (!newCategory.name) {
+      toast.error("Please enter a category name");
+      return;
+    }
+
+    try {
+      setIsCreating(true);
+      await billingService.addCargoCategory({
+        name: newCategory.name,
+        description: newCategory.description,
+        chargePerTon: Number(newCategory.chargePerTon) || 0,
+      });
+      toast.success("New cargo category created successfully");
+      setIsNewCategoryOpen(false);
+      setNewCategory({ name: "", description: "", chargePerTon: 0 });
+      fetchData();
+    } catch (error: unknown) {
+      const message = (error as any)?.response?.data?.message || (error instanceof Error ? error.message : "Failed to create category");
+      toast.error(message);
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleEditCategory = async () => {
+    if (!editingCategory?.id || !editingCategory.name) {
+      toast.error("Please enter a category name");
+      return;
+    }
+
+    try {
+      setIsCreating(true);
+      await billingService.updateCargoCategory(editingCategory.id, {
+        name: editingCategory.name,
+        description: editingCategory.description,
+        active: editingCategory.active,
+        chargePerTon: Number(editingCategory.chargePerTon) || 0,
+      });
+      toast.success("Cargo category updated successfully");
+      setIsEditCategoryOpen(false);
+      setEditingCategory(null);
+      fetchData();
+    } catch (error: unknown) {
+      const message = (error as any)?.response?.data?.message || (error instanceof Error ? error.message : "Failed to update category");
       toast.error(message);
     } finally {
       setIsCreating(false);
@@ -488,6 +552,9 @@ const AdminActivitiesCharges = () => {
               <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
                   <DialogTitle>Create New Activity</DialogTitle>
+                  <DialogDescription>
+                    Add a new billable activity to the system.
+                  </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                   <div className="grid grid-cols-2 gap-4">
@@ -649,6 +716,7 @@ const AdminActivitiesCharges = () => {
               <TabsList className="mb-4">
                 <TabsTrigger value="activities">Activities</TabsTrigger>
                 <TabsTrigger value="charges">Charge Rates</TabsTrigger>
+                <TabsTrigger value="categories">Cargo Categories</TabsTrigger>
                 <TabsTrigger value="history">Rate History</TabsTrigger>
               </TabsList>
               <TabsContent value="activities">
@@ -667,6 +735,167 @@ const AdminActivitiesCharges = () => {
                   searchPlaceholder="Search charge rates..."
                 />
               </TabsContent>
+              <TabsContent value="categories">
+                <div className="flex justify-end mb-4">
+                  <Dialog open={isNewCategoryOpen} onOpenChange={setIsNewCategoryOpen}>
+                    <DialogTrigger asChild>
+                      <Button size="sm">
+                        <Plus className="h-4 w-4 mr-1" />
+                        Add Category
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Add Cargo Category</DialogTitle>
+                        <DialogDescription>
+                          Create a new cargo category for specialized billing.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="catName">Category Name *</Label>
+                          <Input
+                            id="catName"
+                            placeholder="e.g. Hazardous, Reefer High Value"
+                            value={newCategory.name}
+                            onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="catDesc">Description</Label>
+                          <Input
+                            id="catDesc"
+                            placeholder="Brief description"
+                            value={newCategory.description}
+                            onChange={(e) => setNewCategory({ ...newCategory, description: e.target.value })}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="catCharge">Charge per ton *</Label>
+                          <Input
+                            id="catCharge"
+                            type="number"
+                            placeholder="0.00"
+                            value={newCategory.chargePerTon}
+                            onChange={(e) => setNewCategory({ ...newCategory, chargePerTon: Number(e.target.value) })}
+                          />
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsNewCategoryOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button onClick={handleCreateCategory} disabled={isCreating}>
+                          {isCreating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                          Create
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+                <DataTable
+                  data={cargoCategories as any}
+                  columns={[
+                    { key: "name", header: "Name", sortable: true },
+                    { key: "description", header: "Description" },
+                    {
+                      key: "chargePerTon",
+                      header: "Charge/Ton",
+                      render: (item: any) => (
+                        <span className="font-medium">
+                          ₹{item.chargePerTon?.toFixed(2) || "0.00"}
+                        </span>
+                      )
+                    },
+                    {
+                      key: "active",
+                      header: "Status",
+                      render: (item: any) => (
+                        <Badge variant={item.active ? "default" : "secondary"}>
+                          {item.active ? "Active" : "Inactive"}
+                        </Badge>
+                      )
+                    },
+                    {
+                      key: "actions",
+                      header: "Actions",
+                      render: (item: any) => (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setEditingCategory({ ...item });
+                            setIsEditCategoryOpen(true);
+                          }}
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          Edit
+                        </Button>
+                      )
+                    }
+                  ]}
+                  searchable
+                  searchPlaceholder="Search categories..."
+                />
+
+                {/* Edit Category Dialog */}
+                <Dialog open={isEditCategoryOpen} onOpenChange={setIsEditCategoryOpen}>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Edit Cargo Category</DialogTitle>
+                      <DialogDescription>
+                        Update the details of the selected cargo category.
+                      </DialogDescription>
+                    </DialogHeader>
+                    {editingCategory && (
+                      <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="editCatName">Category Name *</Label>
+                          <Input
+                            id="editCatName"
+                            value={editingCategory.name}
+                            onChange={(e) => setEditingCategory({ ...editingCategory, name: e.target.value })}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="editCatDesc">Description</Label>
+                          <Input
+                            id="editCatDesc"
+                            value={editingCategory.description || ""}
+                            onChange={(e) => setEditingCategory({ ...editingCategory, description: e.target.value })}
+                          />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            id="editCatActive"
+                            checked={editingCategory.active}
+                            onCheckedChange={(checked) => setEditingCategory({ ...editingCategory, active: checked })}
+                          />
+                          <Label htmlFor="editCatActive">Active</Label>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="editCatCharge">Charge per ton *</Label>
+                          <Input
+                            id="editCatCharge"
+                            type="number"
+                            value={editingCategory.chargePerTon}
+                            onChange={(e) => setEditingCategory({ ...editingCategory, chargePerTon: Number(e.target.value) })}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setIsEditCategoryOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button onClick={handleEditCategory} disabled={isCreating}>
+                        {isCreating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                        Save Changes
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </TabsContent>
               <TabsContent value="history">
                 <DataTable
                   data={history as any}
@@ -684,6 +913,9 @@ const AdminActivitiesCharges = () => {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Update Charge Rate</DialogTitle>
+              <DialogDescription>
+                Set a new rate for this activity and specify its effective date.
+              </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="grid grid-cols-2 gap-4">
@@ -746,6 +978,9 @@ const AdminActivitiesCharges = () => {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Add Charge Rate</DialogTitle>
+              <DialogDescription>
+                Add a new rate for the selected activity based on container size and type.
+              </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div>
@@ -790,6 +1025,29 @@ const AdminActivitiesCharges = () => {
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="cargoCategory">Cargo Category</Label>
+                <Select
+                  value={newCharge.cargoCategoryId}
+                  onValueChange={(value) => setNewCharge({ ...newCharge, cargoCategoryId: value })}
+                >
+                  <SelectTrigger id="cargoCategory">
+                    <SelectValue placeholder="Select cargo category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">General / Default</SelectItem>
+                    {cargoCategories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id!}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-[10px] text-muted-foreground">
+                  Specific rates for this cargo category. Leave as "General" for default base rate.
+                </p>
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="rate">Rate (INR)</Label>
                 <Input
                   id="rate"
@@ -817,6 +1075,9 @@ const AdminActivitiesCharges = () => {
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
               <DialogTitle>Edit Activity</DialogTitle>
+              <DialogDescription>
+                Modify the details of an existing billable activity.
+              </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="grid grid-cols-2 gap-4">
