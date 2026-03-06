@@ -1,4 +1,5 @@
 import api from "./api";
+import { API_ENDPOINTS } from "@/constants/apiEndpoints";
 
 export interface ProfileData {
     id: string;
@@ -24,20 +25,20 @@ export interface UpdatePasswordRequest {
 
 export const profileService = {
     getProfile: async () => {
-        const response = await api.get<ProfileData>("/users/profile");
+        const response = await api.get<ProfileData>(API_ENDPOINTS.USERS.PROFILE);
         return response.data;
     },
 
     updateProfile: async (data: UpdateProfileRequest) => {
         const response = await api.put<{ message: string; user: ProfileData }>(
-            "/users/profile",
+            API_ENDPOINTS.USERS.PROFILE,
             data
         );
         return response.data;
     },
 
     updatePassword: async (data: UpdatePasswordRequest) => {
-        const response = await api.put<{ message: string }>("/users/password", data);
+        const response = await api.put<{ message: string }>(API_ENDPOINTS.USERS.PASSWORD, data);
         return response.data;
     },
 
@@ -45,7 +46,7 @@ export const profileService = {
         const formData = new FormData();
         formData.append("image", file);
         const response = await api.post<{ profileImage: string }>(
-            "/users/profile/image",
+            API_ENDPOINTS.USERS.PROFILE_IMAGE,
             formData,
             {
                 headers: {

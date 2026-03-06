@@ -1,5 +1,6 @@
 import axios, { AxiosError } from "axios";
 import type { InternalAxiosRequestConfig } from "axios";
+import { API_ENDPOINTS } from "@/constants/apiEndpoints";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api",
@@ -56,8 +57,8 @@ api.interceptors.response.use(
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
-      !originalRequest.url?.includes("/auth/login") &&
-      !originalRequest.url?.includes("/auth/google")
+      !originalRequest.url?.includes(API_ENDPOINTS.AUTH.LOGIN) &&
+      !originalRequest.url?.includes(API_ENDPOINTS.AUTH.GOOGLE)
     ) {
       if (isRefreshing) {
         return new Promise<string | null>((resolve, reject) => {
@@ -76,7 +77,7 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const response = await api.post("/auth/refresh-token");
+        const response = await api.post(API_ENDPOINTS.AUTH.REFRESH_TOKEN);
         const { accessToken } = response.data;
 
         localStorage.setItem("accessToken", accessToken);
