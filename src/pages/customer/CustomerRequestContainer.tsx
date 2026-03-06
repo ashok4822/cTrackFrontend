@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { customerNavItems } from "@/config/navigation";
 import {
@@ -38,7 +38,7 @@ import {
 import type { Container } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { containerRequestService } from "@/services/containerRequestService";
-import { useEffect } from "react";
+import { billingService, type CargoCategory } from "@/services/billingService";
 
 const containerSizes = ["20ft", "40ft"];
 const containerTypes: { value: string; label: string }[] = [
@@ -57,6 +57,7 @@ export default function CustomerRequestContainer() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [myContainers, setMyContainers] = useState<Container[]>([]);
+  const [cargoCategories, setCargoCategories] = useState<CargoCategory[]>([]);
   const [isFetchingContainers, setIsFetchingContainers] = useState(false);
 
   // Stuffing form state
@@ -65,6 +66,7 @@ export default function CustomerRequestContainer() {
     containerType: "",
     cargoDescription: "",
     cargoWeight: "",
+    cargoCategoryId: "",
     isHazardous: false,
     preferredDate: "",
     specialInstructions: "",
@@ -75,21 +77,24 @@ export default function CustomerRequestContainer() {
   const [destuffingRemarks, setDestuffingRemarks] = useState("");
   const [destuffingDate, setDestuffingDate] = useState("");
 
-  // Fetch customer's containers for destuffing
+  // Fetch customer's containers for destuffing and cargo categories
   useEffect(() => {
-    const fetchContainers = async () => {
+    const fetchData = async () => {
       setIsFetchingContainers(true);
       try {
-        const containers =
-          await containerRequestService.getCustomerContainers();
+        const [containers, categories] = await Promise.all([
+          containerRequestService.getCustomerContainers(),
+          billingService.fetchCargoCategories()
+        ]);
         setMyContainers(containers);
+        setCargoCategories(categories.filter(c => c.active));
       } catch (error) {
-        console.error("Failed to fetch containers:", error);
+        console.error("Failed to fetch data:", error);
       } finally {
         setIsFetchingContainers(false);
       }
     };
-    fetchContainers();
+    fetchData();
   }, []);
 
   const selectedContainerDetails = myContainers.find(
@@ -116,6 +121,7 @@ export default function CustomerRequestContainer() {
         preferredDate: stuffingForm.preferredDate,
         specialInstructions: stuffingForm.specialInstructions,
         isHazardous: stuffingForm.isHazardous,
+        cargoCategoryId: stuffingForm.cargoCategoryId === "none" ? undefined : stuffingForm.cargoCategoryId,
       });
       setRequestType("stuffing");
       setShowSuccessDialog(true);
@@ -176,6 +182,7 @@ export default function CustomerRequestContainer() {
         containerType: "",
         cargoDescription: "",
         cargoWeight: "",
+        cargoCategoryId: "",
         isHazardous: false,
         preferredDate: "",
         specialInstructions: "",
@@ -322,6 +329,33 @@ export default function CustomerRequestContainer() {
                         />
                       </div>
                     </div>
+                    <div className="space-y-2">
+                      <Label>Cargo Category</Label>
+                      <Select
+                        value={stuffingForm.cargoCategoryId}
+                        onValueChange={(value) =>
+                          setStuffingForm({
+                            ...stuffingForm,
+                            cargoCategoryId: value,
+                          })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="General / Default" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">General / Default</SelectItem>
+                          {cargoCategories.map((cat) => (
+                            <SelectItem key={cat.id} value={cat.id || ""}>
+                              {cat.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-[10px] text-muted-foreground">
+                        Select a category if your cargo requires special handling or rates (e.g., Hazardous, Reefer).
+                      </p>
+                    </div>
                   </div>
                 </div>
 
@@ -342,7 +376,6 @@ export default function CustomerRequestContainer() {
                       Is this cargo hazardous?
                     </Label>
                   </div>
-
                 </div>
 
                 {/* Special Instructions */}

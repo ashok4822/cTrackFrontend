@@ -40,6 +40,7 @@ import {
 } from "lucide-react";
 import { containerRequestService } from "@/services/containerRequestService";
 import { containerService } from "@/services/containerService";
+import { billingService, type CargoCategory } from "@/services/billingService";
 import { useToast } from "@/hooks/use-toast";
 
 interface CargoRequest {
@@ -56,6 +57,8 @@ interface CargoRequest {
   containerId?: string;
   cargoDescription?: string;
   cargoWeight?: number;
+  cargoCategoryId?: string;
+  cargoCategoryName?: string;
   isHazardous?: boolean;
   hazardClass?: string;
   unNumber?: string;
@@ -63,6 +66,7 @@ interface CargoRequest {
   preferredDate?: string;
   specialInstructions?: string;
   remarks?: string;
+  cargoCharge?: number;
   createdAt?: string;
 }
 
@@ -79,6 +83,8 @@ interface AvailableContainer {
 export default function OperatorCargoRequests() {
   const { toast } = useToast();
   const [requests, setRequests] = useState<CargoRequest[]>([]);
+  const [cargoCategories, setCargoCategories] = useState<CargoCategory[]>([]);
+  const [selectedCargoCategoryId, setSelectedCargoCategoryId] = useState<string>("none");
   const [selectedRequest, setSelectedRequest] = useState<CargoRequest | null>(
     null,
   );
@@ -112,6 +118,12 @@ export default function OperatorCargoRequests() {
   useEffect(() => {
     const init = async () => {
       await fetchRequests();
+      try {
+        const categories = await billingService.fetchCargoCategories();
+        setCargoCategories(categories.filter(c => c.active));
+      } catch (error) {
+        console.error("Failed to fetch cargo categories:", error);
+      }
     };
     init();
   }, [fetchRequests]);
@@ -161,7 +173,16 @@ export default function OperatorCargoRequests() {
     }
 
     try {
-      let updatePayload: Partial<CargoRequest> = { status: "approved" };
+      const category = cargoCategories.find(c => c.id === selectedCargoCategoryId);
+      const chargePerTon = category?.chargePerTon || 0;
+      const weightInTons = (selectedRequest.cargoWeight || 0) / 1000;
+      const calculatedCharge = weightInTons * chargePerTon;
+
+      let updatePayload: Partial<CargoRequest> = {
+        status: "approved",
+        cargoCategoryId: selectedCargoCategoryId === "none" ? undefined : selectedCargoCategoryId,
+        cargoCharge: calculatedCharge
+      };
 
       if (isDestuffing) {
         // Container is already known from the request itself
@@ -196,6 +217,7 @@ export default function OperatorCargoRequests() {
       setAllocationDialogOpen(false);
       setSelectedRequest(null);
       setSelectedContainer("");
+      setSelectedCargoCategoryId("none");
       fetchRequests();
     } catch {
       toast({
@@ -298,6 +320,15 @@ export default function OperatorCargoRequests() {
           : "N/A",
     },
     {
+      key: "cargoCategoryName",
+      header: "Category",
+      render: (item) => (
+        <Badge variant="outline" className="capitalize">
+          {item.cargoCategoryName || "General"}
+        </Badge>
+      ),
+    },
+    {
       key: "containerNumber",
       header: "Allocated Container",
       render: (item) =>
@@ -337,6 +368,7 @@ export default function OperatorCargoRequests() {
                 onClick={() => {
                   setSelectedRequest(item);
                   setSelectedContainer("");
+                  setSelectedCargoCategoryId(item.cargoCategoryId || "none");
                   fetchAvailableContainers(item);
                   setAllocationDialogOpen(true);
                 }}
@@ -518,6 +550,15 @@ export default function OperatorCargoRequests() {
                     {selectedRequest.unNumber}
                   </Badge>
                 )}
+                <div className="flex items-center gap-2 pt-2 border-t border-muted-foreground/10">
+                  <Package className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-muted-foreground text-xs">Initial Cargo Category</p>
+                    <p className="font-medium">
+                      {selectedRequest.cargoCategoryName || "General / Default"}
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {/* Container Selection */}
@@ -595,6 +636,44 @@ export default function OperatorCargoRequests() {
                         : "Showing all empty containers available in yard"}
                     </p>
                   </>
+                )}
+              </div>
+
+              {/* Cargo Category Adjustment */}
+              <div className="space-y-2">
+                <Label htmlFor="category">Change Cargo Category (Optional)</Label>
+                <Select
+                  value={selectedCargoCategoryId}
+                  onValueChange={setSelectedCargoCategoryId}
+                >
+                  <SelectTrigger id="category">
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">General / Default</SelectItem>
+                    {cargoCategories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id || ""}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-[10px] text-muted-foreground">
+                  You can change the category here to apply different charge rates during allocation if needed.
+                </p>
+                {selectedCargoCategoryId !== "none" && (
+                  <div className="mt-2 p-2 bg-primary/5 border border-primary/10 rounded">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-muted-foreground font-medium">Calculated Cargo Charge:</span>
+                      <span className="text-primary font-bold">
+                        ₹{(((selectedRequest?.cargoWeight || 0) / 1000) *
+                          (cargoCategories.find(c => c.id === selectedCargoCategoryId)?.chargePerTon || 0)).toFixed(2)}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground italic mt-0.5">
+                      Based on {((selectedRequest?.cargoWeight || 0) / 1000).toFixed(3)} tons @ ₹{cargoCategories.find(c => c.id === selectedCargoCategoryId)?.chargePerTon || 0}/ton
+                    </p>
+                  </div>
                 )}
               </div>
             </div>

@@ -10,6 +10,8 @@ export interface ContainerRequestData {
     preferredDate?: string;
     specialInstructions?: string;
     isHazardous?: boolean;
+    cargoCategoryId?: string;
+    cargoCategoryName?: string;
     hazardClass?: string;
     unNumber?: string;
     packingGroup?: string;
