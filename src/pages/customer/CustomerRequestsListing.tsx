@@ -27,16 +27,25 @@ import {
   Eye,
   Container,
   AlertTriangle,
+  History,
+  Navigation,
 } from "lucide-react";
 import { containerRequestService } from "@/services/containerRequestService";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 
+interface Checkpoint {
+  location: string;
+  timestamp: string;
+  status: string;
+  remarks?: string;
+}
+
 interface ContainerRequest {
   id: string;
   _id?: string;
   type: "stuffing" | "destuffing";
-  status: "pending" | "approved" | "rejected" | "completed";
+  status: string;
   containerSize?: string;
   containerType?: string;
   containerNumber?: string;
@@ -50,12 +59,16 @@ interface ContainerRequest {
   remarks?: string;
   customerName?: string;
   createdAt?: string;
+  checkpoints?: Checkpoint[];
 }
 
 export default function CustomerRequestsListing() {
   const { toast } = useToast();
   const [selectedRequest, setSelectedRequest] =
     useState<ContainerRequest | null>(null);
+  const [selectedHistoryRequest, setSelectedHistoryRequest] =
+    useState<ContainerRequest | null>(null);
+  const [showHistoryDialog, setShowHistoryDialog] = useState(false);
   const [requests, setRequests] = useState<ContainerRequest[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
@@ -196,18 +209,33 @@ export default function CustomerRequestsListing() {
     },
     {
       key: "actions",
-      header: "View",
+      header: "Actions",
       render: (item) => (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation();
-            setSelectedRequest(item);
-          }}
-        >
-          <Eye className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedRequest(item);
+            }}
+            title="View Details"
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedHistoryRequest(item);
+              setShowHistoryDialog(true);
+            }}
+            title="View History"
+          >
+            <History className="h-4 w-4 text-blue-500" />
+          </Button>
+        </div>
       ),
     },
   ];
@@ -393,6 +421,107 @@ export default function CustomerRequestsListing() {
                   <p className="font-medium">{selectedRequest.remarks}</p>
                 </div>
               )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+      {/* Request History Dialog */}
+      <Dialog open={showHistoryDialog} onOpenChange={setShowHistoryDialog}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Navigation className="h-5 w-5" />
+              Request History Timeline
+            </DialogTitle>
+          </DialogHeader>
+
+          {selectedHistoryRequest && (
+            <div className="space-y-6">
+              {/* Request Info Summary */}
+              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                <div>
+                  <p className="text-sm text-muted-foreground">Request ID</p>
+                  <p className="font-mono font-medium text-lg text-primary">
+                    REQ-{(selectedHistoryRequest.id || "").slice(-6).toUpperCase()}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-muted-foreground">Current Status</p>
+                  <StatusBadge status={selectedHistoryRequest.status} />
+                </div>
+              </div>
+
+              {/* Timeline */}
+              <div className="relative">
+                <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-border" />
+
+                {(() => {
+                  const checkpoints = selectedHistoryRequest.checkpoints || [];
+                  const allEvents = [...checkpoints];
+
+                  // Always ensure there's a "Request Created" event at the start
+                  // Check if we already have a creation-like event from the backend
+                  const hasCreationEvent = allEvents.some(cp =>
+                    cp.status === "pending" ||
+                    cp.status === "Request Created" ||
+                    cp.remarks?.toLowerCase().includes("submitted")
+                  );
+
+                  if (!hasCreationEvent) {
+                    allEvents.push({
+                      status: "Request Created",
+                      location: "Customer Portal",
+                      timestamp: selectedHistoryRequest.createdAt || new Date().toISOString(),
+                      remarks: `Initial ${selectedHistoryRequest.type} request submitted`,
+                    });
+                  }
+
+                  const sortedEvents = allEvents.sort((a, b) =>
+                    new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+                  );
+
+                  return (
+                    <div className="space-y-6">
+                      {sortedEvents.map((checkpoint, index) => (
+                        <div key={index} className="relative pl-10">
+                          <div
+                            className="absolute left-2 top-1 h-5 w-5 rounded-full border-2 flex items-center justify-center bg-primary border-primary"
+                          >
+                            <CheckCircle className="h-3 w-3 text-primary-foreground" />
+                          </div>
+
+                          <Card>
+                            <CardContent className="p-4">
+                              <div className="flex items-start justify-between mb-2">
+                                <div>
+                                  <h4 className="font-semibold capitalize">
+                                    {(checkpoint.status || "Update").replace(/-/g, " ")}
+                                  </h4>
+                                  <div className="flex flex-col gap-1 mt-1">
+                                    <p className="text-sm font-medium">
+                                      {checkpoint.location}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                      <Clock className="h-3 w-3" />
+                                      {new Date(checkpoint.timestamp).toLocaleString()}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {checkpoint.remarks && (
+                                <p className="mt-2 text-sm text-muted-foreground border-t pt-2 italic">
+                                  "{checkpoint.remarks}"
+                                </p>
+                              )}
+                            </CardContent>
+                          </Card>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
             </div>
           )}
         </DialogContent>
