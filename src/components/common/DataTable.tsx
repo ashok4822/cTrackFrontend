@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import {
   Table,
   TableBody,
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Search, ChevronLeft, ChevronRight, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export interface Column<T> {
   key: keyof T | string;
@@ -61,51 +62,12 @@ export function DataTable<T extends { id: string }>({
   manualPagination = false,
 }: DataTableProps<T>) {
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
-  // Filter data based on search
-  const filteredData = data.filter((item) =>
-    Object.values(item).some((value) =>
-      String(value).toLowerCase().includes(search.toLowerCase()),
-    ),
-  );
-
-  // Sort data
-  const sortedData = sortColumn
-    ? [...filteredData].sort((a, b) => {
-      const aVal = getValue(a, sortColumn);
-      const bVal = getValue(b, sortColumn);
-
-      if (aVal === bVal) return 0;
-      if (aVal === null || aVal === undefined) return 1;
-      if (bVal === null || bVal === undefined) return -1;
-
-      const comparison = String(aVal).localeCompare(String(bVal));
-      return sortDirection === "asc" ? comparison : -comparison;
-    })
-    : filteredData;
-
-  // Paginate data
-  const totalPages = Math.ceil(sortedData.length / pageSize);
-  const paginatedData = manualPagination
-    ? sortedData
-    : sortedData.slice(
-      (currentPage - 1) * pageSize,
-      currentPage * pageSize,
-    );
-
-  const handleSort = (columnKey: string) => {
-    if (sortColumn === columnKey) {
-      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
-    } else {
-      setSortColumn(columnKey);
-      setSortDirection("asc");
-    }
-  };
-
-  function getValue(item: T, key: keyof T | string): unknown {
+  const getValue = useCallback((item: T, key: keyof T | string): unknown => {
     if (typeof key === "string" && key.includes(".")) {
       return key.split(".").reduce((obj: unknown, k) => {
         if (obj && typeof obj === "object" && k in obj) {
@@ -119,7 +81,57 @@ export function DataTable<T extends { id: string }>({
       return (item as Record<string, unknown>)[key as string];
     }
     return undefined;
-  }
+  }, []);
+
+  // Filter data based on search
+  const filteredData = useMemo(() => {
+    if (!debouncedSearch) return data;
+    const lowerSearch = debouncedSearch.toLowerCase();
+    return data.filter((item) =>
+      Object.values(item).some((value) =>
+        String(value).toLowerCase().includes(lowerSearch),
+      ),
+    );
+  }, [data, debouncedSearch]);
+
+  // Sort data
+  const sortedData = useMemo(() => {
+    if (!sortColumn) return filteredData;
+
+    return [...filteredData].sort((a, b) => {
+      const aVal = getValue(a, sortColumn);
+      const bVal = getValue(b, sortColumn);
+
+      if (aVal === bVal) return 0;
+      if (aVal === null || aVal === undefined) return 1;
+      if (bVal === null || bVal === undefined) return -1;
+
+      const comparison = String(aVal).localeCompare(String(bVal));
+      return sortDirection === "asc" ? comparison : -comparison;
+    });
+  }, [filteredData, sortColumn, sortDirection, getValue]);
+
+  // Paginate data
+  const totalPages = Math.ceil(sortedData.length / pageSize);
+  const paginatedData = useMemo(() => {
+    if (manualPagination) return sortedData;
+    return sortedData.slice(
+      (currentPage - 1) * pageSize,
+      currentPage * pageSize,
+    );
+  }, [sortedData, currentPage, pageSize, manualPagination]);
+
+  const handleSort = useCallback((columnKey: string) => {
+    setSortColumn((prev) => {
+      if (prev === columnKey) {
+        setSortDirection((dir) => (dir === "asc" ? "desc" : "asc"));
+        return prev;
+      }
+      setSortColumn(columnKey);
+      setSortDirection("asc");
+      return columnKey;
+    });
+  }, []);
 
   return (
     <div className={cn("rounded-lg border bg-card", className)}>
@@ -234,13 +246,16 @@ export function DataTable<T extends { id: string }>({
         <div className="flex items-center justify-between border-t px-4 py-3">
           <div className="text-sm text-muted-foreground">
             Showing {(currentPage - 1) * pageSize + 1} to{" "}
-            {Math.min(currentPage * pageSize, sortedData.length)} of{" "}
-            {sortedData.length} entries
+            {Math.min(currentPage * pageSize, filteredData.length)} of{" "}
+            {filteredData.length} entries
           </div>
           <div className="flex items-center gap-2">
             <Select
               value={String(pageSize)}
               onValueChange={() => {
+                // Since this is a simple mock-up or base logic, we would ideally call a props.onPageSizeChange
+                // For now, it's just local state if it was there, but it's passed as a prop pageSize.
+                // We'll just reset current page if needed.
                 setCurrentPage(1);
               }}
             >

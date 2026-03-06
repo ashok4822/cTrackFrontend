@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -26,12 +26,12 @@ interface SidebarItemProps {
   depth?: number;
 }
 
-function SidebarItem({
+const SidebarItem = memo(({
   item,
   collapsed,
   isActive,
   depth = 0,
-}: SidebarItemProps) {
+}: SidebarItemProps) => {
   const [open, setOpen] = useState(false);
   const location = useLocation();
   const hasChildren = item.children && item.children.length > 0;
@@ -50,7 +50,7 @@ function SidebarItem({
               "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sidebar-foreground transition-colors",
               "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
               (open || isChildActive) &&
-                "bg-sidebar-accent text-sidebar-accent-foreground",
+              "bg-sidebar-accent text-sidebar-accent-foreground",
             )}
           >
             <Icon className="h-5 w-5 shrink-0" />
@@ -108,15 +108,17 @@ function SidebarItem({
       )}
     </Link>
   );
-}
+});
 
-export function Sidebar({
+SidebarItem.displayName = "SidebarItem";
+
+export const Sidebar = memo(({
   items,
   isOpen,
   onToggle,
   collapsed = false,
   onCollapsedChange,
-}: SidebarProps) {
+}: SidebarProps) => {
   const location = useLocation();
 
   return (
@@ -179,4 +181,6 @@ export function Sidebar({
       </aside>
     </>
   );
-}
+});
+
+Sidebar.displayName = "Sidebar";

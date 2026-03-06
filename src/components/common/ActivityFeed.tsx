@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { cn } from "@/lib/utils";
 import {
   ArrowRightLeft,
@@ -36,7 +37,7 @@ const typeColors: Record<string, string> = {
   yard: "bg-purple-100 text-purple-700",
 };
 
-export function ActivityFeed({ activities, className }: ActivityFeedProps) {
+export const ActivityFeed = memo(({ activities, className }: ActivityFeedProps) => {
   return (
     <div className={cn("rounded-lg border bg-card", className)}>
       <div className="border-b p-4">
@@ -85,4 +86,6 @@ export function ActivityFeed({ activities, className }: ActivityFeedProps) {
       )}
     </div>
   );
-}
+});
+
+ActivityFeed.displayName = "ActivityFeed";

@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
 
@@ -30,7 +31,7 @@ const iconVariantStyles = {
   danger: "bg-destructive/10 text-destructive",
 };
 
-export function KPICard({
+export const KPICard = memo(({
   title,
   value,
   subtitle,
@@ -38,7 +39,7 @@ export function KPICard({
   trend,
   variant = "default",
   className,
-}: KPICardProps) {
+}: KPICardProps) => {
   return (
     <div
       className={cn(
@@ -85,4 +86,6 @@ export function KPICard({
       </div>
     </div>
   );
-}
+});
+
+KPICard.displayName = "KPICard";

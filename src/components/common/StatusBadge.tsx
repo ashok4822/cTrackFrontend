@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { cn } from '@/lib/utils';
 import type { ContainerStatus } from '@/types';
 
@@ -35,7 +36,7 @@ const statusConfig: Record<string, { label: string; className: string }> = {
     'cancelled': { label: 'Cancelled', className: 'bg-destructive/10 text-destructive border-destructive/20' },
 };
 
-export function StatusBadge({ status, className }: StatusBadgeProps) {
+export const StatusBadge = memo(({ status, className }: StatusBadgeProps) => {
     const config = statusConfig[status] || { label: status, className: 'bg-muted text-muted-foreground border-border' };
 
     return (
@@ -50,4 +51,6 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
             {config.label}
         </span>
     );
-}
+});
+
+StatusBadge.displayName = "StatusBadge";

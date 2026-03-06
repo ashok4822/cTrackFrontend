@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { cn } from "@/lib/utils";
 import { AlertCircle, AlertTriangle, Info, CheckCircle } from "lucide-react";
 
@@ -42,11 +43,11 @@ const alertConfig = {
   },
 };
 
-export function AlertsPanel({
+export const AlertsPanel = memo(({
   alerts,
   className,
   onAlertClick,
-}: AlertsPanelProps) {
+}: AlertsPanelProps) => {
   return (
     <div className={cn("rounded-lg border bg-card", className)}>
       <div className="border-b p-4">
@@ -92,4 +93,6 @@ export function AlertsPanel({
       )}
     </div>
   );
-}
+});
+
+AlertsPanel.displayName = "AlertsPanel";
