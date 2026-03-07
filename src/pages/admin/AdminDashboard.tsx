@@ -1,6 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchKPIData } from "@/store/slices/dashboardSlice";
+import { fetchBlocks } from "@/store/slices/yardSlice";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { KPICard } from "@/components/common/KPICard";
 import { adminNavItems } from "@/config/navigation";
@@ -8,11 +9,11 @@ import { Container, Truck, DoorOpen, BarChart3, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertsPanel } from '@/components/common/AlertsPanel';
 import { ActivityFeed } from '@/components/common/ActivityFeed';
+import { useSocket } from "@/hooks/useSocket";
 import {
   dummyActivityFeed,
   dummyGateMovementsData,
   dummyDwellTimeData,
-  dummyBlocks,
 } from '@/data/dummyData';
 import {
   BarChart,
@@ -30,7 +31,7 @@ import {
 
 const COLORS = ['hsl(217, 91%, 35%)', 'hsl(199, 89%, 48%)', 'hsl(142, 76%, 36%)', 'hsl(38, 92%, 50%)', 'hsl(280, 68%, 60%)'];
 
-const alerts = [
+const initialAlerts = [
   { id: '1', type: 'info' as const, title: 'Equipment Maintenance', message: 'Forklift FL-001 under maintenance' },
   { id: '2', type: 'warning' as const, title: 'Gate Closure', message: 'Gate 1 closed at 15:30' },
   { id: '3', type: 'success' as const, title: 'Gate Opening', message: 'Gate 1 opened at 16:00' },
@@ -38,13 +39,42 @@ const alerts = [
 
 export default function AdminDashboard() {
   const dispatch = useAppDispatch();
-  const { kpiData, isLoading } = useAppSelector((state) => state.dashboard);
+  const { kpiData, isLoading: kpiLoading } = useAppSelector((state) => state.dashboard);
+  const { blocks, isLoading: blocksLoading } = useAppSelector((state) => state.yard);
+  const [alerts, setAlerts] = useState(initialAlerts);
+  const [activities, setActivities] = useState(dummyActivityFeed);
+
+  const handleSocketEvent = useCallback((event: string, data: any) => {
+    switch (event) {
+      case "kpi_update":
+        console.log("Real-time KPI/Yard Update:", data);
+        dispatch(fetchKPIData());
+        dispatch(fetchBlocks());
+        break;
+      case "new_activity":
+        console.log("Real-time Activity:", data);
+        setActivities(prev => [data, ...prev].slice(0, 10));
+        break;
+      case "new_alert":
+        console.log("Real-time Alert:", data);
+        setAlerts(prev => [data, ...prev].slice(0, 5));
+        break;
+      default:
+        break;
+    }
+  }, [dispatch]);
+
+  useSocket(handleSocketEvent);
 
   useEffect(() => {
     dispatch(fetchKPIData());
+    dispatch(fetchBlocks());
   }, [dispatch]);
 
-  if (isLoading || !kpiData) {
+  const isLoading = kpiLoading || blocksLoading;
+
+  // Only show full-page loader on initial load (when kpiData is missing)
+  if (!kpiData) {
     return (
       <DashboardLayout navItems={adminNavItems} pageTitle="Admin Dashboard">
         <div className="flex h-[400px] items-center justify-center">
@@ -55,7 +85,15 @@ export default function AdminDashboard() {
   }
 
   return (
-    <DashboardLayout navItems={adminNavItems} pageTitle="Admin Dashboard">
+    <DashboardLayout
+      navItems={adminNavItems}
+      pageTitle={
+        <div className="flex items-center gap-2">
+          Admin Dashboard
+          {isLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+        </div>
+      }
+    >
       {/* KPI Cards */}
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <KPICard
@@ -167,7 +205,7 @@ export default function AdminDashboard() {
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            {dummyBlocks.map((block) => {
+            {blocks.map((block) => {
               const percentage = Math.round((block.occupied / block.capacity) * 100);
               return (
                 <div key={block.id} className="rounded-lg border p-4">
@@ -197,20 +235,8 @@ export default function AdminDashboard() {
       {/* Bottom Row */}
       <div className="grid gap-6 lg:grid-cols-2">
         <AlertsPanel alerts={alerts} />
-        <ActivityFeed activities={dummyActivityFeed} />
+        <ActivityFeed activities={activities} />
       </div>
-
-
-      {/* <div className="grid gap-6 lg:grid-cols-1">
-        <div className="rounded-lg border bg-card p-8 text-center shadow-sm">
-          <h3 className="text-xl font-semibold mb-2">
-            Welcome to Admin Dashboard
-          </h3>
-          <p className="text-muted-foreground">
-            New operational features are coming soon. Stay tuned!
-          </p>
-        </div>
-      </div> */}
     </DashboardLayout>
   );
 }
