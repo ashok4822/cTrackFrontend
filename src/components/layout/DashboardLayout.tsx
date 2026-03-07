@@ -8,7 +8,7 @@ import type { NavItem } from "@/types";
 interface DashboardLayoutProps {
   children: ReactNode;
   navItems: NavItem[];
-  pageTitle?: string;
+  pageTitle?: ReactNode;
   pageActions?: ReactNode;
 }
 
