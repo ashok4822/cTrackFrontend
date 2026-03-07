@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { customerNavItems } from "@/config/navigation";
@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 import { billingService, type BillRecord } from "@/services/billingService";
 import { generateBillPDF } from "@/utils/pdfGenerator";
-import { useState, useEffect } from "react";
 
 export default function CustomerPaymentConfirmation() {
   const { billId } = useParams();
@@ -27,17 +26,25 @@ export default function CustomerPaymentConfirmation() {
   const [bill, setBill] = useState<BillRecord | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Use lazy initializers to generate details once on mount without cascading renders
+  const [transactionId] = useState(() => {
+    return `TXN${Date.now()}`;
+  });
+
+  const [transactionDate] = useState(() => {
+    return new Date().toLocaleString();
+  });
+
   useEffect(() => {
     if (billId) {
       billingService.fetchBillById(billId)
         .then(setBill)
-        .catch(console.error)
+        .catch((error) => {
+          console.error("Failed to fetch bill:", error);
+        })
         .finally(() => setLoading(false));
     }
   }, [billId]);
-
-  const transactionId = useMemo(() => `TXN${Date.now()}`, []);
-  const transactionDate = useMemo(() => new Date().toLocaleString(), []);
 
   return (
     <DashboardLayout
