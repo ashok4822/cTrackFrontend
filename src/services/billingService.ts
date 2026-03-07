@@ -66,6 +66,7 @@ export interface BillRecord {
     status: "pending" | "paid" | "overdue";
     dueDate: string;
     remarks?: string;
+    paidAt?: string;
     createdAt: string;
 }
 
