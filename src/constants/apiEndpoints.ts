@@ -109,6 +109,8 @@ export const API_ENDPOINTS = {
   PDA: {
     GET: "/pda",
     DEPOSIT: "/pda/deposit",
+    RAZORPAY_ORDER: "/pda/razorpay/order",
+    RAZORPAY_VERIFY: "/pda/razorpay/verify",
   },
 
   // ─── Dashboard ────────────────────────────────────────────────────────────
