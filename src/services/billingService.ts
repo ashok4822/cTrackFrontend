@@ -144,4 +144,14 @@ export const billingService = {
         const response = await api.get<BillRecord>(API_ENDPOINTS.BILLING.BILL_BY_ID(id));
         return response.data;
     },
+
+    async createRazorpayOrder(id: string): Promise<any> {
+        const response = await api.post(API_ENDPOINTS.BILLING.BILL_RAZORPAY_ORDER(id));
+        return response.data;
+    },
+
+    async verifyRazorpayPayment(id: string, paymentData: any): Promise<BillRecord> {
+        const response = await api.post<{ message: string; bill: BillRecord }>(API_ENDPOINTS.BILLING.BILL_RAZORPAY_VERIFY(id), paymentData);
+        return response.data.bill;
+    },
 };
