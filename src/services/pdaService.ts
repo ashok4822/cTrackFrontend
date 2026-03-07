@@ -13,8 +13,13 @@ export const pdaService = {
         return response.data;
     },
 
-    depositFunds: async (amount: number, description: string): Promise<PDATransaction> => {
-        const response = await api.post(API_ENDPOINTS.PDA.DEPOSIT, { amount, description });
+    createPDAOrder: async (amount: number): Promise<any> => {
+        const response = await api.post(API_ENDPOINTS.PDA.RAZORPAY_ORDER, { amount });
+        return response.data;
+    },
+
+    verifyPDAPayment: async (amount: number, paymentData: any): Promise<PDATransaction> => {
+        const response = await api.post(API_ENDPOINTS.PDA.RAZORPAY_VERIFY, { amount, ...paymentData });
         return response.data;
     },
 };

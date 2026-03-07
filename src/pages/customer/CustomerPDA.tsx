@@ -64,17 +64,83 @@ export default function CustomerPDA() {
       return;
     }
 
+    setDepositing(true);
+
     try {
-      setDepositing(true);
-      await pdaService.depositFunds(amount, "Manual Deposit");
-      toast.success(`Succesfully deposited ₹${amount.toLocaleString()}`);
-      setDepositAmount("");
-      setIsDialogOpen(false);
-      fetchPDA(); // Refresh data
+      // 1. Load Razorpay script
+      const loadScript = (src: string) => {
+        return new Promise((resolve) => {
+          const script = document.createElement("script");
+          script.src = src;
+          script.onload = () => resolve(true);
+          script.onerror = () => resolve(false);
+          document.body.appendChild(script);
+        });
+      };
+
+      const isScriptLoaded = await loadScript(
+        "https://checkout.razorpay.com/v1/checkout.js",
+      );
+
+      if (!isScriptLoaded) {
+        toast.error("Razorpay SDK failed to load. Are you online?");
+        setDepositing(false);
+        return;
+      }
+
+      // 2. Create Order
+      const order = await pdaService.createPDAOrder(amount);
+
+      // 3. Open Razorpay Checkout
+      const options = {
+        key:
+          (import.meta as any).env.VITE_RAZOR_KEY_ID ||
+          "rzp_test_KDYrLJHnu3O9Ip",
+        amount: order.amount,
+        currency: order.currency,
+        name: "cTrack Logistics",
+        description: `PDA Deposit for ${pda?.customer}`,
+        order_id: order.id,
+        handler: async function (response: any) {
+          try {
+            setDepositing(true);
+            const verifiedTx = await pdaService.verifyPDAPayment(amount, {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            });
+
+            if (verifiedTx) {
+              toast.success(`Succesfully deposited ₹${amount.toLocaleString()}`);
+              setDepositAmount("");
+              setIsDialogOpen(false);
+              fetchPDA(); // Refresh data
+            }
+          } catch (error: any) {
+            toast.error(
+              error.response?.data?.message ||
+              "Payment verification failed. Please contact support.",
+            );
+          } finally {
+            setDepositing(false);
+          }
+        },
+        theme: {
+          color: "#0f172a",
+        },
+        modal: {
+          ondismiss: function () {
+            setDepositing(false);
+          },
+        },
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
     } catch (error: any) {
-      toast.error("Deposit failed");
-      console.error(error);
-    } finally {
+      toast.error(
+        error.response?.data?.message || "There was an error initiating payment",
+      );
       setDepositing(false);
     }
   };

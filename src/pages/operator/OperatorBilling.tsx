@@ -330,6 +330,11 @@ export default function OperatorBilling() {
       render: (item) => new Date(item.dueDate).toLocaleDateString(),
     },
     {
+      key: "paidAt",
+      header: "Paid Date",
+      render: (item) => item.paidAt ? new Date(item.paidAt).toLocaleDateString() : "-",
+    },
+    {
       key: "actions",
       header: "Actions",
       render: (item) => (
@@ -374,6 +379,14 @@ export default function OperatorBilling() {
                     {new Date(item.dueDate).toLocaleDateString()}
                   </p>
                 </div>
+                {item.status === "paid" && item.paidAt && (
+                  <div>
+                    <Label className="text-muted-foreground">Paid Date</Label>
+                    <p className="font-medium">
+                      {new Date(item.paidAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                )}
               </div>
               <Separator />
               <div>

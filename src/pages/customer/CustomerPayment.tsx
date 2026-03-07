@@ -10,7 +10,6 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
@@ -138,8 +137,87 @@ export default function CustomerPayment() {
         if (!billId) throw new Error("Bill ID is missing");
         await billingService.payBill(billId);
       } else {
-        // Simulate online payment for now
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        if (!billId || !bill) throw new Error("Bill information is missing");
+
+        // 1. Load Razorpay script
+        const loadScript = (src: string) => {
+          return new Promise((resolve) => {
+            const script = document.createElement("script");
+            script.src = src;
+            script.onload = () => resolve(true);
+            script.onerror = () => resolve(false);
+            document.body.appendChild(script);
+          });
+        };
+
+        const isScriptLoaded = await loadScript("https://checkout.razorpay.com/v1/checkout.js");
+
+        if (!isScriptLoaded) {
+          toast({
+            title: "Error",
+            description: "Razorpay SDK failed to load. Are you online?",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        // 2. Create Order
+        const order = await billingService.createRazorpayOrder(billId);
+
+        // 3. Open Razorpay Checkout
+        const options = {
+          key: (import.meta as any).env.VITE_RAZOR_KEY_ID || "rzp_test_KDYrLJHnu3O9Ip",
+          amount: order.amount,
+          currency: order.currency,
+          name: "cTrack Logistics",
+          description: `Payment for Bill ${bill.billNumber}`,
+          order_id: order.id,
+          handler: async function (response: any) {
+            try {
+              setIsProcessing(true);
+              const verificationResult = await billingService.verifyRazorpayPayment(billId, {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              });
+
+              if (verificationResult) {
+                toast({
+                  title: "Payment Successful",
+                  description: "Your payment has been verified successfully.",
+                });
+                navigate(
+                  `/customer/payment-confirmation/${billId}?status=success&method=${paymentMethod}`,
+                );
+              }
+            } catch (error: any) {
+              toast({
+                title: "Verification Failed",
+                description: error.response?.data?.message || "Payment verification failed. Please contact support.",
+                variant: "destructive",
+              });
+            } finally {
+              setIsProcessing(false);
+            }
+          },
+          prefill: {
+            name: "", // Will be filled by customer if available
+            email: "",
+            contact: "",
+          },
+          theme: {
+            color: "#0f172a",
+          },
+          modal: {
+            ondismiss: function () {
+              setIsProcessing(false);
+            }
+          }
+        };
+
+        const rzp = new (window as any).Razorpay(options);
+        rzp.open();
+        return; // SDK handler will take over
       }
 
       toast({
@@ -310,25 +388,11 @@ export default function CustomerPayment() {
             </RadioGroup>
 
             {paymentMethod === "online" && (
-              <div className="space-y-4 pt-4 border-t">
-                <div className="space-y-2">
-                  <Label>Card Number</Label>
-                  <Input placeholder="1234 5678 9012 3456" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Expiry Date</Label>
-                    <Input placeholder="MM/YY" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>CVV</Label>
-                    <Input placeholder="123" type="password" />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Cardholder Name</Label>
-                  <Input placeholder="Name on card" />
-                </div>
+              <div className="p-4 bg-primary/5 rounded-lg border border-primary/20 text-center">
+                <p className="text-sm font-medium">Secure Payment via Razorpay</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  You will be redirected to the secure Razorpay payment gateway to complete your transaction.
+                </p>
               </div>
             )}
 
