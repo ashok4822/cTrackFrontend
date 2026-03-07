@@ -234,6 +234,10 @@ export interface KPIData {
   pendingApprovals?: number;
   pendingSurveys?: number;
   tasksToday?: number;
+  gateMovements: { name: string; gateIn: number; gateOut: number }[];
+  dwellTimeDistribution: { name: string; value: number }[];
+  recentActivities: { id: string; action: string; description: string; time: string; type: string }[];
+  recentAlerts: { id: string; type: "error" | "warning" | "info" | "success"; title: string; message: string; link?: string }[];
 }
 
 // Chart Data Types

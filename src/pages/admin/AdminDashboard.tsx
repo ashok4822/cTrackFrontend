@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchKPIData } from "@/store/slices/dashboardSlice";
 import { fetchBlocks } from "@/store/slices/yardSlice";
@@ -10,11 +10,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertsPanel } from '@/components/common/AlertsPanel';
 import { ActivityFeed } from '@/components/common/ActivityFeed';
 import { useSocket } from "@/hooks/useSocket";
-import {
-  dummyActivityFeed,
-  dummyGateMovementsData,
-  dummyDwellTimeData,
-} from '@/data/dummyData';
 import {
   BarChart,
   Bar,
@@ -31,33 +26,33 @@ import {
 
 const COLORS = ['hsl(217, 91%, 35%)', 'hsl(199, 89%, 48%)', 'hsl(142, 76%, 36%)', 'hsl(38, 92%, 50%)', 'hsl(280, 68%, 60%)'];
 
-const initialAlerts = [
-  { id: '1', type: 'info' as const, title: 'Equipment Maintenance', message: 'Forklift FL-001 under maintenance' },
-  { id: '2', type: 'warning' as const, title: 'Gate Closure', message: 'Gate 1 closed at 15:30' },
-  { id: '3', type: 'success' as const, title: 'Gate Opening', message: 'Gate 1 opened at 16:00' },
-];
+const formatTimeAgo = (dateString: string) => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (seconds < 60) return 'Just now';
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+};
 
 export default function AdminDashboard() {
   const dispatch = useAppDispatch();
   const { kpiData, isLoading: kpiLoading } = useAppSelector((state) => state.dashboard);
   const { blocks, isLoading: blocksLoading } = useAppSelector((state) => state.yard);
-  const [alerts, setAlerts] = useState(initialAlerts);
-  const [activities, setActivities] = useState(dummyActivityFeed);
 
   const handleSocketEvent = useCallback((event: string, data: any) => {
     switch (event) {
       case "kpi_update":
-        console.log("Real-time KPI/Yard Update:", data);
+      case "new_activity":
+      case "new_alert":
+        console.log("Real-time Update:", event, data);
         dispatch(fetchKPIData());
         dispatch(fetchBlocks());
-        break;
-      case "new_activity":
-        console.log("Real-time Activity:", data);
-        setActivities(prev => [data, ...prev].slice(0, 10));
-        break;
-      case "new_alert":
-        console.log("Real-time Alert:", data);
-        setAlerts(prev => [data, ...prev].slice(0, 5));
         break;
       default:
         break;
@@ -140,7 +135,7 @@ export default function AdminDashboard() {
           <CardContent>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={dummyGateMovementsData}>
+                <BarChart data={kpiData.gateMovements}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                   <XAxis dataKey="name" className="text-xs" />
                   <YAxis className="text-xs" />
@@ -169,7 +164,7 @@ export default function AdminDashboard() {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={dummyDwellTimeData}
+                    data={kpiData.dwellTimeDistribution}
                     cx="50%"
                     cy="50%"
                     innerRadius={60}
@@ -179,7 +174,7 @@ export default function AdminDashboard() {
                     label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
                     labelLine={false}
                   >
-                    {dummyDwellTimeData.map((_, index) => (
+                    {kpiData.dwellTimeDistribution.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
@@ -234,8 +229,16 @@ export default function AdminDashboard() {
 
       {/* Bottom Row */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <AlertsPanel alerts={alerts} />
-        <ActivityFeed activities={activities} />
+        <AlertsPanel
+          alerts={kpiData?.recentAlerts || []}
+          onAlertClick={(alert) => alert.link && (window.location.href = alert.link)}
+        />
+        <ActivityFeed
+          activities={(kpiData?.recentActivities || []).map(a => ({
+            ...a,
+            time: formatTimeAgo(a.time)
+          }))}
+        />
       </div>
     </DashboardLayout>
   );
