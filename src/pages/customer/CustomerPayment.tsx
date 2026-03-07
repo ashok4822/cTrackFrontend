@@ -150,7 +150,9 @@ export default function CustomerPayment() {
           });
         };
 
-        const isScriptLoaded = await loadScript("https://checkout.razorpay.com/v1/checkout.js");
+        const isScriptLoaded = await loadScript(
+          "https://checkout.razorpay.com/v1/checkout.js",
+        );
 
         if (!isScriptLoaded) {
           toast({
@@ -166,7 +168,9 @@ export default function CustomerPayment() {
 
         // 3. Open Razorpay Checkout
         const options = {
-          key: (import.meta as any).env.VITE_RAZOR_KEY_ID || "rzp_test_KDYrLJHnu3O9Ip",
+          key:
+            (import.meta as any).env.VITE_RAZOR_KEY_ID ||
+            "rzp_test_KDYrLJHnu3O9Ip",
           amount: order.amount,
           currency: order.currency,
           name: "cTrack Logistics",
@@ -175,11 +179,12 @@ export default function CustomerPayment() {
           handler: async function (response: any) {
             try {
               setIsProcessing(true);
-              const verificationResult = await billingService.verifyRazorpayPayment(billId, {
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-              });
+              const verificationResult =
+                await billingService.verifyRazorpayPayment(billId, {
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                });
 
               if (verificationResult) {
                 toast({
@@ -193,7 +198,9 @@ export default function CustomerPayment() {
             } catch (error: any) {
               toast({
                 title: "Verification Failed",
-                description: error.response?.data?.message || "Payment verification failed. Please contact support.",
+                description:
+                  error.response?.data?.message ||
+                  "Payment verification failed. Please contact support.",
                 variant: "destructive",
               });
             } finally {
@@ -211,8 +218,8 @@ export default function CustomerPayment() {
           modal: {
             ondismiss: function () {
               setIsProcessing(false);
-            }
-          }
+            },
+          },
         };
 
         const rzp = new (window as any).Razorpay(options);
@@ -232,7 +239,9 @@ export default function CustomerPayment() {
     } catch (error: any) {
       toast({
         title: "Payment Failed",
-        description: error.response?.data?.message || "There was an error processing your payment.",
+        description:
+          error.response?.data?.message ||
+          "There was an error processing your payment.",
         variant: "destructive",
       });
     } finally {
@@ -328,10 +337,11 @@ export default function CustomerPayment() {
             <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
               {/* PDA Option */}
               <div
-                className={`relative flex items-start gap-4 p-4 rounded-lg border-2 transition-colors ${paymentMethod === "pda"
-                  ? "border-primary bg-primary/5"
-                  : "border-border"
-                  }`}
+                className={`relative flex items-start gap-4 p-4 rounded-lg border-2 transition-colors ${
+                  paymentMethod === "pda"
+                    ? "border-primary bg-primary/5"
+                    : "border-border"
+                }`}
               >
                 <RadioGroupItem value="pda" id="pda" className="mt-1" />
                 <div className="flex-1">
@@ -366,10 +376,11 @@ export default function CustomerPayment() {
 
               {/* Online Payment Option */}
               <div
-                className={`relative flex items-start gap-4 p-4 rounded-lg border-2 transition-colors ${paymentMethod === "online"
-                  ? "border-primary bg-primary/5"
-                  : "border-border"
-                  }`}
+                className={`relative flex items-start gap-4 p-4 rounded-lg border-2 transition-colors ${
+                  paymentMethod === "online"
+                    ? "border-primary bg-primary/5"
+                    : "border-border"
+                }`}
               >
                 <RadioGroupItem value="online" id="online" className="mt-1" />
                 <div className="flex-1">
@@ -389,9 +400,12 @@ export default function CustomerPayment() {
 
             {paymentMethod === "online" && (
               <div className="p-4 bg-primary/5 rounded-lg border border-primary/20 text-center">
-                <p className="text-sm font-medium">Secure Payment via Razorpay</p>
+                <p className="text-sm font-medium">
+                  Secure Payment via Razorpay
+                </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  You will be redirected to the secure Razorpay payment gateway to complete your transaction.
+                  You will be redirected to the secure Razorpay payment gateway
+                  to complete your transaction.
                 </p>
               </div>
             )}
