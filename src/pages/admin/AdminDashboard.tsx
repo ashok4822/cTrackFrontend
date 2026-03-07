@@ -6,9 +6,9 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import { KPICard } from "@/components/common/KPICard";
 import { adminNavItems } from "@/config/navigation";
 import { Container, Truck, DoorOpen, BarChart3, Loader2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertsPanel } from '@/components/common/AlertsPanel';
-import { ActivityFeed } from '@/components/common/ActivityFeed';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AlertsPanel } from "@/components/common/AlertsPanel";
+import { ActivityFeed } from "@/components/common/ActivityFeed";
 import { useSocket } from "@/hooks/useSocket";
 import {
   BarChart,
@@ -22,16 +22,22 @@ import {
   Pie,
   Cell,
   Legend,
-} from 'recharts';
+} from "recharts";
 
-const COLORS = ['hsl(217, 91%, 35%)', 'hsl(199, 89%, 48%)', 'hsl(142, 76%, 36%)', 'hsl(38, 92%, 50%)', 'hsl(280, 68%, 60%)'];
+const COLORS = [
+  "hsl(217, 91%, 35%)",
+  "hsl(199, 89%, 48%)",
+  "hsl(142, 76%, 36%)",
+  "hsl(38, 92%, 50%)",
+  "hsl(280, 68%, 60%)",
+];
 
 const formatTimeAgo = (dateString: string) => {
   const date = new Date(dateString);
   const now = new Date();
   const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-  if (seconds < 60) return 'Just now';
+  if (seconds < 60) return "Just now";
   const minutes = Math.floor(seconds / 60);
   if (minutes < 60) return `${minutes}m ago`;
   const hours = Math.floor(minutes / 60);
@@ -42,22 +48,29 @@ const formatTimeAgo = (dateString: string) => {
 
 export default function AdminDashboard() {
   const dispatch = useAppDispatch();
-  const { kpiData, isLoading: kpiLoading } = useAppSelector((state) => state.dashboard);
-  const { blocks, isLoading: blocksLoading } = useAppSelector((state) => state.yard);
+  const { kpiData, isLoading: kpiLoading } = useAppSelector(
+    (state) => state.dashboard,
+  );
+  const { blocks, isLoading: blocksLoading } = useAppSelector(
+    (state) => state.yard,
+  );
 
-  const handleSocketEvent = useCallback((event: string, data: any) => {
-    switch (event) {
-      case "kpi_update":
-      case "new_activity":
-      case "new_alert":
-        console.log("Real-time Update:", event, data);
-        dispatch(fetchKPIData());
-        dispatch(fetchBlocks());
-        break;
-      default:
-        break;
-    }
-  }, [dispatch]);
+  const handleSocketEvent = useCallback(
+    (event: string, data: any) => {
+      switch (event) {
+        case "kpi_update":
+        case "new_activity":
+        case "new_alert":
+          console.log("Real-time Update:", event, data);
+          dispatch(fetchKPIData());
+          dispatch(fetchBlocks());
+          break;
+        default:
+          break;
+      }
+    },
+    [dispatch],
+  );
 
   useSocket(handleSocketEvent);
 
@@ -85,7 +98,9 @@ export default function AdminDashboard() {
       pageTitle={
         <div className="flex items-center gap-2">
           Admin Dashboard
-          {isLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+          {isLoading && (
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          )}
         </div>
       }
     >
@@ -130,24 +145,39 @@ export default function AdminDashboard() {
         {/* Gate Movements Chart */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">Daily Gate Movements</CardTitle>
+            <CardTitle className="text-base font-semibold">
+              Daily Gate Movements
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={kpiData.gateMovements}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    className="stroke-muted"
+                  />
                   <XAxis dataKey="name" className="text-xs" />
                   <YAxis className="text-xs" />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px',
+                      backgroundColor: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "8px",
                     }}
                   />
-                  <Bar dataKey="gateIn" name="Gate In" fill="hsl(142, 76%, 36%)" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="gateOut" name="Gate Out" fill="hsl(217, 91%, 35%)" radius={[4, 4, 0, 0]} />
+                  <Bar
+                    dataKey="gateIn"
+                    name="Gate In"
+                    fill="hsl(142, 76%, 36%)"
+                    radius={[4, 4, 0, 0]}
+                  />
+                  <Bar
+                    dataKey="gateOut"
+                    name="Gate Out"
+                    fill="hsl(217, 91%, 35%)"
+                    radius={[4, 4, 0, 0]}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -157,7 +187,9 @@ export default function AdminDashboard() {
         {/* Dwell Time Distribution */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">Container Dwell Time</CardTitle>
+            <CardTitle className="text-base font-semibold">
+              Container Dwell Time
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[300px]">
@@ -171,18 +203,23 @@ export default function AdminDashboard() {
                     outerRadius={100}
                     paddingAngle={2}
                     dataKey="value"
-                    label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                    label={({ name, percent }) =>
+                      `${name} (${(percent * 100).toFixed(0)}%)`
+                    }
                     labelLine={false}
                   >
                     {kpiData.dwellTimeDistribution.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={COLORS[index % COLORS.length]}
+                      />
                     ))}
                   </Pie>
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px',
+                      backgroundColor: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "8px",
                     }}
                   />
                   <Legend />
@@ -196,23 +233,31 @@ export default function AdminDashboard() {
       {/* Yard Capacity */}
       <Card className="mb-6">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold">Yard Capacity by Block</CardTitle>
+          <CardTitle className="text-base font-semibold">
+            Yard Capacity by Block
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             {blocks.map((block) => {
-              const percentage = Math.round((block.occupied / block.capacity) * 100);
+              const percentage = Math.round(
+                (block.occupied / block.capacity) * 100,
+              );
               return (
                 <div key={block.id} className="rounded-lg border p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium text-foreground">{block.name}</span>
-                    <span className={`text-sm font-medium ${percentage > 80 ? 'text-destructive' : percentage > 60 ? 'text-warning' : 'text-success'}`}>
+                    <span className="font-medium text-foreground">
+                      {block.name}
+                    </span>
+                    <span
+                      className={`text-sm font-medium ${percentage > 80 ? "text-destructive" : percentage > 60 ? "text-warning" : "text-success"}`}
+                    >
                       {percentage}%
                     </span>
                   </div>
                   <div className="h-2 rounded-full bg-muted overflow-hidden">
                     <div
-                      className={`h-full rounded-full transition-all ${percentage > 80 ? 'bg-destructive' : percentage > 60 ? 'bg-warning' : 'bg-success'}`}
+                      className={`h-full rounded-full transition-all ${percentage > 80 ? "bg-destructive" : percentage > 60 ? "bg-warning" : "bg-success"}`}
                       style={{ width: `${percentage}%` }}
                     />
                   </div>
@@ -231,12 +276,14 @@ export default function AdminDashboard() {
       <div className="grid gap-6 lg:grid-cols-2">
         <AlertsPanel
           alerts={kpiData?.recentAlerts || []}
-          onAlertClick={(alert) => alert.link && (window.location.href = alert.link)}
+          onAlertClick={(alert) =>
+            alert.link && (window.location.href = alert.link)
+          }
         />
         <ActivityFeed
-          activities={(kpiData?.recentActivities || []).map(a => ({
+          activities={(kpiData?.recentActivities || []).map((a) => ({
             ...a,
-            time: formatTimeAgo(a.time)
+            time: formatTimeAgo(a.time),
           }))}
         />
       </div>

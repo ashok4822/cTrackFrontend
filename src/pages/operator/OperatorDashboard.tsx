@@ -5,6 +5,7 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import { KPICard } from "@/components/common/KPICard";
 import { operatorNavItems } from "@/config/navigation";
 import { DoorOpen, Container, Truck, Loader2 } from "lucide-react";
+import { BarChart3 } from "lucide-react";
 
 export default function OperatorDashboard() {
   const dispatch = useAppDispatch();
@@ -26,30 +27,39 @@ export default function OperatorDashboard() {
 
   return (
     <DashboardLayout navItems={operatorNavItems} pageTitle="Operator Dashboard">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+      {/* KPI Cards */}
+      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <KPICard
-          title="Yard Occupancy"
-          value={`${kpiData.yardUtilization}%`}
+          title="Containers in Yard"
+          value={kpiData.totalContainersInYard}
           icon={Container}
           variant="primary"
+          trend={{ value: 5.2, isPositive: true }}
         />
         <KPICard
-          title="Gate Movements"
-          value={(kpiData.gateInToday || 0) + (kpiData.gateOutToday || 0)}
+          title="In Transit"
+          value={kpiData.containersInTransit}
+          icon={Truck}
+          variant="default"
+        />
+        <KPICard
+          title="Gate-In Today"
+          value={kpiData.gateInToday}
           icon={DoorOpen}
           variant="success"
+          trend={{ value: 12, isPositive: true }}
         />
         <KPICard
-          title="Pending Approvals"
-          value={kpiData.pendingApprovals || 0}
-          icon={Truck}
-          variant="warning"
-        />
-        <KPICard
-          title="Tasks Today"
-          value={kpiData.tasksToday || 0}
-          icon={Loader2}
+          title="Gate-Out Today"
+          value={kpiData.gateOutToday}
+          icon={DoorOpen}
           variant="default"
+        />
+        <KPICard
+          title="Yard Utilization"
+          value={`${kpiData.yardUtilization}%`}
+          icon={BarChart3}
+          variant="warning"
         />
       </div>
 
