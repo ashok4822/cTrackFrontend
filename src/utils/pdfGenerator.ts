@@ -42,25 +42,21 @@ export const generateBillPDF = (bill: BillRecord) => {
     doc.text(`Status: ${bill.status.toUpperCase()}`, 120, 86);
 
     // Table of Charges
-    const tableData = bill.lineItems.map((item) => [
-        item.activityName,
-        item.quantity.toString(),
-        `INR ${item.unitPrice.toLocaleString()}`,
+    `INR ${item.unitPrice.toLocaleString()}`,
         `INR ${item.amount.toLocaleString()}`,
-    ]);
 
-    autoTable(doc, {
-        startY: 100,
-        head: [["Activity", "Qty", "Unit Price", "Amount"]],
-        body: tableData,
-        theme: "striped",
-        headStyles: { fillColor: [37, 99, 235], textColor: [255, 255, 255] },
-        margin: { left: 20, right: 20 },
-        styles: { fontSize: 10, cellPadding: 5 },
-        columnStyles: {
-            3: { halign: "right" },
-        },
-    });
+        autoTable(doc, {
+            startY: 100,
+            head: [["Activity", "Qty", "Unit Price", "Amount"]],
+            body: tableData,
+            theme: "striped",
+            headStyles: { fillColor: [37, 99, 235], textColor: [255, 255, 255] },
+            margin: { left: 20, right: 20 },
+            styles: { fontSize: 10, cellPadding: 5 },
+            columnStyles: {
+                3: { halign: "right" },
+            },
+        });
 
     // Total Section
     const finalY = (doc as any).lastAutoTable.finalY + 10;

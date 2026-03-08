@@ -20,7 +20,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import {
   Receipt,
-  DollarSign,
+  IndianRupee,
   Clock,
   Printer,
   CreditCard,
@@ -227,7 +227,7 @@ export default function CustomerBills() {
         <KPICard
           title="Total Paid"
           value={`₹${totalPaid.toLocaleString()}`}
-          icon={DollarSign}
+          icon={IndianRupee}
           variant="success"
         />
         <KPICard

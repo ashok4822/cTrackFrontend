@@ -24,7 +24,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 import {
   Receipt,
-  DollarSign,
+  IndianRupee,
   Clock,
   CheckCircle,
   FileText,
@@ -465,7 +465,7 @@ export default function OperatorBilling() {
         <KPICard
           title="Collected (Paid)"
           value={`₹${totalCollected.toLocaleString()}`}
-          icon={DollarSign}
+          icon={IndianRupee}
           variant="success"
         />
         <KPICard
