@@ -25,7 +25,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Receipt, DollarSign, Edit, Plus, Package, Clock, Loader2 } from "lucide-react";
+import { Receipt, IndianRupee, Edit, Plus, Package, Clock, Loader2 } from "lucide-react";
 import { adminNavItems } from "@/config/navigation";
 import { billingService, type Activity, type Charge, type ChargeHistory, type CargoCategory } from "@/services/billingService";
 import { toast } from "sonner";
@@ -685,7 +685,7 @@ const AdminActivitiesCharges = () => {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-purple-500/10">
-                  <DollarSign className="h-5 w-5 text-purple-600" />
+                  <IndianRupee className="h-5 w-5 text-purple-600" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{totalCharges}</p>

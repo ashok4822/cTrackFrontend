@@ -85,13 +85,13 @@ export default function CustomerDashboard() {
         />
         <KPICard
           title="PDA Balance"
-          value={`$${(kpiData.pdaBalance || 0).toLocaleString()}`}
+          value={(kpiData.pdaBalance || 0).toLocaleString()}
           icon={Wallet}
           variant="success"
         />
         <KPICard
           title="Unpaid Amount"
-          value={`$${(kpiData.unpaidBillsAmount || 0).toLocaleString()}`}
+          value={(kpiData.unpaidBillsAmount || 0).toLocaleString()}
           icon={Receipt}
           variant="warning"
         />
