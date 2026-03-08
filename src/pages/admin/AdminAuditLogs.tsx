@@ -83,7 +83,28 @@ export default function AdminAuditLogs() {
     const parseDetails = (details: string) => {
         try {
             const parsed = JSON.parse(details);
-            return JSON.stringify(parsed, null, 2);
+            if (typeof parsed !== 'object' || parsed === null) return details;
+
+            return Object.entries(parsed)
+                .map(([key, value]) => {
+                    // Convert camelCase to Title Case
+                    const label = key
+                        .replace(/([A-Z])/g, " $1")
+                        .replace(/^./, (str) => str.toUpperCase());
+
+                    // Format value if it's an array or object
+                    let displayValue = "";
+                    if (Array.isArray(value)) {
+                        displayValue = value.join(", ");
+                    } else if (typeof value === 'object' && value !== null) {
+                        displayValue = JSON.stringify(value);
+                    } else {
+                        displayValue = String(value);
+                    }
+
+                    return `${label}: ${displayValue}`;
+                })
+                .join(", ");
         } catch {
             return details;
         }
@@ -218,6 +239,12 @@ export default function AdminAuditLogs() {
                                         <SelectItem value="BLOCK_UPDATED">Block Updated</SelectItem>
                                         <SelectItem value="SHIPPING_LINE_CREATED">Shipping Line Created</SelectItem>
                                         <SelectItem value="SHIPPING_LINE_UPDATED">Shipping Line Updated</SelectItem>
+                                        <SelectItem value="CONTAINER_CREATED">Container Created</SelectItem>
+                                        <SelectItem value="CONTAINER_UPDATED">Container Updated</SelectItem>
+                                        <SelectItem value="REQUEST_CREATED">Request Created</SelectItem>
+                                        <SelectItem value="REQUEST_UPDATED">Request Updated</SelectItem>
+                                        <SelectItem value="BILL_PAID">Bill Paid</SelectItem>
+                                        <SelectItem value="SIGNUP">User Signup</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -234,6 +261,9 @@ export default function AdminAuditLogs() {
                                         <SelectItem value="Auth">Auth</SelectItem>
                                         <SelectItem value="Block">Block</SelectItem>
                                         <SelectItem value="ShippingLine">Shipping Line</SelectItem>
+                                        <SelectItem value="Container">Container</SelectItem>
+                                        <SelectItem value="Request">Request</SelectItem>
+                                        <SelectItem value="Bill">Bill</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>

@@ -31,7 +31,6 @@ export const adminNavItems: NavItem[] = [
   { title: "Activities & Charges", href: "/admin/charges", icon: Receipt },
   { title: "Reports & Analytics", href: "/admin/reports", icon: FileText },
   { title: "User Management", href: "/admin/users", icon: Users },
-  { title: "System Configuration", href: "/admin/settings", icon: Settings },
   { title: "Audit Logs", href: "/admin/audit", icon: ScrollText },
   { title: "Profile", href: "/admin/profile", icon: UserCircle },
 ];
