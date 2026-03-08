@@ -21,10 +21,15 @@ import {
   Search,
   Settings,
   X,
+  CheckCheck,
+  Info,
+  AlertTriangle,
+  CheckCircle2,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { logoutUser } from "@/store/slices/authSlice";
-import { dummyNotifications } from "@/data/dummyData";
+import { markAsRead, markAllAsRead } from "@/store/slices/notificationSlice";
+import { formatDistanceToNow } from "date-fns";
 
 interface HeaderProps {
   onMenuToggle?: () => void;
@@ -34,14 +39,38 @@ interface HeaderProps {
 export function Header({ onMenuToggle, isSidebarOpen }: HeaderProps) {
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
+  const { notifications, unreadCount } = useAppSelector((state) => state.notifications);
   const navigate = useNavigate();
   const [showSearch, setShowSearch] = useState(false);
-
-  const unreadCount = dummyNotifications.filter((n) => !n.read).length;
 
   const handleLogout = async () => {
     await dispatch(logoutUser());
     navigate("/");
+  };
+
+  const handleNotificationClick = (notificationId: string, link?: string) => {
+    dispatch(markAsRead(notificationId));
+    if (link) {
+      navigate(link);
+    }
+  };
+
+  const handleMarkAllRead = () => {
+    dispatch(markAllAsRead());
+  };
+
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case "success":
+        return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+      case "alert":
+        return <AlertTriangle className="h-4 w-4 text-destructive" />;
+      case "warning":
+        return <AlertTriangle className="h-4 w-4 text-warning" />;
+      case "info":
+      default:
+        return <Info className="h-4 w-4 text-blue-500" />;
+    }
   };
 
   const getRoleLabel = () => {
@@ -124,7 +153,7 @@ export function Header({ onMenuToggle, isSidebarOpen }: HeaderProps) {
       </Button>
 
       {/* Notifications */}
-      {/* <DropdownMenu>
+      <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" className="relative">
             <Bell className="h-5 w-5" />
@@ -133,39 +162,79 @@ export function Header({ onMenuToggle, isSidebarOpen }: HeaderProps) {
                 className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
                 variant="destructive"
               >
-                {unreadCount}
+                {unreadCount > 9 ? "9+" : unreadCount}
               </Badge>
             )}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-80 bg-card">
-          <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          {dummyNotifications.slice(0, 4).map((notification) => (
-            <DropdownMenuItem
-              key={notification.id}
-              className={cn(
-                "flex flex-col items-start gap-1 p-3",
-                !notification.read && "bg-muted/50",
-              )}
-            >
-              <div className="flex items-center gap-2">
-                <span className="font-medium">{notification.title}</span>
-                {!notification.read && (
-                  <span className="h-2 w-2 rounded-full bg-primary" />
-                )}
+        <DropdownMenuContent align="end" className="w-80 bg-card p-0">
+          <div className="flex items-center justify-between p-4 pb-2">
+            <DropdownMenuLabel className="p-0 font-bold">Notifications</DropdownMenuLabel>
+            {unreadCount > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-auto p-0 text-xs text-primary hover:bg-transparent"
+                onClick={handleMarkAllRead}
+              >
+                <CheckCheck className="mr-1 h-3 w-3" />
+                Mark all as read
+              </Button>
+            )}
+          </div>
+          <DropdownMenuSeparator className="m-0" />
+          <div className="max-h-[400px] overflow-y-auto">
+            {notifications.length > 0 ? (
+              notifications.map((notification) => (
+                <DropdownMenuItem
+                  key={notification.id || (notification as any)._id}
+                  className={cn(
+                    "flex cursor-pointer items-start gap-3 p-4 focus:bg-muted",
+                    !notification.read && "bg-muted/30",
+                  )}
+                  onClick={() => handleNotificationClick(notification.id || (notification as any)._id, notification.link)}
+                >
+                  <div className="mt-1 shrink-0">
+                    {getNotificationIcon(notification.type)}
+                  </div>
+                  <div className="flex flex-col gap-1 overflow-hidden">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className={cn(
+                        "text-sm font-semibold truncate",
+                        !notification.read ? "text-foreground" : "text-muted-foreground"
+                      )}>
+                        {notification.title}
+                      </span>
+                      {!notification.read && (
+                        <span className="h-2 w-2 shrink-0 rounded-full bg-primary" />
+                      )}
+                    </div>
+                    <span className="text-xs text-muted-foreground line-clamp-2">
+                      {notification.message}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground/60">
+                      {notification.timestamp ? formatDistanceToNow(new Date(notification.timestamp), { addSuffix: true }) : "just now"}
+                    </span>
+                  </div>
+                </DropdownMenuItem>
+              ))
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <Bell className="mb-2 h-8 w-8 text-muted-foreground/20" />
+                <p className="text-sm text-muted-foreground">No notifications yet</p>
               </div>
-              <span className="text-sm text-muted-foreground">
-                {notification.message}
-              </span>
-            </DropdownMenuItem>
-          ))}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem className="justify-center text-primary">
+            )}
+          </div>
+          <DropdownMenuSeparator className="m-0" />
+          <Button
+            variant="ghost"
+            className="w-full rounded-none h-10 text-xs font-semibold text-primary"
+            onClick={() => navigate(`/${user?.role}/notifications`)}
+          >
             View all notifications
-          </DropdownMenuItem>
+          </Button>
         </DropdownMenuContent>
-      </DropdownMenu> */}
+      </DropdownMenu>
 
       {/* User Menu */}
       <DropdownMenu>
