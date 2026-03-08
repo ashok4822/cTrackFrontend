@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 //Components
 import { AuthProtectedRoute } from "@/components/auth/AuthProtectedRoute";
 import { PageLoader } from "@/components/common/PageLoader";
+import AdminReportsAnalytics from "@/pages/admin/AdminReportsAnalytics";
 
 // Lazy Pages
 const LandingPage = lazy(() => import("@/pages/LandingPage"));
@@ -13,41 +14,91 @@ const OperatorLogin = lazy(() => import("@/pages/operator/OperatorLogin"));
 const CustomerLogin = lazy(() => import("@/pages/customer/CustomerLogin"));
 const CustomerSignup = lazy(() => import("@/pages/customer/CustomerSignup"));
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
-const OperatorDashboard = lazy(() => import("@/pages/operator/OperatorDashboard"));
-const CustomerDashboard = lazy(() => import("@/pages/customer/CustomerDashboard"));
+const OperatorDashboard = lazy(
+  () => import("@/pages/operator/OperatorDashboard"),
+);
+const CustomerDashboard = lazy(
+  () => import("@/pages/customer/CustomerDashboard"),
+);
 const ForgotPassword = lazy(() => import("@/pages/common/ForgotPassword"));
 const ResetPassword = lazy(() => import("@/pages/common/ResetPassword"));
 const AdminProfile = lazy(() => import("@/pages/admin/AdminProfile"));
 const CustomerProfile = lazy(() => import("@/pages/customer/CustomerProfile"));
 const OperatorProfile = lazy(() => import("@/pages/operator/OperatorProfile"));
-const OperatorYardOperations = lazy(() => import("@/pages/operator/OperatorYardOperations"));
-const AdminYardConfiguration = lazy(() => import("@/pages/admin/AdminYardConfiguration"));
-const AdminUserManagement = lazy(() => import("@/pages/admin/AdminUserManagement"));
-const AdminShippinglineManagement = lazy(() => import("@/pages/admin/AdminShippinglineManagement"));
-const AdminContainerManagement = lazy(() => import("@/pages/admin/AdminContainerManagement"));
-const AdminContainerDetails = lazy(() => import("@/pages/admin/AdminContainerDetails"));
-const AdminGateOperations = lazy(() => import("@/pages/admin/AdminGateOperations"));
-const AdminVehiclesEquipment = lazy(() => import("@/pages/admin/AdminVehiclesEquipment"));
+const OperatorYardOperations = lazy(
+  () => import("@/pages/operator/OperatorYardOperations"),
+);
+const AdminYardConfiguration = lazy(
+  () => import("@/pages/admin/AdminYardConfiguration"),
+);
+const AdminUserManagement = lazy(
+  () => import("@/pages/admin/AdminUserManagement"),
+);
+const AdminShippinglineManagement = lazy(
+  () => import("@/pages/admin/AdminShippinglineManagement"),
+);
+const AdminContainerManagement = lazy(
+  () => import("@/pages/admin/AdminContainerManagement"),
+);
+const AdminContainerDetails = lazy(
+  () => import("@/pages/admin/AdminContainerDetails"),
+);
+const AdminGateOperations = lazy(
+  () => import("@/pages/admin/AdminGateOperations"),
+);
+const AdminVehiclesEquipment = lazy(
+  () => import("@/pages/admin/AdminVehiclesEquipment"),
+);
 const AdminAuditLogs = lazy(() => import("@/pages/admin/AdminAuditLogs"));
-const OperatorGateOperations = lazy(() => import("@/pages/operator/OperatorGateOperations"));
+const OperatorGateOperations = lazy(
+  () => import("@/pages/operator/OperatorGateOperations"),
+);
 const Unauthorized = lazy(() => import("@/pages/common/Unauthorized"));
-const OperatorContainerLookup = lazy(() => import("@/pages/operator/OperatorContainerLookup"));
-const OperatorEquipmentVehicles = lazy(() => import("@/pages/operator/OperatorVehiclesEquipment"));
-const CustomerRequestContainer = lazy(() => import("@/pages/customer/CustomerRequestContainer"));
-const CustomerRequestsListing = lazy(() => import("@/pages/customer/CustomerRequestsListing"));
-const OperatorCargoRequests = lazy(() => import("@/pages/operator/OperatorCargoRequests"));
-const OperatorStuffingDestuffing = lazy(() => import("@/pages/operator/OperatorStuffingDestuffing"));
-const OperatorTransitTracking = lazy(() => import("@/pages/operator/OperatorTransitTracking"));
-const CustomerTransitTracking = lazy(() => import("@/pages/customer/CustomerTransitTracking"));
-const CustomerMyContainers = lazy(() => import("@/pages/customer/CustomerMyContainers"));
-const CustomerStuffingDestuffing = lazy(() => import("@/pages/customer/CustomerStuffingDestuffing"));
-const AdminStuffingDestuffing = lazy(() => import("@/pages/admin/AdminStuffingDestuffing"));
-const AdminTransitTracking = lazy(() => import("@/pages/admin/AdminTransitTracking"));
-const AdminActivitiesCharges = lazy(() => import("@/pages/admin/AdminActivitiesCharges"));
+const OperatorContainerLookup = lazy(
+  () => import("@/pages/operator/OperatorContainerLookup"),
+);
+const OperatorEquipmentVehicles = lazy(
+  () => import("@/pages/operator/OperatorVehiclesEquipment"),
+);
+const CustomerRequestContainer = lazy(
+  () => import("@/pages/customer/CustomerRequestContainer"),
+);
+const CustomerRequestsListing = lazy(
+  () => import("@/pages/customer/CustomerRequestsListing"),
+);
+const OperatorCargoRequests = lazy(
+  () => import("@/pages/operator/OperatorCargoRequests"),
+);
+const OperatorStuffingDestuffing = lazy(
+  () => import("@/pages/operator/OperatorStuffingDestuffing"),
+);
+const OperatorTransitTracking = lazy(
+  () => import("@/pages/operator/OperatorTransitTracking"),
+);
+const CustomerTransitTracking = lazy(
+  () => import("@/pages/customer/CustomerTransitTracking"),
+);
+const CustomerMyContainers = lazy(
+  () => import("@/pages/customer/CustomerMyContainers"),
+);
+const CustomerStuffingDestuffing = lazy(
+  () => import("@/pages/customer/CustomerStuffingDestuffing"),
+);
+const AdminStuffingDestuffing = lazy(
+  () => import("@/pages/admin/AdminStuffingDestuffing"),
+);
+const AdminTransitTracking = lazy(
+  () => import("@/pages/admin/AdminTransitTracking"),
+);
+const AdminActivitiesCharges = lazy(
+  () => import("@/pages/admin/AdminActivitiesCharges"),
+);
 const OperatorBilling = lazy(() => import("@/pages/operator/OperatorBilling"));
 const CustomerBills = lazy(() => import("@/pages/customer/CustomerBills"));
 const CustomerPayment = lazy(() => import("@/pages/customer/CustomerPayment"));
-const CustomerPaymentConfirmation = lazy(() => import("@/pages/customer/CustomerPaymentConfirmation"));
+const CustomerPaymentConfirmation = lazy(
+  () => import("@/pages/customer/CustomerPaymentConfirmation"),
+);
 const OperatorPDAView = lazy(() => import("@/pages/operator/OperatorPDAView"));
 const CustomerPDA = lazy(() => import("@/pages/customer/CustomerPDA"));
 
@@ -179,6 +230,14 @@ const AppRoutes = () => {
               element={
                 <AuthProtectedRoute requiredRole="admin">
                   <AdminActivitiesCharges />
+                </AuthProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/reports"
+              element={
+                <AuthProtectedRoute requiredRole="admin">
+                  <AdminReportsAnalytics />
                 </AuthProtectedRoute>
               }
             />
