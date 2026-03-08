@@ -10,6 +10,7 @@ import auditLogReducer from "./slices/auditLogSlice";
 import gateOperationReducer from "./slices/gateOperationSlice";
 import vehicleReducer from "./slices/vehicleSlice";
 import equipmentReducer from "./slices/equipmentSlice";
+import notificationReducer from "./slices/notificationSlice";
 
 export const store = configureStore({
   reducer: {
@@ -24,6 +25,7 @@ export const store = configureStore({
     gateOperations: gateOperationReducer,
     vehicle: vehicleReducer,
     equipment: equipmentReducer,
+    notifications: notificationReducer,
   },
 });
 

@@ -101,6 +101,9 @@ const CustomerPaymentConfirmation = lazy(
 );
 const OperatorPDAView = lazy(() => import("@/pages/operator/OperatorPDAView"));
 const CustomerPDA = lazy(() => import("@/pages/customer/CustomerPDA"));
+const NotificationsPage = lazy(
+  () => import("@/pages/common/NotificationsPage"),
+);
 
 const AppRoutes = () => {
   return (
@@ -241,6 +244,14 @@ const AppRoutes = () => {
                 </AuthProtectedRoute>
               }
             />
+            <Route
+              path="/admin/notifications"
+              element={
+                <AuthProtectedRoute requiredRole="admin">
+                  <NotificationsPage />
+                </AuthProtectedRoute>
+              }
+            />
 
             {/* Operator Routes */}
             <Route
@@ -334,6 +345,14 @@ const AppRoutes = () => {
                 </AuthProtectedRoute>
               }
             />
+            <Route
+              path="/operator/notifications"
+              element={
+                <AuthProtectedRoute requiredRole="operator">
+                  <NotificationsPage />
+                </AuthProtectedRoute>
+              }
+            />
 
             {/* Customer Routes */}
             <Route
@@ -424,6 +443,14 @@ const AppRoutes = () => {
               element={
                 <AuthProtectedRoute requiredRole="customer">
                   <CustomerPaymentConfirmation />
+                </AuthProtectedRoute>
+              }
+            />
+            <Route
+              path="/customer/notifications"
+              element={
+                <AuthProtectedRoute requiredRole="customer">
+                  <NotificationsPage />
                 </AuthProtectedRoute>
               }
             />

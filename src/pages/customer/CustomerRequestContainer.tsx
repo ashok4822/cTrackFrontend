@@ -285,6 +285,33 @@ export default function CustomerRequestContainer() {
                   </h3>
                   <div className="space-y-4">
                     <div className="space-y-2">
+                      <Label>Cargo Category</Label>
+                      <Select
+                        value={stuffingForm.cargoCategoryId}
+                        onValueChange={(value) =>
+                          setStuffingForm({
+                            ...stuffingForm,
+                            cargoCategoryId: value,
+                          })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="General / Default" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">General / Default</SelectItem>
+                          {cargoCategories.map((cat) => (
+                            <SelectItem key={cat.id} value={cat.id || ""}>
+                              {cat.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-[10px] text-muted-foreground">
+                        Select a category if your cargo requires special handling or rates (e.g., Hazardous, Reefer).
+                      </p>
+                    </div>
+                    <div className="space-y-2">
                       <Label>Cargo Description *</Label>
                       <Textarea
                         placeholder="Describe the cargo to be loaded..."
@@ -328,33 +355,6 @@ export default function CustomerRequestContainer() {
                           required
                         />
                       </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Cargo Category</Label>
-                      <Select
-                        value={stuffingForm.cargoCategoryId}
-                        onValueChange={(value) =>
-                          setStuffingForm({
-                            ...stuffingForm,
-                            cargoCategoryId: value,
-                          })
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="General / Default" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">General / Default</SelectItem>
-                          {cargoCategories.map((cat) => (
-                            <SelectItem key={cat.id} value={cat.id || ""}>
-                              {cat.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <p className="text-[10px] text-muted-foreground">
-                        Select a category if your cargo requires special handling or rates (e.g., Hazardous, Reefer).
-                      </p>
                     </div>
                   </div>
                 </div>

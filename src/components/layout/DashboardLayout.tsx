@@ -1,9 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import type { ReactNode } from "react";
 import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
 import { Breadcrumb } from "../common/Breadcrumb";
-import type { NavItem } from "@/types";
+import type { NavItem, Notification } from "@/types";
+import { useSocket } from "@/hooks/useSocket";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "@/store/store";
+import { fetchNotifications, addNotification } from "@/store/slices/notificationSlice";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -20,6 +24,31 @@ function DashboardLayout({
 }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const dispatch = useDispatch<AppDispatch>();
+  const { user } = useSelector((state: RootState) => state.auth);
+
+  // Fetch initial notifications
+  useEffect(() => {
+    if (user) {
+      dispatch(fetchNotifications());
+    }
+  }, [dispatch, user]);
+
+  // Handle real-time notifications
+  const handleSocketEvent = useCallback((event: string, data: any) => {
+    if (event === "notification") {
+      dispatch(addNotification(data as Notification));
+    }
+  }, [dispatch]);
+
+  const { emit } = useSocket(handleSocketEvent);
+
+  // Join user-specific room for notifications
+  useEffect(() => {
+    if (user && user.id) {
+      emit("join", user.id);
+    }
+  }, [user, emit]);
 
   return (
     <div className="min-h-screen bg-background">
