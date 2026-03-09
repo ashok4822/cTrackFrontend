@@ -6,12 +6,12 @@ import { customerNavItems } from "@/config/navigation";
 import { KPICard } from "@/components/common/KPICard";
 import { CustomerActiveRequests } from "@/components/customer/CustomerActiveRequests";
 import { CustomerContainerSummary } from "@/components/customer/CustomerContainerSummary";
+import { CustomerAIChatbot } from "@/components/customer/CustomerAIChatbot";
 import {
   Factory,
   Plus,
   CreditCard,
   History,
-  HelpCircle,
   Loader2,
   Container,
   ClipboardList,
@@ -158,21 +158,7 @@ export default function CustomerDashboard() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base font-bold flex items-center gap-2">
-                <HelpCircle className="h-4 w-4 text-primary" />
-                Support Resources
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="rounded-lg bg-muted/30 p-3 text-xs">
-                <p className="font-bold mb-1">Need Terminal Assistance?</p>
-                <p className="text-muted-foreground mb-2">Our operations team is available 24/7 for critical queries.</p>
-                <Button size="sm" variant="link" className="p-0 h-auto text-primary font-bold">Contact Ground Ops →</Button>
-              </div>
-            </CardContent>
-          </Card>
+          <CustomerAIChatbot kpiData={kpiData} />
         </div>
       </div>
     </DashboardLayout>
