@@ -30,7 +30,7 @@ export const CustomerAIChatbot: React.FC<CustomerAIChatbotProps> = ({ kpiData })
         {
             id: '1',
             role: 'assistant',
-            content: "Hello! I'm your cTrack Assistant powered by Gemini AI. I can help you with yard operations, bill analysis, and general support. How can I assist you today?"
+            content: "Hello! I'm your cTrack Assistant powered by Groq AI. I can help you with yard operations, bill analysis, and general support. How can I assist you today?"
         }
     ]);
     const [input, setInput] = useState('');
@@ -86,25 +86,55 @@ export const CustomerAIChatbot: React.FC<CustomerAIChatbotProps> = ({ kpiData })
             if (!reader) throw new Error('No reader');
 
             let fullContent = '';
-
+            let buffer = '';
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
 
-                const chunk = decoder.decode(value, { stream: true });
-                // Parse Vercel AI SDK data stream format: lines like "0:\"text\""
-                const lines = chunk.split('\n');
+                buffer += decoder.decode(value, { stream: true });
+                console.log('--- Incoming Stream Buffer ---', buffer);
+                const lines = buffer.split(/\r?\n/);
+
+                // Keep the last (potentially partial) line in the buffer
+                buffer = lines.pop() || '';
+
                 for (const line of lines) {
-                    if (line.startsWith('0:')) {
+                    const trimmedLine = line.trim();
+                    if (trimmedLine.startsWith('0:')) {
                         try {
-                            const parsed = JSON.parse(line.slice(2));
-                            fullContent += parsed;
+                            const content = JSON.parse(trimmedLine.slice(2).trim());
+                            console.log('--- Parsed Chunk Content ---', content);
+                            fullContent += content;
                             setMessages(prev =>
                                 prev.map(m => m.id === botId ? { ...m, content: fullContent } : m)
                             );
-                        } catch { /* skip malformed chunks */ }
+                        } catch (e) {
+                            console.error('Failed to parse AI data line:', trimmedLine, e);
+                        }
+                    } else if (trimmedLine.startsWith('3:')) {
+                        // Protocol error signal
+                        try {
+                            const errorData = JSON.parse(trimmedLine.slice(2).trim());
+                            console.error('AI Stream Error Chunk:', errorData);
+                            setMessages(prev =>
+                                prev.map(m => m.id === botId ? { ...m, content: `AI Error: ${errorData.message || 'The service is currently unavailable.'}` } : m)
+                            );
+                        } catch { /* skip malformed error */ }
+                    } else if (trimmedLine) {
+                        console.log('--- Received system/info line ---', trimmedLine);
                     }
                 }
+            }
+
+            // Handle any remaining content in buffer if it contains a valid signal
+            if (buffer.trim().startsWith('0:')) {
+                try {
+                    const parsed = JSON.parse(buffer.slice(2).trim());
+                    fullContent += parsed;
+                    setMessages(prev =>
+                        prev.map(m => m.id === botId ? { ...m, content: fullContent } : m)
+                    );
+                } catch (e) { /* final fragment ignored if invalid */ }
             }
         } catch (error) {
             setMessages(prev =>
@@ -153,7 +183,7 @@ export const CustomerAIChatbot: React.FC<CustomerAIChatbotProps> = ({ kpiData })
                 </CardHeader>
                 <CardContent className="space-y-3">
                     <p className="text-xs text-muted-foreground leading-relaxed">
-                        Powered by Gemini AI — Get instant insights on your yard status, billing, and operations.
+                        Powered by Groq AI — Get instant insights on your yard status, billing, and operations.
                     </p>
                     <div className="grid gap-2">
                         <QuickInquiry icon={BarChart3} label="Analyze Yard Status" query="Give me a complete summary of my yard status" />
@@ -174,7 +204,7 @@ export const CustomerAIChatbot: React.FC<CustomerAIChatbotProps> = ({ kpiData })
                     <div className="flex items-center gap-2">
                         <Bot className="h-5 w-5" />
                         cTrack AI Assistant
-                        <span className="text-[10px] font-normal opacity-70 bg-white/20 px-1.5 py-0.5 rounded-full">Gemini</span>
+                        <span className="text-[10px] font-normal opacity-70 bg-white/20 px-1.5 py-0.5 rounded-full">Groq</span>
                     </div>
                     <Button
                         variant="ghost"

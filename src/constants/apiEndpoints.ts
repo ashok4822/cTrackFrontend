@@ -102,7 +102,8 @@ export const API_ENDPOINTS = {
     BILL_MARK_PAID: (id: string) => `/billing/bills/${id}/paid`,
     BILL_PAY: (id: string) => `/billing/bills/${id}/pay`,
     BILL_RAZORPAY_ORDER: (id: string) => `/billing/bills/${id}/razorpay/order`,
-    BILL_RAZORPAY_VERIFY: (id: string) => `/billing/bills/${id}/razorpay/verify`,
+    BILL_RAZORPAY_VERIFY: (id: string) =>
+      `/billing/bills/${id}/razorpay/verify`,
   },
 
   // ─── PDA (Pre-Deposit Account) ────────────────────────────────────────────
