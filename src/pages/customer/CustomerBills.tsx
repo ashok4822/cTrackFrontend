@@ -112,7 +112,7 @@ export default function CustomerBills() {
               <DialogTitle>Bill Details</DialogTitle>
               <DialogDescription>{item.billNumber}</DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
+            <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Bill Number</p>
@@ -150,6 +150,14 @@ export default function CustomerBills() {
                     </p>
                   </div>
                 )}
+                {item.status === "paid" && item.paymentMethod && (
+                  <div>
+                    <Label className="text-muted-foreground">Payment Method</Label>
+                    <p className="font-medium">
+                      {item.paymentMethod === "pda" ? "PDA (Pre-Deposit Account)" : "Online Payment"}
+                    </p>
+                  </div>
+                )}
               </div>
               <Separator />
               <div>
@@ -171,12 +179,12 @@ export default function CustomerBills() {
                   ))}
                 </div>
               </div>
-              {item.remarks && (
+              {item.remarks && item.remarks.replace(/\s*\|?\s*REQ-[a-f0-9]+/gi, "").trim() && (
                 <>
                   <Separator />
                   <div>
                     <Label className="text-muted-foreground">Remarks</Label>
-                    <p className="text-sm">{item.remarks}</p>
+                    <p className="text-sm">{item.remarks.replace(/\s*\|?\s*REQ-[a-f0-9]+/gi, "").trim()}</p>
                   </div>
                 </>
               )}

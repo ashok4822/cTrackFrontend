@@ -67,6 +67,7 @@ export interface BillRecord {
     dueDate: string;
     remarks?: string;
     paidAt?: string;
+    paymentMethod?: "pda" | "online";
     createdAt: string;
 }
 
