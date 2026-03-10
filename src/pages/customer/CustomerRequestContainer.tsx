@@ -84,10 +84,10 @@ export default function CustomerRequestContainer() {
       try {
         const [containers, categories] = await Promise.all([
           containerRequestService.getCustomerContainers(),
-          billingService.fetchCargoCategories()
+          billingService.fetchCargoCategories(),
         ]);
         setMyContainers(containers);
-        setCargoCategories(categories.filter(c => c.active));
+        setCargoCategories(categories.filter((c) => c.active));
       } catch (error) {
         console.error("Failed to fetch data:", error);
       } finally {
@@ -104,8 +104,7 @@ export default function CustomerRequestContainer() {
   // Only loaded (non-empty), gate-in or in-yard containers are eligible for destuffing
   const destuffingEligibleContainers = myContainers.filter(
     (c) =>
-      c.empty === false &&
-      (c.status === "gate-in" || c.status === "in-yard"),
+      c.empty === false && (c.status === "gate-in" || c.status === "in-yard"),
   );
 
   const handleStuffingSubmit = async (e: React.FormEvent) => {
@@ -121,7 +120,10 @@ export default function CustomerRequestContainer() {
         preferredDate: stuffingForm.preferredDate,
         specialInstructions: stuffingForm.specialInstructions,
         isHazardous: stuffingForm.isHazardous,
-        cargoCategoryId: stuffingForm.cargoCategoryId === "none" ? undefined : stuffingForm.cargoCategoryId,
+        cargoCategoryId:
+          stuffingForm.cargoCategoryId === "none"
+            ? undefined
+            : stuffingForm.cargoCategoryId,
       });
       setRequestType("stuffing");
       setShowSuccessDialog(true);
@@ -299,7 +301,9 @@ export default function CustomerRequestContainer() {
                           <SelectValue placeholder="General / Default" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="none">General / Default</SelectItem>
+                          <SelectItem value="none">
+                            General / Default
+                          </SelectItem>
                           {cargoCategories.map((cat) => (
                             <SelectItem key={cat.id} value={cat.id || ""}>
                               {cat.name}
@@ -308,7 +312,8 @@ export default function CustomerRequestContainer() {
                         </SelectContent>
                       </Select>
                       <p className="text-[10px] text-muted-foreground">
-                        Select a category if your cargo requires special handling or rates (e.g., Hazardous, Reefer).
+                        Select a category if your cargo requires special
+                        handling or rates (e.g., Hazardous, Reefer).
                       </p>
                     </div>
                     <div className="space-y-2">
@@ -366,7 +371,10 @@ export default function CustomerRequestContainer() {
                       id="hazardous-checkbox"
                       checked={stuffingForm.isHazardous}
                       onCheckedChange={(checked) =>
-                        setStuffingForm({ ...stuffingForm, isHazardous: checked as boolean })
+                        setStuffingForm({
+                          ...stuffingForm,
+                          isHazardous: checked as boolean,
+                        })
                       }
                     />
                     <Label
@@ -438,7 +446,8 @@ export default function CustomerRequestContainer() {
                       />
                     </SelectTrigger>
                     <SelectContent>
-                      {destuffingEligibleContainers.length === 0 && !isFetchingContainers ? (
+                      {destuffingEligibleContainers.length === 0 &&
+                      !isFetchingContainers ? (
                         <div className="p-4 text-center text-sm text-muted-foreground">
                           No loaded containers found in your inventory.
                         </div>
@@ -634,6 +643,6 @@ export default function CustomerRequestContainer() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </DashboardLayout >
+    </DashboardLayout>
   );
 }

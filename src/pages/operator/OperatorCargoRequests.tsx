@@ -129,6 +129,7 @@ export default function OperatorCargoRequests() {
   }, [fetchRequests]);
 
   // Fetch containers that match the request's size/type and are available in-yard
+  // Also filter out containers already allocated to other active requests
   const fetchAvailableContainers = useCallback(
     async (request: CargoRequest) => {
       try {
@@ -138,7 +139,21 @@ export default function OperatorCargoRequests() {
           ...(request.containerSize ? { size: request.containerSize } : {}),
           ...(request.containerType ? { type: request.containerType } : {}),
         });
-        setAvailableContainers(containers);
+
+        // Filter out containers already allocated to other active requests
+        const allocatedContainerIds = requests
+          .filter(r =>
+            r.id !== request.id && // exclude current request
+            r.containerId &&
+            !["completed", "rejected", "cancelled"].includes(r.status)
+          )
+          .map(r => r.containerId);
+
+        const filteredContainers = containers.filter(
+          c => !allocatedContainerIds.includes(c._id || c.id)
+        );
+
+        setAvailableContainers(filteredContainers);
       } catch {
         toast({
           title: "Error",
@@ -150,7 +165,7 @@ export default function OperatorCargoRequests() {
         setLoadingContainers(false);
       }
     },
-    [toast],
+    [toast, requests],
   );
 
   const pendingRequests = requests.filter((r) => r.status === "pending");

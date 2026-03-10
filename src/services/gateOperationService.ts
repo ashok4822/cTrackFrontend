@@ -24,6 +24,7 @@ export interface CreateGateOperationData {
     empty?: boolean;
     movementType?: "import" | "export" | "domestic";
     customer?: string;
+    cargoCategory?: string;
 }
 
 export interface GateOperationFilters {
