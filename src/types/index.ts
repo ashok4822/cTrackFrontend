@@ -53,6 +53,7 @@ export interface Container {
   damageDetails?: string;
   blacklisted?: boolean;
   equipment?: string;
+  cargoCategory?: string;
 }
 
 export interface YardLocation {
@@ -303,6 +304,8 @@ export interface ContainerRequest {
   createdAt: string;
   remarks?: string;
   checkpoints?: Checkpoint[];
+  cargoCategoryName?: string;
+  cargoCategoryId?: string;
 }
 
 // Navigation Types

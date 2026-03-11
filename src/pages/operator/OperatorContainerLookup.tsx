@@ -86,6 +86,16 @@ export default function OperatorContainerLookup() {
       ),
     },
     {
+      key: "hazardousClassification",
+      header: "Hazardous",
+      sortable: true,
+      render: (item) => (
+        <Badge variant={item.hazardousClassification ? "destructive" : "secondary"}>
+          {item.hazardousClassification ? "Yes" : "No"}
+        </Badge>
+      ),
+    },
+    {
       key: "status",
       header: "Status",
       sortable: true,
@@ -213,6 +223,12 @@ export default function OperatorContainerLookup() {
                         <Label className="text-muted-foreground">Damaged</Label>
                         <p className="font-medium">
                           {selectedContainer.damaged ? "Yes" : "No"}
+                        </p>
+                      </div>
+                      <div>
+                        <Label className="text-muted-foreground">Hazardous</Label>
+                        <p className="font-medium">
+                          {selectedContainer.hazardousClassification ? "Yes" : "No"}
                         </p>
                       </div>
                     </div>

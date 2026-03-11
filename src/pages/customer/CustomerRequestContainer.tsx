@@ -581,6 +581,14 @@ export default function CustomerRequestContainer() {
                           </p>
                         </div>
                       )}
+                      <div>
+                        <p className="text-sm text-muted-foreground">
+                          Cargo Category
+                        </p>
+                        <p className="capitalize font-medium text-primary">
+                          {selectedContainerDetails.cargoCategory || "General / Default"}
+                        </p>
+                      </div>
                     </CardContent>
                   </Card>
                 )}

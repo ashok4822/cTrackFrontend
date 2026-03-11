@@ -413,12 +413,12 @@ export default function OperatorBilling() {
                   ))}
                 </div>
               </div>
-              {item.remarks && (
+              {item.remarks && item.remarks.replace(/\s*\|?\s*REQ-[a-f0-9]+/gi, "").trim() && (
                 <>
                   <Separator />
                   <div>
                     <Label className="text-muted-foreground">Remarks</Label>
-                    <p className="text-sm">{item.remarks}</p>
+                    <p className="text-sm">{item.remarks.replace(/\s*\|?\s*REQ-[a-f0-9]+/gi, "").trim()}</p>
                   </div>
                 </>
               )}

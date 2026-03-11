@@ -339,7 +339,7 @@ export default function OperatorCargoRequests() {
       header: "Category",
       render: (item) => (
         <Badge variant="outline" className="capitalize">
-          {item.cargoCategoryName || "General"}
+          {item.cargoCategoryName || "General / Default"}
         </Badge>
       ),
     },
@@ -383,7 +383,19 @@ export default function OperatorCargoRequests() {
                 onClick={() => {
                   setSelectedRequest(item);
                   setSelectedContainer("");
-                  setSelectedCargoCategoryId(item.cargoCategoryId || "none");
+                  
+                  // Pre-select category based on ID or Name fallback
+                  let categoryId = item.cargoCategoryId;
+                  if (!categoryId && item.cargoCategoryName) {
+                    const matchedCategory = cargoCategories.find(
+                      (cat) => cat.name === item.cargoCategoryName
+                    );
+                    if (matchedCategory) {
+                      categoryId = matchedCategory.id;
+                    }
+                  }
+                  setSelectedCargoCategoryId(categoryId || "none");
+                  
                   fetchAvailableContainers(item);
                   setAllocationDialogOpen(true);
                 }}
