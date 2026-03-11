@@ -1,6 +1,9 @@
 import { useEffect, useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { fetchKPIData } from "@/store/slices/dashboardSlice";
+import {
+  fetchKPIData,
+  updateKPIOptimistically,
+} from "@/store/slices/dashboardSlice";
 import { fetchBlocks } from "@/store/slices/yardSlice";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { KPICard } from "@/components/common/KPICard";
@@ -57,14 +60,45 @@ export default function AdminDashboard() {
 
   const handleSocketEvent = useCallback(
     (event: string, data: any) => {
+      console.log(`[Socket] Event Received in Dashboard: ${event}`, data);
+
       switch (event) {
         case "kpi_update":
-        case "new_activity":
-        case "new_alert":
-          console.log("Real-time Update:", event, data);
-          dispatch(fetchKPIData());
-          dispatch(fetchBlocks());
+          console.log("[Socket] Processing kpi_update", data.type);
+          // Apply optimistic update for immediate feedback
+          if (data.type === "GATE_OPERATION") {
+            console.log("[Socket] Triggering optimistic update for GATE_OPERATION");
+            dispatch(
+              updateKPIOptimistically({
+                eventType: "GATE_OPERATION",
+                data: data.data,
+              }),
+            );
+          } else if (data.type === "YARD_UPDATE") {
+            // Handle yard changes optimistically if data available
+            if (data.action === "UPDATE" && data.data.name) {
+              // Potentially refresh blocks or update state
+            }
+          }
+
+          // Trigger full refresh after a small delay to ensure backend consistency
+          console.log("[Socket] Scheduling full data refresh in 1s");
+          setTimeout(() => {
+            dispatch(fetchKPIData());
+            dispatch(fetchBlocks());
+          }, 1000);
           break;
+
+        case "new_activity":
+          console.log("[Socket] Processing new_activity");
+          dispatch(fetchKPIData());
+          break;
+          
+        case "new_alert":
+          console.log("[Socket] Processing new_alert");
+          dispatch(fetchKPIData());
+          break;
+
         default:
           break;
       }
@@ -204,7 +238,7 @@ export default function AdminDashboard() {
                     paddingAngle={2}
                     dataKey="value"
                     label={({ name, percent }) =>
-                      `${name} (${(percent * 100).toFixed(0)}%)`
+                      `${name} (${((percent || 0) * 100).toFixed(0)}%)`
                     }
                     labelLine={false}
                   >

@@ -74,6 +74,13 @@ const yardSlice = createSlice({
         clearYardError: (state) => {
             state.error = null;
         },
+        updateBlockOccupancyOptimistically: (state, action: PayloadAction<{ blockName: string; change: number }>) => {
+            const { blockName, change } = action.payload;
+            const block = state.blocks.find(b => b.name === blockName);
+            if (block) {
+                block.occupied = Math.max(0, Math.min(block.capacity, block.occupied + change));
+            }
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -118,5 +125,5 @@ const yardSlice = createSlice({
     },
 });
 
-export const { clearYardError } = yardSlice.actions;
+export const { clearYardError, updateBlockOccupancyOptimistically } = yardSlice.actions;
 export default yardSlice.reducer;

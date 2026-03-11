@@ -40,6 +40,24 @@ const dashboardSlice = createSlice({
     setKPIData: (state, action: PayloadAction<KPIData>) => {
       state.kpiData = action.payload;
     },
+    updateKPIOptimistically: (state, action: PayloadAction<{ eventType: string; data: any }>) => {
+      if (!state.kpiData) return;
+      const { eventType, data } = action.payload;
+
+      if (eventType === 'GATE_OPERATION') {
+        const opType = data.type; // 'gate-in' or 'gate-out'
+        if (opType === 'gate-in') {
+          state.kpiData.totalContainersInYard++;
+          state.kpiData.gateInToday++;
+        } else if (opType === 'gate-out') {
+          state.kpiData.totalContainersInYard = Math.max(0, state.kpiData.totalContainersInYard - 1);
+          state.kpiData.gateOutToday++;
+          state.kpiData.containersInTransit++;
+        }
+      } else if (eventType === 'CONTAINER_CREATED') {
+        state.kpiData.totalContainersInYard++;
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -61,5 +79,5 @@ const dashboardSlice = createSlice({
   },
 });
 
-export const { setKPIData } = dashboardSlice.actions;
+export const { setKPIData, updateKPIOptimistically } = dashboardSlice.actions;
 export default dashboardSlice.reducer;
