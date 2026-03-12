@@ -67,7 +67,9 @@ export default function AdminDashboard() {
           console.log("[Socket] Processing kpi_update", data.type);
           // Apply optimistic update for immediate feedback
           if (data.type === "GATE_OPERATION") {
-            console.log("[Socket] Triggering optimistic update for GATE_OPERATION");
+            console.log(
+              "[Socket] Triggering optimistic update for GATE_OPERATION",
+            );
             dispatch(
               updateKPIOptimistically({
                 eventType: "GATE_OPERATION",
@@ -93,7 +95,7 @@ export default function AdminDashboard() {
           console.log("[Socket] Processing new_activity");
           dispatch(fetchKPIData());
           break;
-          
+
         case "new_alert":
           console.log("[Socket] Processing new_alert");
           dispatch(fetchKPIData());

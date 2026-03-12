@@ -58,7 +58,8 @@ api.interceptors.response.use(
       error.response?.status === 401 &&
       !originalRequest._retry &&
       !originalRequest.url?.includes(API_ENDPOINTS.AUTH.LOGIN) &&
-      !originalRequest.url?.includes(API_ENDPOINTS.AUTH.GOOGLE)
+      !originalRequest.url?.includes(API_ENDPOINTS.AUTH.GOOGLE) &&
+      !originalRequest.url?.includes(API_ENDPOINTS.AUTH.REFRESH_TOKEN)
     ) {
       if (isRefreshing) {
         return new Promise<string | null>((resolve, reject) => {
@@ -77,7 +78,10 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const response = await api.post(API_ENDPOINTS.AUTH.REFRESH_TOKEN);
+        // Don't send the expired access token with the refresh request
+        const response = await api.post(API_ENDPOINTS.AUTH.REFRESH_TOKEN, null, {
+          headers: { Authorization: "" },
+        });
         const { accessToken } = response.data;
 
         localStorage.setItem("accessToken", accessToken);

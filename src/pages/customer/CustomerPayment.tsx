@@ -33,12 +33,23 @@ import { billingService, type BillRecord } from "@/services/billingService";
 import { pdaService } from "@/services/pdaService";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useCallback } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function CustomerPayment() {
   const { billId } = useParams();
   const navigate = useNavigate();
   const [paymentMethod, setPaymentMethod] = useState<string>("pda");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showConfirmPDA, setShowConfirmPDA] = useState(false);
   const [bill, setBill] = useState<BillRecord | null>(null);
   const [pdaBalance, setPdaBalance] = useState<number>(0);
   const [loading, setLoading] = useState(true);
@@ -134,8 +145,9 @@ export default function CustomerPayment() {
 
     try {
       if (paymentMethod === "pda") {
-        if (!billId) throw new Error("Bill ID is missing");
-        await billingService.payBill(billId);
+        setShowConfirmPDA(true);
+        setIsProcessing(false);
+        return;
       } else {
         if (!billId || !bill) throw new Error("Bill information is missing");
 
@@ -203,6 +215,9 @@ export default function CustomerPayment() {
                   "Payment verification failed. Please contact support.",
                 variant: "destructive",
               });
+              navigate(
+                `/customer/payment-confirmation/${billId}?status=failure&method=online`
+              );
             } finally {
               setIsProcessing(false);
             }
@@ -226,8 +241,10 @@ export default function CustomerPayment() {
 
         rzp.on("payment.failed", function (response: any) {
           console.error("Payment failed:", response.error);
+          setIsProcessing(false);
           navigate(
-            `/customer/payment-confirmation/${billId}?status=failure&method=${paymentMethod}`,
+            `/customer/payment-confirmation/${billId}?status=failure&method=online`,
+            { replace: true }
           );
         });
 
@@ -243,6 +260,24 @@ export default function CustomerPayment() {
       // Navigate to confirmation page
       navigate(
         `/customer/payment-confirmation/${billId}?status=success&method=${paymentMethod}`,
+      );
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const processPDAPayment = async () => {
+    if (!billId) return;
+    setIsProcessing(true);
+    setShowConfirmPDA(false);
+    try {
+      await billingService.payBill(billId);
+      toast({
+        title: "Payment Successful",
+        description: "Your payment has been processed successfully.",
+      });
+      navigate(
+        `/customer/payment-confirmation/${billId}?status=success&method=pda`
       );
     } catch (error: any) {
       toast({
@@ -451,6 +486,27 @@ export default function CustomerPayment() {
           </CardContent>
         </Card>
       </div>
+
+      <AlertDialog open={showConfirmPDA} onOpenChange={setShowConfirmPDA}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm PDA Payment</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to pay ₹{bill.totalAmount.toLocaleString()} using your Pre-Deposit Account?
+              This amount will be deducted from your current balance of ₹{pdaBalance.toLocaleString()}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-blue-600 hover:bg-blue-700"
+              onClick={processPDAPayment}
+            >
+              Confirm Payment
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }

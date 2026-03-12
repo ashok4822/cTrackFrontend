@@ -25,17 +25,22 @@ import {
   Printer,
   CreditCard,
   RefreshCw,
+  History as HistoryIcon,
 } from "lucide-react";
-import { billingService, type BillRecord } from "@/services/billingService";
+import { billingService, type BillRecord, type BillTransaction } from "@/services/billingService";
 import { generateBillPDF } from "@/utils/pdfGenerator";
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export default function CustomerBills() {
   const [bills, setBills] = useState<BillRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedBill, setSelectedBill] = useState<BillRecord | null>(null);
+  const [historyBill, setHistoryBill] = useState<BillRecord | null>(null);
+  const [transactions, setTransactions] = useState<BillTransaction[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -58,6 +63,22 @@ export default function CustomerBills() {
   useEffect(() => {
     fetchBills();
   }, [fetchBills]);
+
+  const fetchHistory = useCallback(async (billId: string) => {
+    setLoadingHistory(true);
+    try {
+      const data = await billingService.fetchBillTransactions(billId);
+      setTransactions(data);
+    } catch {
+      toast({
+        title: "Error",
+        description: "Failed to load transaction history",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingHistory(false);
+    }
+  }, [toast]);
 
   const pendingBills = bills.filter((b) => b.status === "pending");
   const paidBills = bills.filter((b) => b.status === "paid");
@@ -97,126 +118,201 @@ export default function CustomerBills() {
       key: "actions",
       header: "Actions",
       render: (item) => (
-        <Dialog open={selectedBill?.id === item.id} onOpenChange={(open) => setSelectedBill(open ? item : null)}>
-          <DialogTrigger asChild>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setSelectedBill(item)}
-            >
-              View
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Bill Details</DialogTitle>
-              <DialogDescription>{item.billNumber}</DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Bill Number</p>
-                  <p className="font-bold text-lg">{item.billNumber}</p>
-                </div>
-                <StatusBadge status={item.status} />
-              </div>
-              <Separator />
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-muted-foreground">Container</Label>
-                  <p className="font-medium">{item.containerNumber}</p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Date Issued</Label>
-                  <p className="font-medium">
-                    {new Date(item.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Due Date</Label>
-                  <p className="font-medium">
-                    {new Date(item.dueDate).toLocaleDateString()}
-                  </p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Billed To</Label>
-                  <p className="font-medium">{item.customerName || "You"}</p>
-                </div>
-                {item.status === "paid" && item.paidAt && (
-                  <div>
-                    <Label className="text-muted-foreground">Paid Date</Label>
-                    <p className="font-medium">
-                      {new Date(item.paidAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                )}
-                {item.status === "paid" && item.paymentMethod && (
-                  <div>
-                    <Label className="text-muted-foreground">Payment Method</Label>
-                    <p className="font-medium">
-                      {item.paymentMethod === "pda" ? "PDA (Pre-Deposit Account)" : "Online Payment"}
-                    </p>
-                  </div>
-                )}
-              </div>
-              <Separator />
-              <div>
-                <Label className="text-muted-foreground mb-2 block">
-                  Charges
-                </Label>
-                <div className="space-y-2">
-                  {item.lineItems.map((li, idx) => (
-                    <div
-                      key={idx}
-                      className="flex justify-between items-center text-sm"
-                    >
-                      <span>{li.activityName} </span>
-                      <span className="text-muted-foreground">
-                        {li.quantity} × ₹{li.unitPrice} = ₹
-                        {li.amount.toLocaleString()}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              {item.remarks && item.remarks.replace(/\s*\|?\s*REQ-[a-f0-9]+/gi, "").trim() && (
-                <>
-                  <Separator />
-                  <div>
-                    <Label className="text-muted-foreground">Remarks</Label>
-                    <p className="text-sm">{item.remarks.replace(/\s*\|?\s*REQ-[a-f0-9]+/gi, "").trim()}</p>
-                  </div>
-                </>
-              )}
-              <Separator />
-              <div className="flex justify-between items-center">
-                <span className="font-semibold">Total Due</span>
-                <span className="text-xl font-bold">
-                  ₹{item.totalAmount.toLocaleString()}
-                </span>
-              </div>
-            </div>
-            <DialogFooter className="gap-2 sm:gap-0 mt-4">
+        <div className="flex gap-2">
+          <Dialog open={selectedBill?.id === item.id} onOpenChange={(open) => setSelectedBill(open ? item : null)}>
+            <DialogTrigger asChild>
               <Button
+                size="sm"
                 variant="outline"
-                className="w-full sm:w-auto"
-                onClick={() => generateBillPDF(item)}
+                onClick={() => setSelectedBill(item)}
               >
-                <Printer className="mr-2 h-4 w-4" />
-                Download PDF
+                View
               </Button>
-              {item.status !== "paid" && (
+            </DialogTrigger>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Bill Details</DialogTitle>
+                <DialogDescription>{item.billNumber}</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Bill Number</p>
+                    <p className="font-bold text-lg">{item.billNumber}</p>
+                  </div>
+                  <StatusBadge status={item.status} />
+                </div>
+                <Separator />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-muted-foreground">Container</Label>
+                    <p className="font-medium">{item.containerNumber}</p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground">Date Issued</Label>
+                    <p className="font-medium">
+                      {new Date(item.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground">Due Date</Label>
+                    <p className="font-medium">
+                      {new Date(item.dueDate).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground">Billed To</Label>
+                    <p className="font-medium">{item.customerName || "You"}</p>
+                  </div>
+                  {item.status === "paid" && item.paidAt && (
+                    <div>
+                      <Label className="text-muted-foreground">Paid Date</Label>
+                      <p className="font-medium">
+                        {new Date(item.paidAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  )}
+                  {item.status === "paid" && item.paymentMethod && (
+                    <div>
+                      <Label className="text-muted-foreground">Payment Method</Label>
+                      <p className="font-medium">
+                        {item.paymentMethod === "pda" ? "PDA (Pre-Deposit Account)" : "Online Payment"}
+                      </p>
+                    </div>
+                  )}
+                </div>
+                <Separator />
+                <div>
+                  <Label className="text-muted-foreground mb-2 block">
+                    Charges
+                  </Label>
+                  <div className="space-y-2">
+                    {item.lineItems.map((li, idx) => (
+                      <div
+                        key={idx}
+                        className="flex justify-between items-center text-sm"
+                      >
+                        <span>{li.activityName} </span>
+                        <span className="text-muted-foreground">
+                          {li.quantity} × ₹{li.unitPrice} = ₹
+                          {li.amount.toLocaleString()}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {item.remarks && item.remarks.replace(/\s*\|?\s*REQ-[a-f0-9]+/gi, "").trim() && (
+                  <>
+                    <Separator />
+                    <div>
+                      <Label className="text-muted-foreground">Remarks</Label>
+                      <p className="text-sm">{item.remarks.replace(/\s*\|?\s*REQ-[a-f0-9]+/gi, "").trim()}</p>
+                    </div>
+                  </>
+                )}
+                <Separator />
+                <div className="flex justify-between items-center">
+                  <span className="font-semibold">Total Due</span>
+                  <span className="text-xl font-bold">
+                    ₹{item.totalAmount.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+              <DialogFooter className="gap-2 sm:gap-0 mt-4">
                 <Button
-                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700"
-                  onClick={() => navigate(`/customer/payment/${item.id}`)}
+                  variant="outline"
+                  className="w-full sm:w-auto"
+                  onClick={() => generateBillPDF(item)}
                 >
-                  <CreditCard className="mr-2 h-4 w-4" />
-                  Pay Now
+                  <Printer className="mr-2 h-4 w-4" />
+                  Download PDF
                 </Button>
-              )}
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+                {item.status !== "paid" && (
+                  <Button
+                    className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700"
+                    onClick={() => navigate(`/customer/payment/${item.id}`)}
+                  >
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    Pay Now
+                  </Button>
+                )}
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={historyBill?.id === item.id} onOpenChange={(open) => {
+            setHistoryBill(open ? item : null);
+            if (open) fetchHistory(item.id);
+          }}>
+            <DialogTrigger asChild>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-muted-foreground"
+                onClick={() => {
+                  setHistoryBill(item);
+                  fetchHistory(item.id);
+                }}
+              >
+                <HistoryIcon className="h-4 w-4" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Transaction History</DialogTitle>
+                <DialogDescription>
+                  Payment attempts for Bill {item.billNumber}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="mt-4">
+                {loadingHistory ? (
+                  <div className="flex justify-center py-8">
+                    <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+                  </div>
+                ) : transactions.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No transaction history found
+                  </div>
+                ) : (
+                  <div className="border rounded-md overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Method</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Amount</TableHead>
+                          <TableHead>Details</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {transactions.map((tx) => (
+                          <TableRow key={tx.id}>
+                            <TableCell className="text-xs">
+                              {new Date(tx.timestamp).toLocaleString()}
+                            </TableCell>
+                            <TableCell className="capitalize text-xs">
+                              {tx.method}
+                            </TableCell>
+                            <TableCell>
+                              <StatusBadge status={tx.status} />
+                            </TableCell>
+                            <TableCell className="font-medium text-xs">
+                              ₹{tx.amount.toLocaleString()}
+                            </TableCell>
+                            <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate">
+                              {tx.status === "failed" ? tx.errorDetails : (tx.transactionId || tx.orderId || "-")}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       ),
     },
   ];
