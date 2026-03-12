@@ -223,6 +223,14 @@ export default function CustomerPayment() {
         };
 
         const rzp = new (window as any).Razorpay(options);
+
+        rzp.on("payment.failed", function (response: any) {
+          console.error("Payment failed:", response.error);
+          navigate(
+            `/customer/payment-confirmation/${billId}?status=failure&method=${paymentMethod}`,
+          );
+        });
+
         rzp.open();
         return; // SDK handler will take over
       }
