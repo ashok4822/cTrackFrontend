@@ -156,11 +156,6 @@ export default function AdminAuditLogs() {
                 </div>
             ),
         },
-        {
-            key: "ipAddress",
-            header: "IP Address",
-            render: (item) => <span className="font-mono text-xs">{item.ipAddress}</span>,
-        },
     ];
 
     const totalPages = Math.ceil(total / limit);
