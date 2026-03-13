@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "@/services/api";
+import { billingService, type CargoCategory } from "@/services/billingService";
 import { toast } from "sonner";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -54,6 +55,7 @@ const gateInSchema = z.object({
     cargoDescription: z.string().optional(),
     hazardousClassification: z.boolean().optional(),
     hasDamage: z.boolean(),
+    cargoCategory: z.string().optional(),
 });
 
 type GateInFormData = z.infer<typeof gateInSchema>;
@@ -95,6 +97,7 @@ export function GateInDialog({
             cargoDescription: "",
             hazardousClassification: false,
             hasDamage: false,
+            cargoCategory: "",
         },
     });
 
@@ -126,6 +129,7 @@ export function GateInDialog({
                 cargoDescription: "",
                 hazardousClassification: false,
                 hasDamage: false,
+                cargoCategory: "",
             });
         }
     }, [open]);
@@ -152,6 +156,7 @@ export function GateInDialog({
                 customer: data.customer,
                 cargoDescription: data.cargoDescription,
                 hazardousClassification: data.hazardousClassification,
+                cargoCategory: data.cargoCategory,
             };
             await onSubmit(payload);
         } catch (err: any) {
@@ -169,21 +174,27 @@ export function GateInDialog({
     };
 
     const [customers, setCustomers] = useState<{ id: string; name: string }[]>([]);
+    const [cargoCategories, setCargoCategories] = useState<CargoCategory[]>([]);
 
     useEffect(() => {
-        const fetchCustomers = async () => {
+        const fetchData = async () => {
             try {
-                const response = await api.get("/users");
-                const customerUsers = response.data.filter((u: any) => u.role === "customer");
+                // Fetch Customers
+                const userResponse = await api.get("/users");
+                const customerUsers = userResponse.data.filter((u: any) => u.role === "customer");
                 setCustomers(customerUsers.map((u: any) => ({
-                    id: u._id,
+                    id: u.id,
                     name: u.companyName || u.name || u.email
                 })));
+
+                // Fetch Cargo Categories
+                const categories = await billingService.fetchCargoCategories();
+                setCargoCategories(categories.filter(c => c.active));
             } catch (error) {
-                console.error("Failed to fetch customers:", error);
+                console.error("Failed to fetch data:", error);
             }
         };
-        if (open) fetchCustomers();
+        if (open) fetchData();
     }, [open]);
 
     return (
@@ -475,6 +486,39 @@ export function GateInDialog({
                                                         customers.map((customer) => (
                                                             <SelectItem key={customer.id} value={customer.id}>
                                                                 {customer.name}
+                                                            </SelectItem>
+                                                        ))
+                                                    )}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            )}
+
+                            {isLoaded && (
+                                <FormField
+                                    control={form.control}
+                                    name="cargoCategory"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Cargo Category</FormLabel>
+                                            <Select onValueChange={field.onChange} value={field.value}>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select cargo category" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {cargoCategories.length === 0 ? (
+                                                        <SelectItem value="none" disabled>
+                                                            No categories found
+                                                        </SelectItem>
+                                                    ) : (
+                                                        cargoCategories.map((category) => (
+                                                            <SelectItem key={category.id} value={category.name}>
+                                                                {category.name}
                                                             </SelectItem>
                                                         ))
                                                     )}

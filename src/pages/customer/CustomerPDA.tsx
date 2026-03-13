@@ -167,13 +167,13 @@ export default function CustomerPDA() {
           title="Current Balance"
           value={`₹${pda.balance.toLocaleString()}`}
           icon={Wallet}
-          variant={pda.balance < 50000 ? "warning" : "success"}
+          variant={pda.balance < (pda as any).lowBalanceThreshold ? "warning" : "success"}
         />
         <KPICard
           title="Account Status"
-          value={pda.balance < 50000 ? "Low Balance" : "Active"}
-          icon={pda.balance < 50000 ? TrendingDown : TrendingUp}
-          variant={pda.balance < 50000 ? "warning" : "primary"}
+          value={pda.balance < (pda as any).lowBalanceThreshold ? "Low Balance" : "Active"}
+          icon={pda.balance < (pda as any).lowBalanceThreshold ? TrendingDown : TrendingUp}
+          variant={pda.balance < (pda as any).lowBalanceThreshold ? "warning" : "primary"}
         />
         <KPICard title="Organization" value={pda.customer} icon={Building2} />
       </div>

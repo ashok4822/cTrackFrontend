@@ -67,6 +67,7 @@ export interface BillRecord {
     dueDate: string;
     remarks?: string;
     paidAt?: string;
+    paymentMethod?: "pda" | "online";
     createdAt: string;
 }
 
@@ -155,4 +156,22 @@ export const billingService = {
         const response = await api.post<{ message: string; bill: BillRecord }>(API_ENDPOINTS.BILLING.BILL_RAZORPAY_VERIFY(id), paymentData);
         return response.data.bill;
     },
+
+    async fetchBillTransactions(id: string): Promise<BillTransaction[]> {
+        const response = await api.get<BillTransaction[]>(`${API_ENDPOINTS.BILLING.BILLS}/${id}/transactions`);
+        return response.data;
+    },
 };
+
+export interface BillTransaction {
+    id: string;
+    billId: string;
+    userId: string;
+    amount: number;
+    method: "pda" | "online";
+    status: "pending" | "success" | "failed";
+    transactionId?: string;
+    orderId?: string;
+    errorDetails?: string;
+    timestamp: string;
+}

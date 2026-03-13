@@ -37,6 +37,7 @@ interface ContainerRequest {
   containerNumber?: string;
   remarks?: string;
   createdAt?: string;
+  cargoCategoryName?: string;
 }
 
 export default function CustomerStuffingDestuffing() {
@@ -156,6 +157,14 @@ export default function CustomerStuffingDestuffing() {
         item.createdAt
           ? new Date(item.createdAt).toLocaleDateString()
           : "-",
+    },
+    {
+      key: "cargoCategoryName",
+      header: "Category",
+      sortable: true,
+      render: (item) => (
+        <span className="capitalize">{item.cargoCategoryName || "General / Default"}</span>
+      ),
     },
     {
       key: "actions",
@@ -312,6 +321,14 @@ export default function CustomerStuffingDestuffing() {
                   </p>
                   <p>
                     {selectedOperation.createdAt ? new Date(selectedOperation.createdAt).toLocaleString() : "N/A"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">
+                    Cargo Category
+                  </p>
+                  <p className="capitalize font-medium">
+                    {selectedOperation.cargoCategoryName || "General / Default"}
                   </p>
                 </div>
               </div>
