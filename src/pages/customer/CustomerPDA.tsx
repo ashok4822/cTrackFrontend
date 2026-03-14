@@ -18,11 +18,10 @@ import {
   ArrowUpCircle,
   ArrowDownCircle,
   Wallet,
-  Building2,
-  TrendingDown,
   TrendingUp,
   Plus,
   Loader2,
+  CheckCircle2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -157,25 +156,50 @@ export default function CustomerPDA() {
 
   if (!pda) return null;
 
+  const monthlySpending = transactions
+    .filter(tx => tx.type === 'debit' && new Date(tx.timestamp).getMonth() === new Date().getMonth() && new Date(tx.timestamp).getFullYear() === new Date().getFullYear())
+    .reduce((sum, tx) => sum + tx.amount, 0);
+
+  const lastActivity = transactions.length > 0 ? transactions[0] : null;
+
   return (
     <DashboardLayout
       navItems={customerNavItems}
       pageTitle="Pre-Deposit Account (PDA)"
     >
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KPICard
           title="Current Balance"
           value={`₹${pda.balance.toLocaleString()}`}
           icon={Wallet}
-          variant={pda.balance < (pda as any).lowBalanceThreshold ? "warning" : "success"}
+          variant={pda.balance < (pda as any).lowBalanceThreshold ? "danger" : "success"}
+          subtitle={
+            pda.balance < (pda as any).lowBalanceThreshold ? (
+              <span className="text-destructive font-semibold">Low Balance Alert</span>
+            ) : "Available Funds"
+          }
         />
         <KPICard
-          title="Account Status"
-          value={pda.balance < (pda as any).lowBalanceThreshold ? "Low Balance" : "Active"}
-          icon={pda.balance < (pda as any).lowBalanceThreshold ? TrendingDown : TrendingUp}
-          variant={pda.balance < (pda as any).lowBalanceThreshold ? "warning" : "primary"}
+          title="Monthly Spending"
+          value={`₹${monthlySpending.toLocaleString()}`}
+          icon={TrendingUp}
+          variant="warning"
+          subtitle="Spent this month"
         />
-        <KPICard title="Organization" value={pda.customer} icon={Building2} />
+        <KPICard
+          title="Last Activity"
+          value={lastActivity ? `${lastActivity.type === 'credit' ? '+' : '-'}₹${lastActivity.amount.toLocaleString()}` : "No Activity"}
+          icon={lastActivity?.type === 'credit' ? ArrowUpCircle : ArrowDownCircle}
+          variant="primary"
+          subtitle={lastActivity ? lastActivity.description.replace(/\(.*\)/, '').trim() : "No transactions yet"}
+        />
+        <KPICard 
+          title="Account Status" 
+          value="Active" 
+          icon={CheckCircle2} 
+          variant="success" 
+          subtitle="PDA status"
+        />
       </div>
 
       <div className="grid gap-6">

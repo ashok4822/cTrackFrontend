@@ -4,8 +4,8 @@ import type { LucideIcon } from "lucide-react";
 
 interface KPICardProps {
   title: string;
-  value: string | number;
-  subtitle?: string;
+  value: React.ReactNode;
+  subtitle?: React.ReactNode;
   icon?: LucideIcon;
   trend?: {
     value: number;
