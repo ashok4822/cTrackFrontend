@@ -194,7 +194,7 @@ export default function CustomerDashboard() {
             </CardContent>
           </Card>
 
-          <CustomerAIChatbot kpiData={kpiData} />
+          <CustomerAIChatbot />
         </div>
       </div>
     </DashboardLayout>
