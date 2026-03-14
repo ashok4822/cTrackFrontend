@@ -31,8 +31,11 @@ import {
   Navigation,
 } from "lucide-react";
 import { containerRequestService } from "@/services/containerRequestService";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useOverdueStatus } from "@/hooks/useOverdueStatus";
+import { OverdueBlocker } from "@/components/common/OverdueBlocker";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Checkpoint {
   location: string;
@@ -71,29 +74,59 @@ export default function CustomerRequestsListing() {
   const [showHistoryDialog, setShowHistoryDialog] = useState(false);
   const [requests, setRequests] = useState<ContainerRequest[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [isLoading, setIsLoading] = useState(true); // Add loading state
+  const { hasOverdueBills, loading: checkingOverdue } = useOverdueStatus();
+
+  const fetchRequests = useCallback(async () => {
+    setIsLoading(true); // Set loading to true before fetching
+    try {
+      const data = await containerRequestService.getMyRequests();
+      const formattedData = data.map(
+        (r: ContainerRequest & { _id?: string }) => ({
+          ...r,
+          id: r._id || r.id,
+        }),
+      );
+      setRequests(formattedData);
+    } catch {
+      toast({
+        title: "Error",
+        description: "Failed to fetch container requests",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false); // Set loading to false after fetching (or error)
+    }
+  }, [toast]);
 
   useEffect(() => {
-    const fetchRequests = async () => {
-      try {
-        const data = await containerRequestService.getMyRequests();
-        const formattedData = data.map(
-          (r: ContainerRequest & { _id?: string }) => ({
-            ...r,
-            id: r._id || r.id,
-          }),
-        );
-        setRequests(formattedData);
-      } catch {
-        toast({
-          title: "Error",
-          description: "Failed to fetch container requests",
-          variant: "destructive",
-        });
-      }
-    };
+    if (!hasOverdueBills && !checkingOverdue) {
+      fetchRequests();
+    } else if (hasOverdueBills) {
+      // If overdue, ensure loading is false and requests are cleared if needed
+      setIsLoading(false);
+      setRequests([]); // Optionally clear requests if overdue
+    }
+  }, [fetchRequests, hasOverdueBills, checkingOverdue]);
 
-    fetchRequests();
-  }, [toast]);
+  if (checkingOverdue || (isLoading && requests.length === 0)) {
+    return (
+      <DashboardLayout navItems={customerNavItems} pageTitle="Container Requests Listing">
+        <div className="space-y-4 p-6">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-40 w-full" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (hasOverdueBills) {
+    return (
+      <DashboardLayout navItems={customerNavItems} pageTitle="Container Requests Listing">
+        <OverdueBlocker />
+      </DashboardLayout>
+    );
+  }
 
   const pendingRequests = requests.filter((r) => r.status === "pending").length;
   const approvedRequests = requests.filter(

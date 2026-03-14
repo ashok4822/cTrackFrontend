@@ -18,6 +18,8 @@ import type { Container as ContainerType } from "@/types";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchCustomerContainers } from "@/store/slices/containerSlice";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useOverdueStatus } from "@/hooks/useOverdueStatus";
+import { OverdueBlocker } from "@/components/common/OverdueBlocker";
 
 export default function CustomerMyContainers() {
   const dispatch = useAppDispatch();
@@ -26,9 +28,32 @@ export default function CustomerMyContainers() {
   const [selectedContainer, setSelectedContainer] =
     useState<ContainerType | null>(null);
 
+  const { hasOverdueBills, loading: checkingOverdue } = useOverdueStatus();
+
   useEffect(() => {
-    dispatch(fetchCustomerContainers());
-  }, [dispatch]);
+    if (!hasOverdueBills && !checkingOverdue) {
+      dispatch(fetchCustomerContainers());
+    }
+  }, [dispatch, hasOverdueBills, checkingOverdue]);
+
+  if (checkingOverdue || (isLoading && containers.length === 0)) {
+    return (
+      <DashboardLayout navItems={customerNavItems} pageTitle="My Containers">
+        <div className="space-y-4 p-6">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-40 w-full" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (hasOverdueBills) {
+    return (
+      <DashboardLayout navItems={customerNavItems} pageTitle="My Containers">
+        <OverdueBlocker />
+      </DashboardLayout>
+    );
+  }
 
   const inYard = containers.filter((c) => c.status === "in-yard").length;
   const inTransit = containers.filter(

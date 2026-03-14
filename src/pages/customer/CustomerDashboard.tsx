@@ -21,22 +21,53 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useOverdueStatus } from "@/hooks/useOverdueStatus";
+import { OverdueBlocker } from "@/components/common/OverdueBlocker";
 
 export default function CustomerDashboard() {
   const dispatch = useAppDispatch();
-  const { kpiData, isLoading } = useAppSelector((state) => state.dashboard);
+  const { kpiData, isLoading: dashboardLoading } = useAppSelector((state) => state.dashboard);
   const { user } = useAppSelector((state) => state.auth);
+  const { hasOverdueBills, loading: checkingOverdue } = useOverdueStatus();
 
   useEffect(() => {
-    dispatch(fetchKPIData());
-  }, [dispatch]);
+    if (!hasOverdueBills && !checkingOverdue) {
+      dispatch(fetchKPIData());
+    }
+  }, [dispatch, hasOverdueBills, checkingOverdue]);
 
-  if (isLoading || !kpiData) {
+  if (checkingOverdue || dashboardLoading) {
     return (
       <DashboardLayout navItems={customerNavItems} pageTitle="Customer Dashboard">
         <div className="flex h-[400px] items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (hasOverdueBills) {
+    return (
+      <DashboardLayout navItems={customerNavItems} pageTitle="Customer Dashboard">
+        <OverdueBlocker />
+      </DashboardLayout>
+    );
+  }
+
+  if (!kpiData) {
+    return (
+      <DashboardLayout navItems={customerNavItems} pageTitle="Customer Dashboard">
+        <div className="flex h-[400px] items-center justify-center">
+          <p className="text-muted-foreground">Failed to load dashboard data.</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (hasOverdueBills) {
+    return (
+      <DashboardLayout navItems={customerNavItems} pageTitle="Customer Dashboard">
+        <OverdueBlocker />
       </DashboardLayout>
     );
   }
@@ -140,9 +171,14 @@ export default function CustomerDashboard() {
               <CardTitle className="text-lg font-bold">Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-3">
-              <Button asChild className="w-full justify-start gap-2 bg-white/10 hover:bg-white/20 border-white/20" variant="outline">
+              <Button 
+                asChild 
+                disabled={hasOverdueBills} 
+                className={`w-full justify-start gap-2 bg-white/10 hover:bg-white/20 border-white/20 ${hasOverdueBills ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`} 
+                variant="outline"
+              >
                 <Link to="/customer/request-container">
-                  <Plus className="h-4 w-4" /> New Cargo Request
+                  <Plus className="h-4 w-4" /> New Cargo Request {hasOverdueBills && "(Locked)"}
                 </Link>
               </Button>
               <Button asChild className="w-full justify-start gap-2 bg-white/10 hover:bg-white/20 border-white/20" variant="outline">

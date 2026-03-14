@@ -35,6 +35,9 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
+import { useOverdueStatus } from "@/hooks/useOverdueStatus";
+import { OverdueBlocker } from "@/components/common/OverdueBlocker";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CustomerProfile() {
   const dispatch = useAppDispatch();
@@ -50,6 +53,7 @@ export default function CustomerProfile() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const { hasOverdueBills, loading: checkingOverdue } = useOverdueStatus();
 
   const [prevProfile, setPrevProfile] = useState(profile);
 
@@ -64,8 +68,10 @@ export default function CustomerProfile() {
   }
 
   useEffect(() => {
-    dispatch(getProfile());
-  }, [dispatch]);
+    if (!hasOverdueBills && !checkingOverdue) {
+      dispatch(getProfile());
+    }
+  }, [dispatch, hasOverdueBills, checkingOverdue]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -128,12 +134,21 @@ export default function CustomerProfile() {
     return `${baseUrl}${normalizedPath}`;
   };
 
-  if (isLoading && !profile) {
+  if (checkingOverdue || (isLoading && !profile)) {
     return (
       <DashboardLayout navItems={customerNavItems} pageTitle="Profile">
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="space-y-4 p-6">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-64 w-full" />
         </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (hasOverdueBills) {
+    return (
+      <DashboardLayout navItems={customerNavItems} pageTitle="Profile">
+        <OverdueBlocker />
       </DashboardLayout>
     );
   }

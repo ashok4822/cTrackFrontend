@@ -127,6 +127,11 @@ export const billingService = {
         return response.data;
     },
 
+    async fetchOverdueStatus(): Promise<{ hasOverdueBills: boolean }> {
+        const response = await api.get<{ hasOverdueBills: boolean }>(API_ENDPOINTS.BILLING.OVERDUE_STATUS);
+        return response.data;
+    },
+
     async markBillPaid(id: string): Promise<BillRecord> {
         const response = await api.patch<{ message: string; bill: BillRecord }>(API_ENDPOINTS.BILLING.BILL_MARK_PAID(id));
         return response.data.bill;

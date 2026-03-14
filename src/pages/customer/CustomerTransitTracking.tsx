@@ -32,6 +32,9 @@ import {
 import { containerRequestService } from "@/services/containerRequestService";
 import type { ContainerRequest } from "@/types";
 import { useToast } from "@/hooks/use-toast";
+import { useOverdueStatus } from "@/hooks/useOverdueStatus";
+import { OverdueBlocker } from "@/components/common/OverdueBlocker";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CustomerTransitTracking() {
   const { toast } = useToast();
@@ -40,6 +43,7 @@ export default function CustomerTransitTracking() {
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+  const { hasOverdueBills, loading: checkingOverdue } = useOverdueStatus();
 
   const fetchData = async () => {
     try {
@@ -58,8 +62,29 @@ export default function CustomerTransitTracking() {
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (!hasOverdueBills && !checkingOverdue) {
+      fetchData();
+    }
+  }, [hasOverdueBills, checkingOverdue]);
+
+  if (checkingOverdue) {
+    return (
+      <DashboardLayout navItems={customerNavItems} pageTitle="Transit Tracking">
+        <div className="space-y-4 p-6">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-40 w-full" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (hasOverdueBills) {
+    return (
+      <DashboardLayout navItems={customerNavItems} pageTitle="Transit Tracking">
+        <OverdueBlocker />
+      </DashboardLayout>
+    );
+  }
 
   const relevantStatuses = ["ready-for-dispatch", "in-transit", "at-factory", "completed"];
 
