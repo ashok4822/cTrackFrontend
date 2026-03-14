@@ -151,16 +151,20 @@ export default function AdminReportsAnalytics() {
   // Table search & pagination states
   const [billSearch, setBillSearch] = useState("");
   const [billStatusFilter, setBillStatusFilter] = useState("all");
+  const [billStartDate, setBillStartDate] = useState("");
+  const [billEndDate, setBillEndDate] = useState("");
   const [billPage, setBillPage] = useState(1);
   const [gateSearch, setGateSearch] = useState("");
   const [gateTypeFilter, setGateTypeFilter] = useState("all");
+  const [gateStartDate, setGateStartDate] = useState("");
+  const [gateEndDate, setGateEndDate] = useState("");
   const [gatePage, setGatePage] = useState(1);
   const itemsPerPage = 10;
 
   useEffect(() => {
     setBillPage(1);
     setGatePage(1);
-  }, [dateRange, billSearch, billStatusFilter, gateSearch, gateTypeFilter]);
+  }, [dateRange, billSearch, billStatusFilter, billStartDate, billEndDate, gateSearch, gateTypeFilter, gateStartDate, gateEndDate]);
 
   useEffect(() => {
     const load = async () => {
@@ -371,9 +375,14 @@ export default function AdminReportsAnalytics() {
             .includes(billSearch.toLowerCase());
         const matchStatus =
           billStatusFilter === "all" || b.status === billStatusFilter;
-        return matchSearch && matchStatus;
+        
+        const billDateStr = b.createdAt.split("T")[0]; // YYYY-MM-DD format
+        const matchStartDate = !billStartDate || billDateStr >= billStartDate;
+        const matchEndDate = !billEndDate || billDateStr <= billEndDate;
+
+        return matchSearch && matchStatus && matchStartDate && matchEndDate;
       }),
-    [filteredBills, billSearch, billStatusFilter],
+    [filteredBills, billSearch, billStatusFilter, billStartDate, billEndDate],
   );
 
   const paginatedBills = useMemo(() => {
@@ -394,9 +403,12 @@ export default function AdminReportsAnalytics() {
           g.vehicleNumber.toLowerCase().includes(gateSearch.toLowerCase()) ||
           g.driverName.toLowerCase().includes(gateSearch.toLowerCase());
         const matchType = gateTypeFilter === "all" || g.type === gateTypeFilter;
-        return matchSearch && matchType;
+        const gateDateStr = g.timestamp.split("T")[0]; // YYYY-MM-DD
+        const matchStartDate = !gateStartDate || gateDateStr >= gateStartDate;
+        const matchEndDate = !gateEndDate || gateDateStr <= gateEndDate;
+        return matchSearch && matchType && matchStartDate && matchEndDate;
       }),
-    [filteredGateOps, gateSearch, gateTypeFilter],
+    [filteredGateOps, gateSearch, gateTypeFilter, gateStartDate, gateEndDate],
   );
 
   const paginatedGateOps = useMemo(() => {
@@ -443,7 +455,7 @@ export default function AdminReportsAnalytics() {
     autoTable(doc, {
       startY: (doc as any).lastAutoTable.finalY + 20,
       head: [
-        ["Bill #", "Container", "Customer", "Amount", "Status", "Due Date"],
+        ["Bill #", "Container", "Customer", "Amount", "Status", "Generated Date", "Due Date"],
       ],
       body: filteredBillsTable.map((b) => [
         b.billNumber,
@@ -451,6 +463,7 @@ export default function AdminReportsAnalytics() {
         b.customerName || b.customer || "—",
         formatCurrencyForPDF(b.totalAmount),
         b.status.toUpperCase(),
+        formatDate(b.createdAt),
         formatDate(b.dueDate),
       ]),
       theme: "grid",
@@ -821,7 +834,7 @@ export default function AdminReportsAnalytics() {
                     Export PDF
                   </Button>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <div className="relative">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -845,13 +858,35 @@ export default function AdminReportsAnalytics() {
                       <SelectItem value="overdue">Overdue</SelectItem>
                     </SelectContent>
                   </Select>
-                  {(billSearch || billStatusFilter !== "all") && (
+                  <div className="flex items-center gap-2 bg-background border rounded-md px-2 shadow-sm">
+                    <span className="text-muted-foreground text-xs font-medium">From:</span>
+                    <Input
+                      type="date"
+                      value={billStartDate}
+                      onChange={(e) => setBillStartDate(e.target.value)}
+                      className="w-[135px] h-9 border-none bg-transparent px-1 pr-2 text-xs focus-visible:ring-0 focus-visible:ring-offset-0"
+                      title="Start Date"
+                    />
+                    <div className="h-4 w-px bg-border" />
+                    <span className="text-muted-foreground text-xs font-medium">To:</span>
+                    <Input
+                      type="date"
+                      value={billEndDate}
+                      onChange={(e) => setBillEndDate(e.target.value)}
+                      className="w-[135px] h-9 border-none bg-transparent px-1 pr-2 text-xs focus-visible:ring-0 focus-visible:ring-offset-0"
+                      title="End Date"
+                    />
+                  </div>
+                  {(billSearch || billStatusFilter !== "all" || billStartDate || billEndDate) && (
                     <button
                       onClick={() => {
                         setBillSearch("");
                         setBillStatusFilter("all");
+                        setBillStartDate("");
+                        setBillEndDate("");
                       }}
                       className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      title="Clear filters"
                     >
                       <FilterX className="h-4 w-4" />
                     </button>
@@ -878,6 +913,9 @@ export default function AdminReportsAnalytics() {
                       </th>
                       <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                         Status
+                      </th>
+                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                        Generated Date
                       </th>
                       <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                         Due Date
@@ -917,6 +955,9 @@ export default function AdminReportsAnalytics() {
                           </td>
                           <td className="px-4 py-3">
                             <StatusBadge status={bill.status} />
+                          </td>
+                          <td className="px-4 py-3 text-muted-foreground">
+                            {formatDate(bill.createdAt)}
                           </td>
                           <td className="px-4 py-3 text-muted-foreground">
                             {formatDate(bill.dueDate)}
@@ -1332,7 +1373,7 @@ export default function AdminReportsAnalytics() {
                     Export PDF
                   </Button>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <div className="relative">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -1355,13 +1396,35 @@ export default function AdminReportsAnalytics() {
                       <SelectItem value="gate-out">Gate Out</SelectItem>
                     </SelectContent>
                   </Select>
-                  {(gateSearch || gateTypeFilter !== "all") && (
+                  <div className="flex items-center gap-2 bg-background border rounded-md px-2 shadow-sm">
+                    <span className="text-muted-foreground text-xs font-medium">From:</span>
+                    <Input
+                      type="date"
+                      value={gateStartDate}
+                      onChange={(e) => setGateStartDate(e.target.value)}
+                      className="w-[135px] h-9 border-none bg-transparent px-1 pr-2 text-xs focus-visible:ring-0 focus-visible:ring-offset-0"
+                      title="Start Date"
+                    />
+                    <div className="h-4 w-px bg-border" />
+                    <span className="text-muted-foreground text-xs font-medium">To:</span>
+                    <Input
+                      type="date"
+                      value={gateEndDate}
+                      onChange={(e) => setGateEndDate(e.target.value)}
+                      className="w-[135px] h-9 border-none bg-transparent px-1 pr-2 text-xs focus-visible:ring-0 focus-visible:ring-offset-0"
+                      title="End Date"
+                    />
+                  </div>
+                  {(gateSearch || gateTypeFilter !== "all" || gateStartDate || gateEndDate) && (
                     <button
                       onClick={() => {
                         setGateSearch("");
                         setGateTypeFilter("all");
+                        setGateStartDate("");
+                        setGateEndDate("");
                       }}
                       className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      title="Clear filters"
                     >
                       <FilterX className="h-4 w-4" />
                     </button>
