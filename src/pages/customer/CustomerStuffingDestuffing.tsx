@@ -19,6 +19,9 @@ import { Package, Clock, CheckCircle, Eye, AlertTriangle } from "lucide-react";
 import { containerRequestService } from "@/services/containerRequestService";
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useOverdueStatus } from "@/hooks/useOverdueStatus";
+import { OverdueBlocker } from "@/components/common/OverdueBlocker";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ContainerRequest {
   id: string;
@@ -47,6 +50,7 @@ export default function CustomerStuffingDestuffing() {
   const [requests, setRequests] = useState<ContainerRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const { hasOverdueBills, loading: checkingOverdue } = useOverdueStatus();
 
   const fetchRequests = useCallback(async () => {
     setIsLoading(true);
@@ -69,8 +73,10 @@ export default function CustomerStuffingDestuffing() {
   }, [toast]);
 
   useEffect(() => {
-    fetchRequests();
-  }, [fetchRequests]);
+    if (!hasOverdueBills && !checkingOverdue) {
+      fetchRequests();
+    }
+  }, [fetchRequests, hasOverdueBills, checkingOverdue]);
 
   const pendingOps = requests.filter((op) => op.status === "pending").length;
   const inProgressOps = requests.filter((op) =>
@@ -196,11 +202,20 @@ export default function CustomerStuffingDestuffing() {
     },
   ];
 
-  if (isLoading && requests.length === 0) {
+  if (hasOverdueBills) {
     return (
       <DashboardLayout navItems={customerNavItems} pageTitle="Stuffing / Destuffing">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <OverdueBlocker />
+      </DashboardLayout>
+    );
+  }
+
+  if (checkingOverdue || (isLoading && requests.length === 0)) {
+    return (
+      <DashboardLayout navItems={customerNavItems} pageTitle="Stuffing / Destuffing">
+        <div className="space-y-4 p-6">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-40 w-full" />
         </div>
       </DashboardLayout>
     );

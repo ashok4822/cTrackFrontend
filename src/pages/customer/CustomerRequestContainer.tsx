@@ -39,6 +39,9 @@ import type { Container } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { containerRequestService } from "@/services/containerRequestService";
 import { billingService, type CargoCategory } from "@/services/billingService";
+import { useOverdueStatus } from "@/hooks/useOverdueStatus";
+import { OverdueBlocker } from "@/components/common/OverdueBlocker";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const containerSizes = ["20ft", "40ft"];
 const containerTypes: { value: string; label: string }[] = [
@@ -59,6 +62,7 @@ export default function CustomerRequestContainer() {
   const [myContainers, setMyContainers] = useState<Container[]>([]);
   const [cargoCategories, setCargoCategories] = useState<CargoCategory[]>([]);
   const [isFetchingContainers, setIsFetchingContainers] = useState(false);
+  const { hasOverdueBills, loading: checkingOverdue } = useOverdueStatus();
 
   // Stuffing form state
   const [stuffingForm, setStuffingForm] = useState({
@@ -94,8 +98,11 @@ export default function CustomerRequestContainer() {
         setIsFetchingContainers(false);
       }
     };
-    fetchData();
-  }, []);
+    
+    if (!hasOverdueBills && !checkingOverdue) {
+      fetchData();
+    }
+  }, [hasOverdueBills, checkingOverdue]);
 
   const selectedContainerDetails = myContainers.find(
     (c) => c.id === selectedContainer || c._id === selectedContainer,
@@ -195,6 +202,25 @@ export default function CustomerRequestContainer() {
       setDestuffingDate("");
     }
   };
+
+  if (checkingOverdue) {
+    return (
+      <DashboardLayout navItems={customerNavItems} pageTitle="Request Container">
+        <div className="space-y-4 p-6">
+          <Skeleton className="h-10 w-full max-w-md" />
+          <Skeleton className="h-96 w-full" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (hasOverdueBills) {
+    return (
+      <DashboardLayout navItems={customerNavItems} pageTitle="Request Container">
+        <OverdueBlocker />
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout navItems={customerNavItems} pageTitle="Request Container">

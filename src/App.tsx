@@ -1,12 +1,15 @@
 import AppRoutes from "./routes/AppRoutes";
 import { Toaster } from "sonner";
+import ErrorBoundary from "./components/common/ErrorBoundary";
 
 const App = () => {
   return (
-    <div>
-      <Toaster position="top-right" richColors />
-      <AppRoutes />
-    </div>
+    <ErrorBoundary>
+      <div>
+        <Toaster position="top-right" richColors />
+        <AppRoutes />
+      </div>
+    </ErrorBoundary>
   );
 };
 

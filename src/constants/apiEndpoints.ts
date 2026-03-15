@@ -98,6 +98,7 @@ export const API_ENDPOINTS = {
 
     // Bills
     BILLS: "/billing/bills",
+    OVERDUE_STATUS: "/billing/bills/overdue-status",
     BILL_BY_ID: (id: string) => `/billing/bills/${id}`,
     BILL_MARK_PAID: (id: string) => `/billing/bills/${id}/paid`,
     BILL_PAY: (id: string) => `/billing/bills/${id}/pay`,
