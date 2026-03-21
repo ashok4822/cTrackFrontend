@@ -30,6 +30,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { logoutUser } from "@/store/slices/authSlice";
 import { markAsRead, markAllAsRead } from "@/store/slices/notificationSlice";
 import { formatDistanceToNow } from "date-fns";
+import { ThemeToggle } from "./ThemeToggle";
 
 interface HeaderProps {
   onMenuToggle?: () => void;
@@ -151,6 +152,9 @@ export function Header({ onMenuToggle, isSidebarOpen }: HeaderProps) {
       >
         <Search className="h-5 w-5" />
       </Button>
+
+      {/* Theme Toggle */}
+      <ThemeToggle />
 
       {/* Notifications */}
       <DropdownMenu>

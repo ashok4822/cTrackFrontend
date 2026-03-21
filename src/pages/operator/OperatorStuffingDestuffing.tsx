@@ -29,7 +29,7 @@ import { containerRequestService } from "@/services/containerRequestService";
 import { equipmentService } from "@/services/equipmentService";
 import type { ContainerRequest, Equipment } from "@/types";
 import { useState, useMemo, useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/useToast";
 import { Truck } from "lucide-react";
 
 export default function OperatorStuffingDestuffing() {

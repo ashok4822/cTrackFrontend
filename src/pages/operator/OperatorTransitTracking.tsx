@@ -24,7 +24,7 @@ import { Truck, Clock, CheckCircle, Navigation, Eye } from "lucide-react";
 import { containerRequestService } from "@/services/containerRequestService";
 import type { ContainerRequest } from "@/types";
 import { useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/useToast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DialogFooter } from "@/components/ui/dialog";

@@ -28,11 +28,11 @@ import {
 } from "recharts";
 
 const COLORS = [
-  "hsl(217, 91%, 35%)",
-  "hsl(199, 89%, 48%)",
-  "hsl(142, 76%, 36%)",
-  "hsl(38, 92%, 50%)",
-  "hsl(280, 68%, 60%)",
+  "hsl(var(--chart-1))",
+  "hsl(var(--chart-2))",
+  "hsl(var(--chart-3))",
+  "hsl(var(--chart-4))",
+  "hsl(var(--chart-5))",
 ];
 
 const formatTimeAgo = (dateString: string) => {
@@ -205,13 +205,13 @@ export default function AdminDashboard() {
                   <Bar
                     dataKey="gateIn"
                     name="Gate In"
-                    fill="hsl(142, 76%, 36%)"
+                    fill="hsl(var(--success))"
                     radius={[4, 4, 0, 0]}
                   />
                   <Bar
                     dataKey="gateOut"
                     name="Gate Out"
-                    fill="hsl(217, 91%, 35%)"
+                    fill="hsl(var(--primary))"
                     radius={[4, 4, 0, 0]}
                   />
                 </BarChart>

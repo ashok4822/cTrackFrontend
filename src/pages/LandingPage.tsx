@@ -16,6 +16,7 @@ import {
   Shield,
   Truck,
 } from "lucide-react";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { useAppSelector } from "@/store/hooks";
 import { useEffect } from "react";
 
@@ -103,6 +104,7 @@ const LandingPage = () => {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <ThemeToggle />
             <Button variant="ghost" asChild>
               <Link to="/about">About</Link>
             </Button>

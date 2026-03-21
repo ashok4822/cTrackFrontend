@@ -31,7 +31,7 @@ import {
 } from "lucide-react";
 import { containerRequestService } from "@/services/containerRequestService";
 import type { ContainerRequest } from "@/types";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/useToast";
 import { useOverdueStatus } from "@/hooks/useOverdueStatus";
 import { OverdueBlocker } from "@/components/common/OverdueBlocker";
 import { Skeleton } from "@/components/ui/skeleton";

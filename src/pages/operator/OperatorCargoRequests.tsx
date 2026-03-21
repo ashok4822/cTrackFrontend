@@ -41,7 +41,7 @@ import {
 import { containerRequestService } from "@/services/containerRequestService";
 import { containerService } from "@/services/containerService";
 import { billingService, type CargoCategory } from "@/services/billingService";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/useToast";
 
 interface CargoRequest {
   id: string;
