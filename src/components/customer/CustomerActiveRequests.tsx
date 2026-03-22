@@ -3,10 +3,10 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, ArrowRightLeft, CheckCircle2, Timer } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import type { ContainerRequest } from "@/types";
+import type { DashboardActiveTask } from "@/types";
 
 interface CustomerActiveRequestsProps {
-  requests: ContainerRequest[];
+  requests: DashboardActiveTask[];
 }
 
 export function CustomerActiveRequests({

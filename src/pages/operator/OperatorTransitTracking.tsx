@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { operatorNavItems } from "@/config/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,7 +23,6 @@ import { KPICard } from "@/components/common/KPICard";
 import { Truck, Clock, CheckCircle, Navigation, Eye } from "lucide-react";
 import { containerRequestService } from "@/services/containerRequestService";
 import type { ContainerRequest } from "@/types";
-import { useEffect } from "react";
 import { useToast } from "@/hooks/useToast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,7 +43,7 @@ export default function OperatorTransitTracking() {
     remarks: "",
   });
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const data = await containerRequestService.getAllRequests();
@@ -58,11 +57,11 @@ export default function OperatorTransitTracking() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   const inTransitCount = requests.filter(
     (c) => c.status === "in-transit",
@@ -386,7 +385,7 @@ export default function OperatorTransitTracking() {
                     allEvents.push({
                       status: "Request Created",
                       location: "Customer Portal",
-                      timestamp: (selectedRequest as any).createdAt || new Date().toISOString(),
+                      timestamp: selectedRequest.createdAt || new Date().toISOString(),
                       remarks: `Initial ${selectedRequest.type} request submitted`,
                     });
                   }

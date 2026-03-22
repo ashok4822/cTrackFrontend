@@ -46,7 +46,6 @@ const CustomerSignup = () => {
 
     setLoading(true);
     try {
-      // @ts-ignore
       const resultAction = await dispatch(initiateSignup(formData.email));
       if (initiateSignup.fulfilled.match(resultAction)) {
         console.log("OTP sent successfully");
@@ -113,7 +112,6 @@ const CustomerSignup = () => {
     setLoading(true);
     setError(null);
     try {
-      // @ts-ignore
       const resultAction = await dispatch(initiateSignup(formData.email));
       if (initiateSignup.fulfilled.match(resultAction)) {
         console.log("OTP resent successfully");

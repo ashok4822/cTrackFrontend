@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { customerNavItems } from "@/config/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -45,7 +45,7 @@ export default function CustomerTransitTracking() {
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const { hasOverdueBills, loading: checkingOverdue } = useOverdueStatus();
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const data = await containerRequestService.getMyRequests();
@@ -59,13 +59,13 @@ export default function CustomerTransitTracking() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
   useEffect(() => {
     if (!hasOverdueBills && !checkingOverdue) {
       fetchData();
     }
-  }, [hasOverdueBills, checkingOverdue]);
+  }, [hasOverdueBills, checkingOverdue, fetchData]);
 
   if (checkingOverdue) {
     return (
@@ -265,7 +265,7 @@ export default function CustomerTransitTracking() {
                     allEvents.push({
                       status: "Request Created",
                       location: "Customer Portal",
-                      timestamp: (selectedRequest as any).createdAt || new Date().toISOString(),
+                      timestamp: selectedRequest.createdAt || new Date().toISOString(),
                       remarks: `Initial ${selectedRequest.type} request submitted`,
                     });
                   }

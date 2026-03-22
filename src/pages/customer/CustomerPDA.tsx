@@ -27,6 +27,8 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { pdaService } from "@/services/pdaService";
 import type { PreDepositAccount, PDATransaction } from "@/types";
+import type { RazorpayOptions, RazorpayResponse } from "@/types/razorpay";
+import axios from "axios";
 
 export default function CustomerPDA() {
   const [pda, setPDA] = useState<PreDepositAccount | null>(null);
@@ -48,7 +50,7 @@ export default function CustomerPDA() {
         setPDA(data);
         setTransactions(data.transactions || []);
       }
-    } catch (error: any) {
+    } catch (error) {
       toast.error("Failed to fetch PDA data");
       console.error(error);
     } finally {
@@ -91,16 +93,16 @@ export default function CustomerPDA() {
       const order = await pdaService.createPDAOrder(amount);
 
       // 3. Open Razorpay Checkout
-      const options = {
+      const options: RazorpayOptions = {
         key:
-          (import.meta as any).env.VITE_RAZOR_KEY_ID ||
+          import.meta.env.VITE_RAZOR_KEY_ID ||
           "rzp_test_KDYrLJHnu3O9Ip",
         amount: order.amount,
         currency: order.currency,
         name: "cTrack Logistics",
         description: `PDA Deposit for ${pda?.customer}`,
         order_id: order.id,
-        handler: async function (response: any) {
+        handler: async function (response: RazorpayResponse) {
           try {
             setDepositing(true);
             const verifiedTx = await pdaService.verifyPDAPayment(amount, {
@@ -115,11 +117,12 @@ export default function CustomerPDA() {
               setIsDialogOpen(false);
               fetchPDA(); // Refresh data
             }
-          } catch (error: any) {
-            toast.error(
-              error.response?.data?.message ||
-              "Payment verification failed. Please contact support.",
-            );
+          } catch (error) {
+            let message = "Payment verification failed. Please contact support.";
+            if (axios.isAxiosError(error)) {
+              message = error.response?.data?.message || message;
+            }
+            toast.error(message);
           } finally {
             setDepositing(false);
           }
@@ -134,12 +137,14 @@ export default function CustomerPDA() {
         },
       };
 
-      const rzp = new (window as any).Razorpay(options);
+      const rzp = new window.Razorpay(options);
       rzp.open();
-    } catch (error: any) {
-      toast.error(
-        error.response?.data?.message || "There was an error initiating payment",
-      );
+    } catch (error) {
+      let message = "There was an error initiating payment";
+      if (axios.isAxiosError(error)) {
+        message = error.response?.data?.message || message;
+      }
+      toast.error(message);
       setDepositing(false);
     }
   };
@@ -172,9 +177,9 @@ export default function CustomerPDA() {
           title="Current Balance"
           value={`₹${pda.balance.toLocaleString()}`}
           icon={Wallet}
-          variant={pda.balance < (pda as any).lowBalanceThreshold ? "danger" : "success"}
+          variant={pda.balance < (pda.lowBalanceThreshold || 0) ? "danger" : "success"}
           subtitle={
-            pda.balance < (pda as any).lowBalanceThreshold ? (
+            pda.balance < (pda.lowBalanceThreshold || 0) ? (
               <span className="text-destructive font-semibold">Low Balance Alert</span>
             ) : "Available Funds"
           }

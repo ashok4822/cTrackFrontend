@@ -131,7 +131,7 @@ export default function CustomerDashboard() {
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main Operational Column */}
         <div className="lg:col-span-2 space-y-6">
-          <CustomerActiveRequests requests={kpiData.activeTasks as any || []} />
+          <CustomerActiveRequests requests={kpiData.activeTasks || []} />
 
           <div className="grid gap-6 sm:grid-cols-2">
             <Card>

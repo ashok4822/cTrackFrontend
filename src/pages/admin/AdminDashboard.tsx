@@ -49,6 +49,19 @@ const formatTimeAgo = (dateString: string) => {
   return `${days}d ago`;
 };
 
+interface SocketEventPayload {
+  type?: string;
+  action?: string;
+  data?: {
+    type?: string;
+    name?: string;
+    [key: string]: unknown;
+  };
+}
+
+const isSocketEventPayload = (d: unknown): d is SocketEventPayload =>
+  typeof d === "object" && d !== null;
+
 export default function AdminDashboard() {
   const dispatch = useAppDispatch();
   const { kpiData, isLoading: kpiLoading } = useAppSelector(
@@ -59,26 +72,28 @@ export default function AdminDashboard() {
   );
 
   const handleSocketEvent = useCallback(
-    (event: string, data: any) => {
+    (event: string, data: unknown) => {
       console.log(`[Socket] Event Received in Dashboard: ${event}`, data);
+
+      const payload = isSocketEventPayload(data) ? data : {};
 
       switch (event) {
         case "kpi_update":
-          console.log("[Socket] Processing kpi_update", data.type);
+          console.log("[Socket] Processing kpi_update", payload.type);
           // Apply optimistic update for immediate feedback
-          if (data.type === "GATE_OPERATION") {
+          if (payload.type === "GATE_OPERATION" && payload.data) {
             console.log(
               "[Socket] Triggering optimistic update for GATE_OPERATION",
             );
             dispatch(
               updateKPIOptimistically({
                 eventType: "GATE_OPERATION",
-                data: data.data,
+                data: payload.data,
               }),
             );
-          } else if (data.type === "YARD_UPDATE") {
+          } else if (payload.type === "YARD_UPDATE") {
             // Handle yard changes optimistically if data available
-            if (data.action === "UPDATE" && data.data.name) {
+            if (payload.action === "UPDATE" && payload.data?.name) {
               // Potentially refresh blocks or update state
             }
           }

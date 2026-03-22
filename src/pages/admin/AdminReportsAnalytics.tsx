@@ -61,6 +61,12 @@ import { containerRequestService } from "@/services/containerRequestService";
 import { dashboardService } from "@/services/dashboardService";
 import type { GateOperation, ContainerRequest, KPIData } from "@/types";
 
+interface jsPDFWithAutoTable extends jsPDF {
+  lastAutoTable: {
+    finalY: number;
+  };
+}
+
 // ─── Colour Palette ───────────────────────────────────────────────────────────
 const CHART_COLORS = {
   primary: "hsl(217, 91%, 45%)",
@@ -450,10 +456,10 @@ export default function AdminReportsAnalytics() {
 
     doc.setFontSize(14);
     doc.setTextColor(40);
-    doc.text("Bills Detail", 14, (doc as any).lastAutoTable.finalY + 15);
+    doc.text("Bills Detail", 14, (doc as jsPDFWithAutoTable).lastAutoTable.finalY + 15);
 
     autoTable(doc, {
-      startY: (doc as any).lastAutoTable.finalY + 20,
+      startY: (doc as jsPDFWithAutoTable).lastAutoTable.finalY + 20,
       head: [
         ["Bill #", "Container", "Customer", "Amount", "Status", "Generated Date", "Due Date"],
       ],
@@ -509,11 +515,11 @@ export default function AdminReportsAnalytics() {
     doc.text(
       "Gate Operations Detail",
       14,
-      (doc as any).lastAutoTable.finalY + 15,
+      (doc as jsPDFWithAutoTable).lastAutoTable.finalY + 15,
     );
 
     autoTable(doc, {
-      startY: (doc as any).lastAutoTable.finalY + 20,
+      startY: (doc as jsPDFWithAutoTable).lastAutoTable.finalY + 20,
       head: [
         ["Type", "Container #", "Vehicle #", "Driver", "Purpose", "Timestamp"],
       ],
@@ -687,7 +693,7 @@ export default function AdminReportsAnalytics() {
                         />
                         <Tooltip
                           contentStyle={ChartTooltipStyle}
-                          formatter={(v: any) => [
+                          formatter={(v: number | string | (string | number)[] | undefined) => [
                             formatCurrency(Number(v || 0)),
                             "",
                           ]}
@@ -791,7 +797,7 @@ export default function AdminReportsAnalytics() {
                       />
                       <Tooltip
                         contentStyle={ChartTooltipStyle}
-                        formatter={(v: any) => [
+                        formatter={(v: number | string | (string | number)[] | undefined) => [
                           formatCurrency(Number(v || 0)),
                           "Revenue",
                         ]}

@@ -44,6 +44,44 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+interface RazorpayResponse {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}
+
+interface RazorpayOptions {
+  key: string;
+  amount: number;
+  currency: string;
+  name: string;
+  description: string;
+  order_id: string;
+  handler: (response: RazorpayResponse) => Promise<void>;
+  prefill: {
+    name: string;
+    email: string;
+    contact: string;
+  };
+  theme: {
+    color: string;
+  };
+  modal: {
+    ondismiss: () => void;
+  };
+}
+
+interface RazorpayInstance {
+  open: () => void;
+  on: (event: string, callback: (response: { error: { code: string; description: string; source: string; step: string; reason: string; metadata: { order_id: string; payment_id: string; }; }; }) => void) => void;
+}
+
+declare global {
+  interface Window {
+    Razorpay: new (options: RazorpayOptions) => RazorpayInstance;
+  }
+}
+
 export default function CustomerPayment() {
   const { billId } = useParams();
   const navigate = useNavigate();
@@ -179,16 +217,16 @@ export default function CustomerPayment() {
         const order = await billingService.createRazorpayOrder(billId);
 
         // 3. Open Razorpay Checkout
-        const options = {
+        const options: RazorpayOptions = {
           key:
-            (import.meta as any).env.VITE_RAZOR_KEY_ID ||
+            import.meta.env.VITE_RAZOR_KEY_ID ||
             "rzp_test_KDYrLJHnu3O9Ip",
           amount: order.amount,
           currency: order.currency,
           name: "cTrack Logistics",
           description: `Payment for Bill ${bill.billNumber}`,
           order_id: order.id,
-          handler: async function (response: any) {
+          handler: async function (response: RazorpayResponse) {
             try {
               setIsProcessing(true);
               const verificationResult =
@@ -207,12 +245,14 @@ export default function CustomerPayment() {
                   `/customer/payment-confirmation/${billId}?status=success&method=${paymentMethod}`,
                 );
               }
-            } catch (error: any) {
+            } catch (error: unknown) {
+              const errorMessage = error instanceof Error 
+                ? error.message 
+                : (error as { response?: { data?: { message?: string } } })?.response?.data?.message || "Payment verification failed. Please contact support.";
+              
               toast({
                 title: "Verification Failed",
-                description:
-                  error.response?.data?.message ||
-                  "Payment verification failed. Please contact support.",
+                description: errorMessage,
                 variant: "destructive",
               });
               navigate(
@@ -237,9 +277,9 @@ export default function CustomerPayment() {
           },
         };
 
-        const rzp = new (window as any).Razorpay(options);
+        const rzp = new window.Razorpay(options);
 
-        rzp.on("payment.failed", function (response: any) {
+        rzp.on("payment.failed", function (response: { error: { code: string; description: string; source: string; step: string; reason: string; metadata: { order_id: string; payment_id: string; }; }; }) {
           console.error("Payment failed:", response.error);
           setIsProcessing(false);
           navigate(
@@ -279,12 +319,14 @@ export default function CustomerPayment() {
       navigate(
         `/customer/payment-confirmation/${billId}?status=success&method=pda`
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : (error as { response?: { data?: { message?: string } } })?.response?.data?.message || "There was an error processing your payment.";
+
       toast({
         title: "Payment Failed",
-        description:
-          error.response?.data?.message ||
-          "There was an error processing your payment.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

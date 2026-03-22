@@ -40,12 +40,12 @@ const dashboardSlice = createSlice({
     setKPIData: (state, action: PayloadAction<KPIData>) => {
       state.kpiData = action.payload;
     },
-    updateKPIOptimistically: (state, action: PayloadAction<{ eventType: string; data: any }>) => {
+    updateKPIOptimistically: (state, action: PayloadAction<{ eventType: string; data: Record<string, unknown> }>) => {
       if (!state.kpiData) return;
       const { eventType, data } = action.payload;
 
       if (eventType === 'GATE_OPERATION') {
-        const opType = data.type; // 'gate-in' or 'gate-out'
+        const opType = data.type as string; // 'gate-in' or 'gate-out'
         
         // Update counters
         if (opType === 'gate-in') {
