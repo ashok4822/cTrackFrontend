@@ -1,7 +1,7 @@
 import { useEffect, useRef, useCallback } from "react";
 import { socketService } from "@/services/socket";
 
-export const useSocket = (onEvent?: (event: string, data: any) => void) => {
+export const useSocket = (onEvent?: (event: string, data: unknown) => void) => {
   const onEventRef = useRef(onEvent);
 
   // Keep onEventRef up to date without re-triggering the effect
@@ -10,7 +10,7 @@ export const useSocket = (onEvent?: (event: string, data: any) => void) => {
   }, [onEvent]);
 
   useEffect(() => {
-    const handleAny = (eventName: string, data: any) => {
+    const handleAny = (eventName: string, data: unknown) => {
       if (onEventRef.current) {
         onEventRef.current(eventName, data);
       }
@@ -24,7 +24,7 @@ export const useSocket = (onEvent?: (event: string, data: any) => void) => {
   }, []);
 
   const emit = useCallback(
-    (event: string, data: any) => {
+    (event: string, data: unknown) => {
       socketService.emit(event, data);
     },
     [],

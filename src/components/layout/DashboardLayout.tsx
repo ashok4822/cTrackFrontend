@@ -7,7 +7,10 @@ import type { NavItem, Notification } from "@/types";
 import { useSocket } from "@/hooks/useSocket";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
-import { fetchNotifications, addNotification } from "@/store/slices/notificationSlice";
+import {
+  fetchNotifications,
+  addNotification,
+} from "@/store/slices/notificationSlice";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -35,11 +38,14 @@ function DashboardLayout({
   }, [dispatch, user]);
 
   // Handle real-time notifications
-  const handleSocketEvent = useCallback((event: string, data: any) => {
-    if (event === "notification") {
-      dispatch(addNotification(data as Notification));
-    }
-  }, [dispatch]);
+  const handleSocketEvent = useCallback(
+    (event: string, data: unknown) => {
+      if (event === "notification") {
+        dispatch(addNotification(data as Notification));
+      }
+    },
+    [dispatch],
+  );
 
   const { emit } = useSocket(handleSocketEvent);
 

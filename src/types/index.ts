@@ -216,7 +216,8 @@ export interface AuditLog {
 
 // Notification Types
 export interface Notification {
-  id: string;
+  id?: string;
+  _id?: string;
   type: "alert" | "info" | "warning" | "success";
   title: string;
   message: string;

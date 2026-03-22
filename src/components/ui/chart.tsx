@@ -59,7 +59,7 @@ const ChartContainer = React.forwardRef<
 ChartContainer.displayName = "Chart";
 
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
-  const colorConfig = Object.entries(config).filter(([_, config]) => config.theme || config.color);
+  const colorConfig = Object.entries(config).filter(([, config]) => config.theme || config.color);
 
   if (!colorConfig.length) {
     return null;
@@ -91,7 +91,7 @@ const ChartTooltip = RechartsPrimitive.Tooltip;
 
 const ChartTooltipContent = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
+  RechartsPrimitive.TooltipContentProps<number | string | Array<number | string>, number | string> &
     React.ComponentProps<"div"> & {
       hideLabel?: boolean;
       hideIndicator?: boolean;
@@ -99,7 +99,7 @@ const ChartTooltipContent = React.forwardRef<
       nameKey?: string;
       labelKey?: string;
     }
->(
+> (
   (
     {
       active,
@@ -230,7 +230,8 @@ const ChartLegend = RechartsPrimitive.Legend;
 const ChartLegendContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> &
-    Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
+    Pick<RechartsPrimitive.DefaultLegendContentProps, "payload"> &
+    Pick<RechartsPrimitive.LegendProps, "verticalAlign"> & {
       hideIcon?: boolean;
       nameKey?: string;
     }

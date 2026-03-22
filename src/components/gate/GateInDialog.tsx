@@ -6,625 +6,685 @@ import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogDescription,
-    DialogFooter,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { type CreateGateOperationData } from "@/services/gateOperationService";
-import type { ShippingLine } from "@/types";
+import type { ShippingLine, User } from "@/types";
 
 const gateInSchema = z.object({
-    containerNumber: z.string().length(11),
-    size: z.enum(["20ft", "40ft"] as const),
-    type: z.enum(["standard", "reefer", "tank", "open-top"] as const),
-    movementType: z.enum(["import", "export", "domestic"] as const),
-    shippingLine: z.string().min(1),
-    weight: z.string(),
-    vehicleNumber: z.string().min(1),
-    driverName: z.string().min(1),
-    driverPhone: z.string().min(1),
-    vehicleType: z.enum(["truck", "trailer", "chassis"] as const),
-    purpose: z.enum(["port", "factory", "transfer"] as const),
-    sealNumber: z.string(),
-    cargoWeight: z.string(),
-    remarks: z.string(),
-    loaded: z.boolean(),
-    customer: z.string().optional(),
-    cargoDescription: z.string().optional(),
-    hazardousClassification: z.boolean().optional(),
-    hasDamage: z.boolean(),
-    cargoCategory: z.string().optional(),
+  containerNumber: z.string().length(11),
+  size: z.enum(["20ft", "40ft"] as const),
+  type: z.enum(["standard", "reefer", "tank", "open-top"] as const),
+  movementType: z.enum(["import", "export", "domestic"] as const),
+  shippingLine: z.string().min(1),
+  weight: z.string(),
+  vehicleNumber: z.string().min(1),
+  driverName: z.string().min(1),
+  driverPhone: z.string().min(1),
+  vehicleType: z.enum(["truck", "trailer", "chassis"] as const),
+  purpose: z.enum(["port", "factory", "transfer"] as const),
+  sealNumber: z.string(),
+  cargoWeight: z.string(),
+  remarks: z.string(),
+  loaded: z.boolean(),
+  customer: z.string().optional(),
+  cargoDescription: z.string().optional(),
+  hazardousClassification: z.boolean().optional(),
+  hasDamage: z.boolean(),
+  cargoCategory: z.string().optional(),
 });
 
 type GateInFormData = z.infer<typeof gateInSchema>;
 
 interface GateInDialogProps {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
-    onSubmit: (data: CreateGateOperationData) => Promise<void>;
-    loading: boolean;
-    shippingLines: ShippingLine[];
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSubmit: (data: CreateGateOperationData) => Promise<void>;
+  loading: boolean;
+  shippingLines: ShippingLine[];
 }
 
 export function GateInDialog({
-    open,
-    onOpenChange,
-    onSubmit,
-    loading,
-    shippingLines,
+  open,
+  onOpenChange,
+  onSubmit,
+  loading,
+  shippingLines,
 }: GateInDialogProps) {
-    const form = useForm<GateInFormData>({
-        resolver: zodResolver(gateInSchema),
-        defaultValues: {
-            containerNumber: "",
-            size: "40ft",
-            type: "standard",
-            movementType: "import",
-            shippingLine: "",
-            weight: "",
-            vehicleNumber: "",
-            driverName: "",
-            driverPhone: "",
-            vehicleType: "truck",
-            purpose: "port",
-            sealNumber: "",
-            cargoWeight: "",
-            remarks: "",
-            loaded: false,
-            customer: "",
-            cargoDescription: "",
-            hazardousClassification: false,
-            hasDamage: false,
-            cargoCategory: "",
-        },
-    });
+  const form = useForm<GateInFormData>({
+    resolver: zodResolver(gateInSchema),
+    defaultValues: {
+      containerNumber: "",
+      size: "40ft",
+      type: "standard",
+      movementType: "import",
+      shippingLine: "",
+      weight: "",
+      vehicleNumber: "",
+      driverName: "",
+      driverPhone: "",
+      vehicleType: "truck",
+      purpose: "port",
+      sealNumber: "",
+      cargoWeight: "",
+      remarks: "",
+      loaded: false,
+      customer: "",
+      cargoDescription: "",
+      hazardousClassification: false,
+      hasDamage: false,
+      cargoCategory: "",
+    },
+  });
 
-    const isLoaded = useWatch({
-        control: form.control,
-        name: "loaded",
-        defaultValue: false,
-    });
+  const isLoaded = useWatch({
+    control: form.control,
+    name: "loaded",
+    defaultValue: false,
+  });
 
-    useEffect(() => {
-        if (open) {
-            form.reset({
-                containerNumber: "",
-                size: "40ft",
-                type: "standard",
-                movementType: "import",
-                shippingLine: "",
-                weight: "",
-                vehicleNumber: "",
-                driverName: "",
-                driverPhone: "",
-                vehicleType: "truck",
-                purpose: "port",
-                sealNumber: "",
-                cargoWeight: "",
-                remarks: "",
-                loaded: false,
-                customer: "",
-                cargoDescription: "",
-                hazardousClassification: false,
-                hasDamage: false,
-                cargoCategory: "",
-            });
-        }
-    }, [open]);
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        containerNumber: "",
+        size: "40ft",
+        type: "standard",
+        movementType: "import",
+        shippingLine: "",
+        weight: "",
+        vehicleNumber: "",
+        driverName: "",
+        driverPhone: "",
+        vehicleType: "truck",
+        purpose: "port",
+        sealNumber: "",
+        cargoWeight: "",
+        remarks: "",
+        loaded: false,
+        customer: "",
+        cargoDescription: "",
+        hazardousClassification: false,
+        hasDamage: false,
+        cargoCategory: "",
+      });
+    }
+  }, [open, form]);
 
-    const onFormSubmit = async (data: GateInFormData) => {
-        try {
-            const payload: CreateGateOperationData = {
-                type: "gate-in",
-                containerNumber: data.containerNumber,
-                vehicleNumber: data.vehicleNumber,
-                driverName: data.driverName,
-                purpose: data.purpose,
-                remarks: data.remarks,
-                size: data.size,
-                containerType: data.type,
-                shippingLine: data.shippingLine,
-                weight: data.weight ? Number(data.weight) : undefined,
-                cargoWeight: data.cargoWeight ? Number(data.cargoWeight) : undefined,
-                sealNumber: data.sealNumber,
-                empty: !data.loaded,
-                movementType: data.movementType,
-                driverPhone: data.driverPhone,
-                vehicleType: data.vehicleType,
-                customer: data.customer,
-                cargoDescription: data.cargoDescription,
-                hazardousClassification: data.hazardousClassification,
-                cargoCategory: data.cargoCategory,
-            };
-            await onSubmit(payload);
-        } catch (err: any) {
-            console.error("Gate-in submission failed:", err);
-            const message = typeof err === "string" ? err : err.response?.data?.message || err.message || "Failed to record gate-in";
+  const onFormSubmit = async (data: GateInFormData) => {
+    try {
+      const payload: CreateGateOperationData = {
+        type: "gate-in",
+        containerNumber: data.containerNumber,
+        vehicleNumber: data.vehicleNumber,
+        driverName: data.driverName,
+        purpose: data.purpose,
+        remarks: data.remarks,
+        size: data.size,
+        containerType: data.type,
+        shippingLine: data.shippingLine,
+        weight: data.weight ? Number(data.weight) : undefined,
+        cargoWeight: data.cargoWeight ? Number(data.cargoWeight) : undefined,
+        sealNumber: data.sealNumber,
+        empty: !data.loaded,
+        movementType: data.movementType,
+        driverPhone: data.driverPhone,
+        vehicleType: data.vehicleType,
+        customer: data.customer,
+        cargoDescription: data.cargoDescription,
+        hazardousClassification: data.hazardousClassification,
+        cargoCategory: data.cargoCategory,
+      };
+      await onSubmit(payload);
+    } catch (err: unknown) {
+      console.error("Gate-in submission failed:", err);
+      const error = err as {
+        response?: { data?: { message?: string } };
+        message?: string;
+      };
+      const message =
+        typeof err === "string"
+          ? err
+          : error.response?.data?.message ||
+            error.message ||
+            "Failed to record gate-in";
 
-            if (message.toLowerCase().includes("vehicle")) {
-                form.setError("vehicleNumber", { message });
-            } else if (message.toLowerCase().includes("container")) {
-                form.setError("containerNumber", { message });
-            } else {
-                toast.error(message);
-            }
-        }
+      if (message.toLowerCase().includes("vehicle")) {
+        form.setError("vehicleNumber", { message });
+      } else if (message.toLowerCase().includes("container")) {
+        form.setError("containerNumber", { message });
+      } else {
+        toast.error(message);
+      }
+    }
+  };
+
+  const [customers, setCustomers] = useState<{ id: string; name: string }[]>(
+    [],
+  );
+  const [cargoCategories, setCargoCategories] = useState<CargoCategory[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch Customers
+        const userResponse = await api.get("/users");
+        const customerUsers = userResponse.data.filter(
+          (u: User) => u.role === "customer",
+        );
+        setCustomers(
+          customerUsers.map((u: User) => ({
+            id: u.id,
+            name: u.companyName || u.name || u.email,
+          })),
+        );
+
+        // Fetch Cargo Categories
+        const categories = await billingService.fetchCargoCategories();
+        setCargoCategories(categories.filter((c) => c.active));
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+      }
     };
+    if (open) fetchData();
+  }, [open]);
 
-    const [customers, setCustomers] = useState<{ id: string; name: string }[]>([]);
-    const [cargoCategories, setCargoCategories] = useState<CargoCategory[]>([]);
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg flex flex-col max-h-[90vh]">
+        <DialogHeader>
+          <DialogTitle>New Gate-In</DialogTitle>
+          <DialogDescription>Record a new container gate-in</DialogDescription>
+        </DialogHeader>
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onFormSubmit)}
+            className="flex flex-col flex-1 overflow-hidden"
+          >
+            <div className="flex-1 overflow-y-auto px-1 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="containerNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Container Number</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="MSCU1234567"
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(e.target.value.toUpperCase())
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="size"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Container Size</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select size" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="20ft">20ft</SelectItem>
+                          <SelectItem value="40ft">40ft</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                // Fetch Customers
-                const userResponse = await api.get("/users");
-                const customerUsers = userResponse.data.filter((u: any) => u.role === "customer");
-                setCustomers(customerUsers.map((u: any) => ({
-                    id: u.id,
-                    name: u.companyName || u.name || u.email
-                })));
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Container Type</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="standard">Standard</SelectItem>
+                          <SelectItem value="reefer">Reefer</SelectItem>
+                          <SelectItem value="tank">Tank</SelectItem>
+                          <SelectItem value="open-top">Open Top</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="movementType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Movement Type</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select movement" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="import">Import</SelectItem>
+                          <SelectItem value="export">Export</SelectItem>
+                          <SelectItem value="domestic">Domestic</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-                // Fetch Cargo Categories
-                const categories = await billingService.fetchCargoCategories();
-                setCargoCategories(categories.filter(c => c.active));
-            } catch (error) {
-                console.error("Failed to fetch data:", error);
-            }
-        };
-        if (open) fetchData();
-    }, [open]);
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="shippingLine"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Shipping Line</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select shipping line" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {shippingLines.map((line) => (
+                            <SelectItem
+                              key={line.id}
+                              value={line.shipping_line_name}
+                            >
+                              {line.shipping_line_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="weight"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tare Weight (kg)</FormLabel>
+                      <FormControl>
+                        <Input type="number" placeholder="2200" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-    return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-lg flex flex-col max-h-[90vh]">
-                <DialogHeader>
-                    <DialogTitle>New Gate-In</DialogTitle>
-                    <DialogDescription>Record a new container gate-in</DialogDescription>
-                </DialogHeader>
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onFormSubmit)} className="flex flex-col flex-1 overflow-hidden">
-                        <div className="flex-1 overflow-y-auto px-1 space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <FormField
-                                    control={form.control}
-                                    name="containerNumber"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Container Number</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    placeholder="MSCU1234567"
-                                                    {...field}
-                                                    onChange={(e) => field.onChange(e.target.value.toUpperCase())}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="size"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Container Size</FormLabel>
-                                            <Select onValueChange={field.onChange} value={field.value}>
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select size" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    <SelectItem value="20ft">20ft</SelectItem>
-                                                    <SelectItem value="40ft">40ft</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="vehicleNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Vehicle Number</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="TN01AB1234"
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(e.target.value.toUpperCase())
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="driverName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Driver Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter driver name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <FormField
-                                    control={form.control}
-                                    name="type"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Container Type</FormLabel>
-                                            <Select onValueChange={field.onChange} value={field.value}>
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select type" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    <SelectItem value="standard">Standard</SelectItem>
-                                                    <SelectItem value="reefer">Reefer</SelectItem>
-                                                    <SelectItem value="tank">Tank</SelectItem>
-                                                    <SelectItem value="open-top">Open Top</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="movementType"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Movement Type</FormLabel>
-                                            <Select onValueChange={field.onChange} value={field.value}>
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select movement" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    <SelectItem value="import">Import</SelectItem>
-                                                    <SelectItem value="export">Export</SelectItem>
-                                                    <SelectItem value="domestic">Domestic</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="driverPhone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Driver Phone</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter driver phone" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="vehicleType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Vehicle Type</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="truck">Truck</SelectItem>
+                          <SelectItem value="trailer">Trailer</SelectItem>
+                          <SelectItem value="chassis">Chassis</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <FormField
-                                    control={form.control}
-                                    name="shippingLine"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Shipping Line</FormLabel>
-                                            <Select onValueChange={field.onChange} value={field.value}>
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select shipping line" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    {shippingLines.map((line) => (
-                                                        <SelectItem key={line.id} value={line.shipping_line_name}>
-                                                            {line.shipping_line_name}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="weight"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Tare Weight (kg)</FormLabel>
-                                            <FormControl>
-                                                <Input type="number" placeholder="2200" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
+              <FormField
+                control={form.control}
+                name="purpose"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Purpose</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select purpose" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="port">From Port</SelectItem>
+                        <SelectItem value="factory">From Factory</SelectItem>
+                        <SelectItem value="transfer">Transfer</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <FormField
-                                    control={form.control}
-                                    name="vehicleNumber"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Vehicle Number</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    placeholder="TN01AB1234"
-                                                    {...field}
-                                                    onChange={(e) => field.onChange(e.target.value.toUpperCase())}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="driverName"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Driver Name</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="Enter driver name" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="loaded"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 pt-4">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={(checked) =>
+                            field.onChange(!!checked)
+                          }
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel>Loaded Container</FormLabel>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="hasDamage"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 pt-4">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel className="text-destructive">
+                          Has Damage
+                        </FormLabel>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <FormField
-                                    control={form.control}
-                                    name="driverPhone"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Driver Phone</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="Enter driver phone" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="vehicleType"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Vehicle Type</FormLabel>
-                                            <Select onValueChange={field.onChange} value={field.value}>
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select type" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    <SelectItem value="truck">Truck</SelectItem>
-                                                    <SelectItem value="trailer">Trailer</SelectItem>
-                                                    <SelectItem value="chassis">Chassis</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
+              {isLoaded && (
+                <FormField
+                  control={form.control}
+                  name="customer"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Assign to Customer</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select customer" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {customers.length === 0 ? (
+                            <SelectItem value="none" disabled>
+                              No customers found
+                            </SelectItem>
+                          ) : (
+                            customers.map((customer) => (
+                              <SelectItem key={customer.id} value={customer.id}>
+                                {customer.name}
+                              </SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
-                            <FormField
-                                control={form.control}
-                                name="purpose"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Purpose</FormLabel>
-                                        <Select onValueChange={field.onChange} value={field.value}>
-                                            <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select purpose" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                <SelectItem value="port">From Port</SelectItem>
-                                                <SelectItem value="factory">From Factory</SelectItem>
-                                                <SelectItem value="transfer">Transfer</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+              {isLoaded && (
+                <FormField
+                  control={form.control}
+                  name="cargoCategory"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Cargo Category</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select cargo category" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {cargoCategories.length === 0 ? (
+                            <SelectItem value="none" disabled>
+                              No categories found
+                            </SelectItem>
+                          ) : (
+                            cargoCategories.map((category) => (
+                              <SelectItem
+                                key={category.id}
+                                value={category.name}
+                              >
+                                {category.name}
+                              </SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <FormField
-                                    control={form.control}
-                                    name="loaded"
-                                    render={({ field }) => (
-                                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 pt-4">
-                                            <FormControl>
-                                                <Checkbox
-                                                    checked={field.value}
-                                                    onCheckedChange={(checked) => field.onChange(!!checked)}
-                                                />
-                                            </FormControl>
-                                            <div className="space-y-1 leading-none">
-                                                <FormLabel>Loaded Container</FormLabel>
-                                            </div>
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="hasDamage"
-                                    render={({ field }) => (
-                                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 pt-4">
-                                            <FormControl>
-                                                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                                            </FormControl>
-                                            <div className="space-y-1 leading-none">
-                                                <FormLabel className="text-destructive">Has Damage</FormLabel>
-                                            </div>
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
+              {isLoaded && (
+                <FormField
+                  control={form.control}
+                  name="cargoWeight"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Cargo Weight (kg)</FormLabel>
+                      <FormControl>
+                        <Input type="number" placeholder="18000" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
-                            {isLoaded && (
-                                <FormField
-                                    control={form.control}
-                                    name="customer"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Assign to Customer</FormLabel>
-                                            <Select onValueChange={field.onChange} value={field.value}>
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select customer" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    {customers.length === 0 ? (
-                                                        <SelectItem value="none" disabled>
-                                                            No customers found
-                                                        </SelectItem>
-                                                    ) : (
-                                                        customers.map((customer) => (
-                                                            <SelectItem key={customer.id} value={customer.id}>
-                                                                {customer.name}
-                                                            </SelectItem>
-                                                        ))
-                                                    )}
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            )}
-
-                            {isLoaded && (
-                                <FormField
-                                    control={form.control}
-                                    name="cargoCategory"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Cargo Category</FormLabel>
-                                            <Select onValueChange={field.onChange} value={field.value}>
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select cargo category" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    {cargoCategories.length === 0 ? (
-                                                        <SelectItem value="none" disabled>
-                                                            No categories found
-                                                        </SelectItem>
-                                                    ) : (
-                                                        cargoCategories.map((category) => (
-                                                            <SelectItem key={category.id} value={category.name}>
-                                                                {category.name}
-                                                            </SelectItem>
-                                                        ))
-                                                    )}
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            )}
-
-                            {isLoaded && (
-                                <FormField
-                                    control={form.control}
-                                    name="cargoWeight"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Cargo Weight (kg)</FormLabel>
-                                            <FormControl>
-                                                <Input type="number" placeholder="18000" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            )}
-
-                            {isLoaded && (
-                                <div className="grid grid-cols-1 gap-4">
-                                    <FormField
-                                        control={form.control}
-                                        name="hazardousClassification"
-                                        render={({ field }) => (
-                                            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                                                <FormControl>
-                                                    <Checkbox
-                                                        checked={field.value}
-                                                        onCheckedChange={field.onChange}
-                                                    />
-                                                </FormControl>
-                                                <div className="space-y-1 leading-none">
-                                                    <FormLabel>Is Hazardous</FormLabel>
-                                                </div>
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="cargoDescription"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Cargo Description</FormLabel>
-                                                <FormControl>
-                                                    <Textarea
-                                                        placeholder="Enter cargo description"
-                                                        className="resize-none"
-                                                        {...field}
-                                                    />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-                            )}
-
-                            <FormField
-                                control={form.control}
-                                name="sealNumber"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Seal Number</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="Enter seal number" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-
-                            <FormField
-                                control={form.control}
-                                name="remarks"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Remarks</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="Optional remarks" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+              {isLoaded && (
+                <div className="grid grid-cols-1 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="hazardousClassification"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>Is Hazardous</FormLabel>
                         </div>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="cargoDescription"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Cargo Description</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Enter cargo description"
+                            className="resize-none"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
 
-                        <DialogFooter className="pt-4">
-                            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                                Cancel
-                            </Button>
-                            <Button type="submit" disabled={loading}>
-                                {loading ? "Processing..." : "Process Gate-In"}
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </Form>
-            </DialogContent>
-        </Dialog>
-    );
+              <FormField
+                control={form.control}
+                name="sealNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Seal Number</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter seal number" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="remarks"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Remarks</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Optional remarks" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <DialogFooter className="pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? "Processing..." : "Process Gate-In"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  );
 }
