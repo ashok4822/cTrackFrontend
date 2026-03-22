@@ -33,6 +33,7 @@ import { billingService, type BillRecord } from "@/services/billingService";
 import { pdaService } from "@/services/pdaService";
 import { useToast } from "@/hooks/useToast";
 import { useEffect, useCallback } from "react";
+import type { RazorpayOptions, RazorpayResponse } from "@/types/razorpay";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,44 +44,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-
-interface RazorpayResponse {
-  razorpay_order_id: string;
-  razorpay_payment_id: string;
-  razorpay_signature: string;
-}
-
-interface RazorpayOptions {
-  key: string;
-  amount: number;
-  currency: string;
-  name: string;
-  description: string;
-  order_id: string;
-  handler: (response: RazorpayResponse) => Promise<void>;
-  prefill: {
-    name: string;
-    email: string;
-    contact: string;
-  };
-  theme: {
-    color: string;
-  };
-  modal: {
-    ondismiss: () => void;
-  };
-}
-
-interface RazorpayInstance {
-  open: () => void;
-  on: (event: string, callback: (response: { error: { code: string; description: string; source: string; step: string; reason: string; metadata: { order_id: string; payment_id: string; }; }; }) => void) => void;
-}
-
-declare global {
-  interface Window {
-    Razorpay: new (options: RazorpayOptions) => RazorpayInstance;
-  }
-}
 
 export default function CustomerPayment() {
   const { billId } = useParams();
@@ -218,9 +181,7 @@ export default function CustomerPayment() {
 
         // 3. Open Razorpay Checkout
         const options: RazorpayOptions = {
-          key:
-            import.meta.env.VITE_RAZOR_KEY_ID ||
-            "rzp_test_KDYrLJHnu3O9Ip",
+          key: import.meta.env.VITE_RAZOR_KEY_ID || "rzp_test_KDYrLJHnu3O9Ip",
           amount: order.amount,
           currency: order.currency,
           name: "cTrack Logistics",
@@ -246,17 +207,20 @@ export default function CustomerPayment() {
                 );
               }
             } catch (error: unknown) {
-              const errorMessage = error instanceof Error 
-                ? error.message 
-                : (error as { response?: { data?: { message?: string } } })?.response?.data?.message || "Payment verification failed. Please contact support.";
-              
+              const errorMessage =
+                error instanceof Error
+                  ? error.message
+                  : (error as { response?: { data?: { message?: string } } })
+                      ?.response?.data?.message ||
+                    "Payment verification failed. Please contact support.";
+
               toast({
                 title: "Verification Failed",
                 description: errorMessage,
                 variant: "destructive",
               });
               navigate(
-                `/customer/payment-confirmation/${billId}?status=failure&method=online`
+                `/customer/payment-confirmation/${billId}?status=failure&method=online`,
               );
             } finally {
               setIsProcessing(false);
@@ -279,14 +243,26 @@ export default function CustomerPayment() {
 
         const rzp = new window.Razorpay(options);
 
-        rzp.on("payment.failed", function (response: { error: { code: string; description: string; source: string; step: string; reason: string; metadata: { order_id: string; payment_id: string; }; }; }) {
-          console.error("Payment failed:", response.error);
-          setIsProcessing(false);
-          navigate(
-            `/customer/payment-confirmation/${billId}?status=failure&method=online`,
-            { replace: true }
-          );
-        });
+        rzp.on(
+          "payment.failed",
+          function (response: {
+            error: {
+              code: string;
+              description: string;
+              source: string;
+              step: string;
+              reason: string;
+              metadata: { order_id: string; payment_id: string };
+            };
+          }) {
+            console.error("Payment failed:", response.error);
+            setIsProcessing(false);
+            navigate(
+              `/customer/payment-confirmation/${billId}?status=failure&method=online`,
+              { replace: true },
+            );
+          },
+        );
 
         rzp.open();
         return; // SDK handler will take over
@@ -317,12 +293,14 @@ export default function CustomerPayment() {
         description: "Your payment has been processed successfully.",
       });
       navigate(
-        `/customer/payment-confirmation/${billId}?status=success&method=pda`
+        `/customer/payment-confirmation/${billId}?status=success&method=pda`,
       );
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : (error as { response?: { data?: { message?: string } } })?.response?.data?.message || "There was an error processing your payment.";
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : (error as { response?: { data?: { message?: string } } })?.response
+              ?.data?.message || "There was an error processing your payment.";
 
       toast({
         title: "Payment Failed",
@@ -534,8 +512,9 @@ export default function CustomerPayment() {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirm PDA Payment</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to pay ₹{bill.totalAmount.toLocaleString()} using your Pre-Deposit Account?
-              This amount will be deducted from your current balance of ₹{pdaBalance.toLocaleString()}.
+              Are you sure you want to pay ₹{bill.totalAmount.toLocaleString()}{" "}
+              using your Pre-Deposit Account? This amount will be deducted from
+              your current balance of ₹{pdaBalance.toLocaleString()}.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
