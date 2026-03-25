@@ -1,6 +1,7 @@
 import api from "./api";
 import type { PreDepositAccount, PDATransaction } from "@/types";
 import { API_ENDPOINTS } from "@/constants/apiEndpoints";
+import type { RazorpayOrder, RazorpayResponse } from "@/types/razorpay";
 
 export const pdaService = {
     getPDA: async (): Promise<PreDepositAccount & { transactions: PDATransaction[] }> => {
@@ -13,12 +14,12 @@ export const pdaService = {
         return response.data;
     },
 
-    createPDAOrder: async (amount: number): Promise<any> => {
+    createPDAOrder: async (amount: number): Promise<RazorpayOrder> => {
         const response = await api.post(API_ENDPOINTS.PDA.RAZORPAY_ORDER, { amount });
         return response.data;
     },
 
-    verifyPDAPayment: async (amount: number, paymentData: any): Promise<PDATransaction> => {
+    verifyPDAPayment: async (amount: number, paymentData: RazorpayResponse): Promise<PDATransaction> => {
         const response = await api.post(API_ENDPOINTS.PDA.RAZORPAY_VERIFY, { amount, ...paymentData });
         return response.data;
     },

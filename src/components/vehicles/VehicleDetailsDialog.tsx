@@ -26,24 +26,23 @@ export function VehicleDetailsDialog({ vehicle }: VehicleDetailsDialogProps) {
 
     useEffect(() => {
         if (open) {
+            const fetchHistory = async () => {
+                setIsLoading(true);
+                try {
+                    const data = await gateOperationService.getGateOperations({
+                        vehicleNumber: vehicle.vehicleNumber.trim(),
+                        limit: 20
+                    });
+                    setHistory(data);
+                } catch (error) {
+                    console.error("Failed to fetch vehicle history:", error);
+                } finally {
+                    setIsLoading(false);
+                }
+            };
             fetchHistory();
         }
-    }, [open]);
-
-    const fetchHistory = async () => {
-        setIsLoading(true);
-        try {
-            const data = await gateOperationService.getGateOperations({
-                vehicleNumber: vehicle.vehicleNumber.trim(),
-                limit: 20
-            });
-            setHistory(data);
-        } catch (error) {
-            console.error("Failed to fetch vehicle history:", error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    }, [open, vehicle.vehicleNumber]);
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>

@@ -25,9 +25,33 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Receipt, IndianRupee, Edit, Plus, Package, Clock, Loader2 } from "lucide-react";
+import {
+  Receipt,
+  IndianRupee,
+  Edit,
+  Plus,
+  Package,
+  Clock,
+  Loader2,
+} from "lucide-react";
 import { adminNavItems } from "@/config/navigation";
-import { billingService, type Activity, type Charge, type ChargeHistory, type CargoCategory } from "@/services/billingService";
+import {
+  billingService,
+  type Activity,
+  type Charge,
+  type ChargeHistory,
+  type CargoCategory,
+} from "@/services/billingService";
+
+interface ApiError {
+  response?: { data?: { message?: string } };
+  message?: string;
+}
+
+const getErrorMessage = (error: unknown, fallback: string): string => {
+  const e = error as ApiError;
+  return e?.response?.data?.message ?? e?.message ?? fallback;
+};
 import { toast } from "sonner";
 
 const AdminActivitiesCharges = () => {
@@ -38,7 +62,9 @@ const AdminActivitiesCharges = () => {
   const [loading, setLoading] = useState(true);
   const [editingCharge, setEditingCharge] = useState<Charge | null>(null);
   const [newRate, setNewRate] = useState("");
-  const [effectiveDate, setEffectiveDate] = useState(new Date().toISOString().split("T")[0]);
+  const [effectiveDate, setEffectiveDate] = useState(
+    new Date().toISOString().split("T")[0],
+  );
   const [isUpdating, setIsUpdating] = useState(false);
   const [isUpdateRateOpen, setIsUpdateRateOpen] = useState(false);
   const [isNewActivityOpen, setIsNewActivityOpen] = useState(false);
@@ -47,7 +73,9 @@ const AdminActivitiesCharges = () => {
   const [isEditCategoryOpen, setIsEditCategoryOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
-  const [editingCategory, setEditingCategory] = useState<CargoCategory | null>(null);
+  const [editingCategory, setEditingCategory] = useState<CargoCategory | null>(
+    null,
+  );
   const [newActivity, setNewActivity] = useState<Partial<Activity>>({
     code: "",
     name: "",
@@ -61,7 +89,9 @@ const AdminActivitiesCharges = () => {
     chargePerTon: 0,
   });
   const [isAddRateOpen, setIsAddRateOpen] = useState(false);
-  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(
+    null,
+  );
   const [newCharge, setNewCharge] = useState<Partial<Charge>>({
     containerSize: "20ft",
     containerType: "all",
@@ -77,19 +107,21 @@ const AdminActivitiesCharges = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [activitiesData, chargesData, historyData, categoriesData] = await Promise.all([
-        billingService.fetchActivities(),
-        billingService.fetchCharges(),
-        billingService.fetchChargeHistory(),
-        billingService.fetchCargoCategories(),
-      ]);
+      const [activitiesData, chargesData, historyData, categoriesData] =
+        await Promise.all([
+          billingService.fetchActivities(),
+          billingService.fetchCharges(),
+          billingService.fetchChargeHistory(),
+          billingService.fetchCargoCategories(),
+        ]);
       setActivities(activitiesData);
       setCharges(chargesData);
       setHistory(historyData);
       setCargoCategories(categoriesData);
     } catch (error: unknown) {
       console.error("Failed to fetch billing data:", error);
-      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
       toast.error(`Failed to load activities and charges: ${errorMessage}`);
     } finally {
       setLoading(false);
@@ -101,12 +133,16 @@ const AdminActivitiesCharges = () => {
 
     try {
       setIsUpdating(true);
-      await billingService.updateChargeRate(editingCharge.id, parseFloat(newRate), effectiveDate);
+      await billingService.updateChargeRate(
+        editingCharge.id,
+        parseFloat(newRate),
+        effectiveDate,
+      );
       toast.success("Charge rate updated successfully");
       setEditingCharge(null);
       setIsUpdateRateOpen(false);
       fetchData();
-    } catch (_error) {
+    } catch {
       toast.error("Failed to update charge rate");
     } finally {
       setIsUpdating(false);
@@ -115,16 +151,25 @@ const AdminActivitiesCharges = () => {
 
   const handleToggleActivity = async (activity: Activity) => {
     try {
-      await billingService.updateActivity(activity.id!, { active: !activity.active });
-      toast.success(`Activity ${!activity.active ? "activated" : "deactivated"} successfully`);
+      await billingService.updateActivity(activity.id!, {
+        active: !activity.active,
+      });
+      toast.success(
+        `Activity ${!activity.active ? "activated" : "deactivated"} successfully`,
+      );
       fetchData();
-    } catch (_error) {
+    } catch {
       toast.error("Failed to update activity status");
     }
   };
 
   const handleCreateActivity = async () => {
-    if (!newActivity.code || !newActivity.name || !newActivity.category || !newActivity.unitType) {
+    if (
+      !newActivity.code ||
+      !newActivity.name ||
+      !newActivity.category ||
+      !newActivity.unitType
+    ) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -143,7 +188,7 @@ const AdminActivitiesCharges = () => {
       });
       fetchData();
     } catch (error: unknown) {
-      const message = (error as any)?.response?.data?.message || (error instanceof Error ? error.message : "Failed to create activity");
+      const message = getErrorMessage(error, "Failed to create activity");
       toast.error(message);
     } finally {
       setIsCreating(false);
@@ -172,7 +217,7 @@ const AdminActivitiesCharges = () => {
       });
       fetchData();
     } catch (error: unknown) {
-      const message = (error as any)?.response?.data?.message || (error instanceof Error ? error.message : "Failed to add charge rate");
+      const message = getErrorMessage(error, "Failed to add charge rate");
       toast.error(message);
     } finally {
       setIsCreating(false);
@@ -197,7 +242,7 @@ const AdminActivitiesCharges = () => {
       setNewCategory({ name: "", description: "", chargePerTon: 0 });
       fetchData();
     } catch (error: unknown) {
-      const message = (error as any)?.response?.data?.message || (error instanceof Error ? error.message : "Failed to create category");
+      const message = getErrorMessage(error, "Failed to create category");
       toast.error(message);
     } finally {
       setIsCreating(false);
@@ -223,7 +268,7 @@ const AdminActivitiesCharges = () => {
       setEditingCategory(null);
       fetchData();
     } catch (error: unknown) {
-      const message = (error as any)?.response?.data?.message || (error instanceof Error ? error.message : "Failed to update category");
+      const message = getErrorMessage(error, "Failed to update category");
       toast.error(message);
     } finally {
       setIsCreating(false);
@@ -231,7 +276,12 @@ const AdminActivitiesCharges = () => {
   };
 
   const handleEditActivity = async () => {
-    if (!editingActivity?.id || !editingActivity.name || !editingActivity.category || !editingActivity.unitType) {
+    if (
+      !editingActivity?.id ||
+      !editingActivity.name ||
+      !editingActivity.category ||
+      !editingActivity.unitType
+    ) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -249,7 +299,7 @@ const AdminActivitiesCharges = () => {
       setEditingActivity(null);
       fetchData();
     } catch (error: unknown) {
-      const message = (error as any)?.response?.data?.message || (error instanceof Error ? error.message : "Failed to update activity");
+      const message = getErrorMessage(error, "Failed to update activity");
       toast.error(message);
     } finally {
       setIsCreating(false);
@@ -542,7 +592,10 @@ const AdminActivitiesCharges = () => {
             </p>
           </div>
           <div className="flex gap-2">
-            <Dialog open={isNewActivityOpen} onOpenChange={setIsNewActivityOpen}>
+            <Dialog
+              open={isNewActivityOpen}
+              onOpenChange={setIsNewActivityOpen}
+            >
               <DialogTrigger asChild>
                 <Button>
                   <Plus className="h-4 w-4 mr-2" />
@@ -565,7 +618,10 @@ const AdminActivitiesCharges = () => {
                         placeholder="e.g. LIFT"
                         value={newActivity.code}
                         onChange={(e) =>
-                          setNewActivity({ ...newActivity, code: e.target.value.toUpperCase() })
+                          setNewActivity({
+                            ...newActivity,
+                            code: e.target.value.toUpperCase(),
+                          })
                         }
                       />
                     </div>
@@ -576,7 +632,10 @@ const AdminActivitiesCharges = () => {
                         placeholder="e.g. Container Lift"
                         value={newActivity.name}
                         onChange={(e) =>
-                          setNewActivity({ ...newActivity, name: e.target.value })
+                          setNewActivity({
+                            ...newActivity,
+                            name: e.target.value,
+                          })
                         }
                       />
                     </div>
@@ -588,7 +647,10 @@ const AdminActivitiesCharges = () => {
                       placeholder="Enter a brief description"
                       value={newActivity.description}
                       onChange={(e) =>
-                        setNewActivity({ ...newActivity, description: e.target.value })
+                        setNewActivity({
+                          ...newActivity,
+                          description: e.target.value,
+                        })
                       }
                     />
                   </div>
@@ -625,7 +687,9 @@ const AdminActivitiesCharges = () => {
                           <SelectValue placeholder="Select unit type" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="per-container">Per Container</SelectItem>
+                          <SelectItem value="per-container">
+                            Per Container
+                          </SelectItem>
                           <SelectItem value="per-day">Per Day</SelectItem>
                           <SelectItem value="per-hour">Per Hour</SelectItem>
                           <SelectItem value="per-teu">Per TEU</SelectItem>
@@ -636,11 +700,16 @@ const AdminActivitiesCharges = () => {
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsNewActivityOpen(false)}>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsNewActivityOpen(false)}
+                  >
                     Cancel
                   </Button>
                   <Button onClick={handleCreateActivity} disabled={isCreating}>
-                    {isCreating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                    {isCreating && (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    )}
                     Create Activity
                   </Button>
                 </DialogFooter>
@@ -721,23 +790,28 @@ const AdminActivitiesCharges = () => {
               </TabsList>
               <TabsContent value="activities">
                 <DataTable
-                  data={activities as any}
-                  columns={activityColumns as any}
+                  data={activities as (Activity & { id: string })[]}
+                  columns={
+                    activityColumns as Column<Activity & { id: string }>[]
+                  }
                   searchable
                   searchPlaceholder="Search activities..."
                 />
               </TabsContent>
               <TabsContent value="charges">
                 <DataTable
-                  data={charges as any}
-                  columns={chargeColumns as any}
+                  data={charges as (Charge & { id: string })[]}
+                  columns={chargeColumns as Column<Charge & { id: string }>[]}
                   searchable
                   searchPlaceholder="Search charge rates..."
                 />
               </TabsContent>
               <TabsContent value="categories">
                 <div className="flex justify-end mb-4">
-                  <Dialog open={isNewCategoryOpen} onOpenChange={setIsNewCategoryOpen}>
+                  <Dialog
+                    open={isNewCategoryOpen}
+                    onOpenChange={setIsNewCategoryOpen}
+                  >
                     <DialogTrigger asChild>
                       <Button size="sm">
                         <Plus className="h-4 w-4 mr-1" />
@@ -758,7 +832,12 @@ const AdminActivitiesCharges = () => {
                             id="catName"
                             placeholder="e.g. Hazardous, Reefer High Value"
                             value={newCategory.name}
-                            onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
+                            onChange={(e) =>
+                              setNewCategory({
+                                ...newCategory,
+                                name: e.target.value,
+                              })
+                            }
                           />
                         </div>
                         <div className="space-y-2">
@@ -767,7 +846,12 @@ const AdminActivitiesCharges = () => {
                             id="catDesc"
                             placeholder="Brief description"
                             value={newCategory.description}
-                            onChange={(e) => setNewCategory({ ...newCategory, description: e.target.value })}
+                            onChange={(e) =>
+                              setNewCategory({
+                                ...newCategory,
+                                description: e.target.value,
+                              })
+                            }
                           />
                         </div>
                         <div className="space-y-2">
@@ -777,16 +861,29 @@ const AdminActivitiesCharges = () => {
                             type="number"
                             placeholder="0.00"
                             value={newCategory.chargePerTon}
-                            onChange={(e) => setNewCategory({ ...newCategory, chargePerTon: Number(e.target.value) })}
+                            onChange={(e) =>
+                              setNewCategory({
+                                ...newCategory,
+                                chargePerTon: Number(e.target.value),
+                              })
+                            }
                           />
                         </div>
                       </div>
                       <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsNewCategoryOpen(false)}>
+                        <Button
+                          variant="outline"
+                          onClick={() => setIsNewCategoryOpen(false)}
+                        >
                           Cancel
                         </Button>
-                        <Button onClick={handleCreateCategory} disabled={isCreating}>
-                          {isCreating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                        <Button
+                          onClick={handleCreateCategory}
+                          disabled={isCreating}
+                        >
+                          {isCreating && (
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          )}
                           Create
                         </Button>
                       </DialogFooter>
@@ -794,32 +891,32 @@ const AdminActivitiesCharges = () => {
                   </Dialog>
                 </div>
                 <DataTable
-                  data={cargoCategories as any}
+                  data={cargoCategories as (CargoCategory & { id: string })[]}
                   columns={[
                     { key: "name", header: "Name", sortable: true },
                     { key: "description", header: "Description" },
                     {
                       key: "chargePerTon",
                       header: "Charge/Ton",
-                      render: (item: any) => (
+                      render: (item: CargoCategory) => (
                         <span className="font-medium">
                           ₹{item.chargePerTon?.toFixed(2) || "0.00"}
                         </span>
-                      )
+                      ),
                     },
                     {
                       key: "active",
                       header: "Status",
-                      render: (item: any) => (
+                      render: (item: CargoCategory) => (
                         <Badge variant={item.active ? "default" : "secondary"}>
                           {item.active ? "Active" : "Inactive"}
                         </Badge>
-                      )
+                      ),
                     },
                     {
                       key: "actions",
                       header: "Actions",
-                      render: (item: any) => (
+                      render: (item: CargoCategory) => (
                         <Button
                           variant="ghost"
                           size="sm"
@@ -831,15 +928,18 @@ const AdminActivitiesCharges = () => {
                           <Edit className="h-4 w-4 mr-1" />
                           Edit
                         </Button>
-                      )
-                    }
+                      ),
+                    },
                   ]}
                   searchable
                   searchPlaceholder="Search categories..."
                 />
 
                 {/* Edit Category Dialog */}
-                <Dialog open={isEditCategoryOpen} onOpenChange={setIsEditCategoryOpen}>
+                <Dialog
+                  open={isEditCategoryOpen}
+                  onOpenChange={setIsEditCategoryOpen}
+                >
                   <DialogContent>
                     <DialogHeader>
                       <DialogTitle>Edit Cargo Category</DialogTitle>
@@ -854,7 +954,12 @@ const AdminActivitiesCharges = () => {
                           <Input
                             id="editCatName"
                             value={editingCategory.name}
-                            onChange={(e) => setEditingCategory({ ...editingCategory, name: e.target.value })}
+                            onChange={(e) =>
+                              setEditingCategory({
+                                ...editingCategory,
+                                name: e.target.value,
+                              })
+                            }
                           />
                         </div>
                         <div className="space-y-2">
@@ -862,34 +967,59 @@ const AdminActivitiesCharges = () => {
                           <Input
                             id="editCatDesc"
                             value={editingCategory.description || ""}
-                            onChange={(e) => setEditingCategory({ ...editingCategory, description: e.target.value })}
+                            onChange={(e) =>
+                              setEditingCategory({
+                                ...editingCategory,
+                                description: e.target.value,
+                              })
+                            }
                           />
                         </div>
                         <div className="flex items-center gap-2">
                           <Switch
                             id="editCatActive"
                             checked={editingCategory.active}
-                            onCheckedChange={(checked) => setEditingCategory({ ...editingCategory, active: checked })}
+                            onCheckedChange={(checked) =>
+                              setEditingCategory({
+                                ...editingCategory,
+                                active: checked,
+                              })
+                            }
                           />
                           <Label htmlFor="editCatActive">Active</Label>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="editCatCharge">Charge per ton *</Label>
+                          <Label htmlFor="editCatCharge">
+                            Charge per ton *
+                          </Label>
                           <Input
                             id="editCatCharge"
                             type="number"
                             value={editingCategory.chargePerTon}
-                            onChange={(e) => setEditingCategory({ ...editingCategory, chargePerTon: Number(e.target.value) })}
+                            onChange={(e) =>
+                              setEditingCategory({
+                                ...editingCategory,
+                                chargePerTon: Number(e.target.value),
+                              })
+                            }
                           />
                         </div>
                       </div>
                     )}
                     <DialogFooter>
-                      <Button variant="outline" onClick={() => setIsEditCategoryOpen(false)}>
+                      <Button
+                        variant="outline"
+                        onClick={() => setIsEditCategoryOpen(false)}
+                      >
                         Cancel
                       </Button>
-                      <Button onClick={handleEditCategory} disabled={isCreating}>
-                        {isCreating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                      <Button
+                        onClick={handleEditCategory}
+                        disabled={isCreating}
+                      >
+                        {isCreating && (
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        )}
                         Save Changes
                       </Button>
                     </DialogFooter>
@@ -898,8 +1028,10 @@ const AdminActivitiesCharges = () => {
               </TabsContent>
               <TabsContent value="history">
                 <DataTable
-                  data={history as any}
-                  columns={historyColumns as any}
+                  data={history as (ChargeHistory & { id: string })[]}
+                  columns={
+                    historyColumns as Column<ChargeHistory & { id: string }>[]
+                  }
                   searchable
                   searchPlaceholder="Search history..."
                 />
@@ -938,10 +1070,16 @@ const AdminActivitiesCharges = () => {
                 <Label htmlFor="currentRate">
                   Current Rate ({editingCharge?.currency})
                 </Label>
-                <Input id="currentRate" value={editingCharge?.rate.toFixed(2) || "0.00"} disabled />
+                <Input
+                  id="currentRate"
+                  value={editingCharge?.rate.toFixed(2) || "0.00"}
+                  disabled
+                />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="newRate">New Rate ({editingCharge?.currency})</Label>
+                <Label htmlFor="newRate">
+                  New Rate ({editingCharge?.currency})
+                </Label>
                 <Input
                   id="newRate"
                   type="number"
@@ -962,11 +1100,16 @@ const AdminActivitiesCharges = () => {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsUpdateRateOpen(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setIsUpdateRateOpen(false)}
+              >
                 Cancel
               </Button>
               <Button onClick={handleUpdateRate} disabled={isUpdating}>
-                {isUpdating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                {isUpdating && (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                )}
                 Update Rate
               </Button>
             </DialogFooter>
@@ -979,13 +1122,16 @@ const AdminActivitiesCharges = () => {
             <DialogHeader>
               <DialogTitle>Add Charge Rate</DialogTitle>
               <DialogDescription>
-                Add a new rate for the selected activity based on container size and type.
+                Add a new rate for the selected activity based on container size
+                and type.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div>
                 <Label className="text-muted-foreground">Activity</Label>
-                <p className="font-medium">{selectedActivity?.name} ({selectedActivity?.code})</p>
+                <p className="font-medium">
+                  {selectedActivity?.name} ({selectedActivity?.code})
+                </p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -993,7 +1139,9 @@ const AdminActivitiesCharges = () => {
                   <Label htmlFor="size">Container Size</Label>
                   <Select
                     value={newCharge.containerSize}
-                    onValueChange={(value) => setNewCharge({ ...newCharge, containerSize: value })}
+                    onValueChange={(value) =>
+                      setNewCharge({ ...newCharge, containerSize: value })
+                    }
                   >
                     <SelectTrigger id="size">
                       <SelectValue placeholder="Select size" />
@@ -1009,7 +1157,9 @@ const AdminActivitiesCharges = () => {
                   <Label htmlFor="type">Container Type</Label>
                   <Select
                     value={newCharge.containerType}
-                    onValueChange={(value) => setNewCharge({ ...newCharge, containerType: value })}
+                    onValueChange={(value) =>
+                      setNewCharge({ ...newCharge, containerType: value })
+                    }
                   >
                     <SelectTrigger id="type">
                       <SelectValue placeholder="Select type" />
@@ -1028,7 +1178,9 @@ const AdminActivitiesCharges = () => {
                 <Label htmlFor="cargoCategory">Cargo Category</Label>
                 <Select
                   value={newCharge.cargoCategoryId}
-                  onValueChange={(value) => setNewCharge({ ...newCharge, cargoCategoryId: value })}
+                  onValueChange={(value) =>
+                    setNewCharge({ ...newCharge, cargoCategoryId: value })
+                  }
                 >
                   <SelectTrigger id="cargoCategory">
                     <SelectValue placeholder="Select cargo category" />
@@ -1043,7 +1195,8 @@ const AdminActivitiesCharges = () => {
                   </SelectContent>
                 </Select>
                 <p className="text-[10px] text-muted-foreground">
-                  Specific rates for this cargo category. Leave as "General" for default base rate.
+                  Specific rates for this cargo category. Leave as "General" for
+                  default base rate.
                 </p>
               </div>
 
@@ -1053,7 +1206,12 @@ const AdminActivitiesCharges = () => {
                   id="rate"
                   type="number"
                   value={newCharge.rate}
-                  onChange={(e) => setNewCharge({ ...newCharge, rate: parseFloat(e.target.value) })}
+                  onChange={(e) =>
+                    setNewCharge({
+                      ...newCharge,
+                      rate: parseFloat(e.target.value),
+                    })
+                  }
                   placeholder="Enter rate"
                 />
               </div>
@@ -1063,7 +1221,9 @@ const AdminActivitiesCharges = () => {
                 Cancel
               </Button>
               <Button onClick={handleAddRate} disabled={isCreating}>
-                {isCreating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                {isCreating && (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                )}
                 Add Rate
               </Button>
             </DialogFooter>
@@ -1089,7 +1249,9 @@ const AdminActivitiesCharges = () => {
                     disabled
                     className="bg-muted"
                   />
-                  <p className="text-[10px] text-muted-foreground italic">Code cannot be changed</p>
+                  <p className="text-[10px] text-muted-foreground italic">
+                    Code cannot be changed
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="edit-name">Activity Name *</Label>
@@ -1098,7 +1260,9 @@ const AdminActivitiesCharges = () => {
                     placeholder="e.g. Container Lift"
                     value={editingActivity?.name || ""}
                     onChange={(e) =>
-                      setEditingActivity(prev => prev ? { ...prev, name: e.target.value } : null)
+                      setEditingActivity((prev) =>
+                        prev ? { ...prev, name: e.target.value } : null,
+                      )
                     }
                   />
                 </div>
@@ -1110,7 +1274,9 @@ const AdminActivitiesCharges = () => {
                   placeholder="Enter a brief description"
                   value={editingActivity?.description || ""}
                   onChange={(e) =>
-                    setEditingActivity(prev => prev ? { ...prev, description: e.target.value } : null)
+                    setEditingActivity((prev) =>
+                      prev ? { ...prev, description: e.target.value } : null,
+                    )
                   }
                 />
               </div>
@@ -1120,7 +1286,9 @@ const AdminActivitiesCharges = () => {
                   <Select
                     value={editingActivity?.category}
                     onValueChange={(value) =>
-                      setEditingActivity(prev => prev ? { ...prev, category: value } : null)
+                      setEditingActivity((prev) =>
+                        prev ? { ...prev, category: value } : null,
+                      )
                     }
                   >
                     <SelectTrigger id="edit-category">
@@ -1140,14 +1308,18 @@ const AdminActivitiesCharges = () => {
                   <Select
                     value={editingActivity?.unitType}
                     onValueChange={(value) =>
-                      setEditingActivity(prev => prev ? { ...prev, unitType: value } : null)
+                      setEditingActivity((prev) =>
+                        prev ? { ...prev, unitType: value } : null,
+                      )
                     }
                   >
                     <SelectTrigger id="edit-unitType">
                       <SelectValue placeholder="Select unit type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="per-container">Per Container</SelectItem>
+                      <SelectItem value="per-container">
+                        Per Container
+                      </SelectItem>
                       <SelectItem value="per-day">Per Day</SelectItem>
                       <SelectItem value="per-hour">Per Hour</SelectItem>
                       <SelectItem value="per-teu">Per TEU</SelectItem>
@@ -1158,11 +1330,16 @@ const AdminActivitiesCharges = () => {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsEditActivityOpen(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setIsEditActivityOpen(false)}
+              >
                 Cancel
               </Button>
               <Button onClick={handleEditActivity} disabled={isCreating}>
-                {isCreating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                {isCreating && (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                )}
                 Save Changes
               </Button>
             </DialogFooter>

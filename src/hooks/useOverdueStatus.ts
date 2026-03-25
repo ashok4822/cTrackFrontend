@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { billingService } from "@/services/billingService";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/useToast";
 
 export function useOverdueStatus() {
   const [hasOverdueBills, setHasOverdueBills] = useState<boolean>(false);

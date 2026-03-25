@@ -2,6 +2,13 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import type { BillRecord } from "@/services/billingService";
 
+interface jsPDFWithAutoTable extends jsPDF {
+    lastAutoTable: {
+        finalY: number;
+    };
+}
+
+
 export const generateBillPDF = (bill: BillRecord) => {
     const doc = new jsPDF();
 
@@ -67,7 +74,7 @@ export const generateBillPDF = (bill: BillRecord) => {
     });
 
     // Total Section
-    const finalY = (doc as any).lastAutoTable.finalY + 10;
+    const finalY = (doc as jsPDFWithAutoTable).lastAutoTable.finalY + 10;
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
     doc.text(`Total Amount: INR ${bill.totalAmount.toLocaleString()}`, 140, finalY);

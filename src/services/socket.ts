@@ -18,11 +18,9 @@ class SocketService {
     });
 
     this.socket.on("connect", () => {
-      console.log("Connected to WebSocket server");
     });
 
-    this.socket.on("disconnect", (reason) => {
-      console.log("Disconnected from WebSocket server:", reason);
+    this.socket.on("disconnect", () => {
     });
 
     this.socket.on("connect_error", (error) => {
@@ -41,11 +39,11 @@ class SocketService {
     return this.socket;
   }
 
-  public on(event: string, callback: (data: any) => void) {
+  public on(event: string, callback: (data: unknown) => void) {
     this.socket.on(event, callback);
   }
 
-  public off(event: string, callback?: (data: any) => void) {
+  public off(event: string, callback?: (data: unknown) => void) {
     if (callback) {
       this.socket.off(event, callback);
     } else {
@@ -53,15 +51,15 @@ class SocketService {
     }
   }
 
-  public onAny(callback: (event: string, data: any) => void) {
+  public onAny(callback: (event: string, data: unknown) => void) {
     this.socket.onAny(callback);
   }
 
-  public offAny(callback: (event: string, data: any) => void) {
+  public offAny(callback: (event: string, data: unknown) => void) {
     this.socket.offAny(callback);
   }
 
-  public emit(event: string, data: any) {
+  public emit(event: string, data: unknown) {
     this.socket.emit(event, data);
   }
 }

@@ -32,12 +32,10 @@ const CustomerLogin = () => {
     e.preventDefault();
 
     try {
-      console.log("CustomerLogin: Attempting login for", email);
       const resultAction = await dispatch(
         login({ email, password, role: "customer" }),
       );
       if (login.fulfilled.match(resultAction)) {
-        console.log("CustomerLogin: Login fulfilled, navigating to dashboard");
         navigate("/customer/dashboard");
       } else {
         console.warn("CustomerLogin: Login action failed or not fulfilled", resultAction);
@@ -50,13 +48,11 @@ const CustomerLogin = () => {
   const handleGoogleLogin = useGoogleLogin({
     flow: "auth-code",
     onSuccess: async (codeResponse) => {
-      console.log("Google Login Success (Code):", codeResponse);
       try {
         const resultAction = await dispatch(
           googleLogin({ code: codeResponse.code, role: "customer" })
         );
         if (googleLogin.fulfilled.match(resultAction)) {
-          console.log("Google Login fulfilled, navigating to dashboard");
           navigate("/customer/dashboard");
         } else if (googleLogin.rejected.match(resultAction)) {
           console.error("Google Login rejected:", resultAction.payload);
@@ -66,7 +62,7 @@ const CustomerLogin = () => {
         console.error("Google Login Thunk Error:", err);
       }
     },
-    onError: (error) => console.log("Google Login Failed:", error),
+    onError: (error) => console.error("Google Login Failed:", error),
   });
 
   return (

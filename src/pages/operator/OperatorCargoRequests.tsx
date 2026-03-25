@@ -41,7 +41,7 @@ import {
 import { containerRequestService } from "@/services/containerRequestService";
 import { containerService } from "@/services/containerService";
 import { billingService, type CargoCategory } from "@/services/billingService";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/useToast";
 
 interface CargoRequest {
   id: string;
@@ -103,7 +103,8 @@ export default function OperatorCargoRequests() {
       const formattedData = data.map((r: CargoRequest & { _id?: string }) => ({
         ...r,
         id: r._id || r.id,
-        customerName: r.customerName || r.name || r.customerId || "Unknown",
+        // customerName is populated by the backend aggregate; fall back gracefully
+        customerName: r.customerName || r.name || "Unknown",
       }));
       setRequests(formattedData);
     } catch {
@@ -631,9 +632,13 @@ export default function OperatorCargoRequests() {
                             No matching containers available
                           </div>
                         ) : (
-                          availableContainers.map(
-                            (container: AvailableContainer) => {
-                              const cId = container._id || container.id || "";
+                          availableContainers
+                            .filter(
+                              (container: AvailableContainer) =>
+                                !!(container._id || container.id),
+                            )
+                            .map((container: AvailableContainer) => {
+                              const cId = (container._id || container.id) as string;
                               return (
                                 <SelectItem key={cId} value={cId}>
                                   <div className="flex items-center gap-2">
@@ -651,8 +656,7 @@ export default function OperatorCargoRequests() {
                                   </div>
                                 </SelectItem>
                               );
-                            },
-                          )
+                            })
                         )}
                       </SelectContent>
                     </Select>

@@ -46,10 +46,8 @@ const CustomerSignup = () => {
 
     setLoading(true);
     try {
-      // @ts-ignore
       const resultAction = await dispatch(initiateSignup(formData.email));
       if (initiateSignup.fulfilled.match(resultAction)) {
-        console.log("OTP sent successfully");
         setStep(2);
       } else {
         if (resultAction.payload) {
@@ -92,7 +90,6 @@ const CustomerSignup = () => {
       );
 
       if (signup.fulfilled.match(resultAction)) {
-        console.log("Signup successful");
         navigate("/customer/login");
       } else {
         if (resultAction.payload) {
@@ -113,10 +110,8 @@ const CustomerSignup = () => {
     setLoading(true);
     setError(null);
     try {
-      // @ts-ignore
       const resultAction = await dispatch(initiateSignup(formData.email));
       if (initiateSignup.fulfilled.match(resultAction)) {
-        console.log("OTP resent successfully");
         setTimeLeft(300);
       } else {
         if (resultAction.payload) {
@@ -136,20 +131,18 @@ const CustomerSignup = () => {
   const handleGoogleLogin = useGoogleLogin({
     flow: "auth-code",
     onSuccess: async (codeResponse) => {
-      console.log("Google Signup Success (Code):", codeResponse);
       try {
         const resultAction = await dispatch(
           googleLogin({ code: codeResponse.code, role: "customer" }),
         );
         if (googleLogin.fulfilled.match(resultAction)) {
-          console.log("Google Signup fulfilled, navigating to dashboard");
           navigate("/customer/dashboard");
         }
       } catch (err) {
         console.error("Google Signup Thunk Error:", err);
       }
     },
-    onError: (error) => console.log("Google Signup Failed:", error),
+    onError: (error) => console.error("Google Signup Failed:", error),
   });
 
   return (

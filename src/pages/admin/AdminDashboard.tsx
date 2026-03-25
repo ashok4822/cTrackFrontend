@@ -28,11 +28,11 @@ import {
 } from "recharts";
 
 const COLORS = [
-  "hsl(217, 91%, 35%)",
-  "hsl(199, 89%, 48%)",
-  "hsl(142, 76%, 36%)",
-  "hsl(38, 92%, 50%)",
-  "hsl(280, 68%, 60%)",
+  "hsl(var(--chart-1))",
+  "hsl(var(--chart-2))",
+  "hsl(var(--chart-3))",
+  "hsl(var(--chart-4))",
+  "hsl(var(--chart-5))",
 ];
 
 const formatTimeAgo = (dateString: string) => {
@@ -49,6 +49,19 @@ const formatTimeAgo = (dateString: string) => {
   return `${days}d ago`;
 };
 
+interface SocketEventPayload {
+  type?: string;
+  action?: string;
+  data?: {
+    type?: string;
+    name?: string;
+    [key: string]: unknown;
+  };
+}
+
+const isSocketEventPayload = (d: unknown): d is SocketEventPayload =>
+  typeof d === "object" && d !== null;
+
 export default function AdminDashboard() {
   const dispatch = useAppDispatch();
   const { kpiData, isLoading: kpiLoading } = useAppSelector(
@@ -59,32 +72,27 @@ export default function AdminDashboard() {
   );
 
   const handleSocketEvent = useCallback(
-    (event: string, data: any) => {
-      console.log(`[Socket] Event Received in Dashboard: ${event}`, data);
+    (event: string, data: unknown) => {
+      const payload = isSocketEventPayload(data) ? data : {};
 
       switch (event) {
         case "kpi_update":
-          console.log("[Socket] Processing kpi_update", data.type);
           // Apply optimistic update for immediate feedback
-          if (data.type === "GATE_OPERATION") {
-            console.log(
-              "[Socket] Triggering optimistic update for GATE_OPERATION",
-            );
+          if (payload.type === "GATE_OPERATION" && payload.data) {
             dispatch(
               updateKPIOptimistically({
                 eventType: "GATE_OPERATION",
-                data: data.data,
+                data: payload.data,
               }),
             );
-          } else if (data.type === "YARD_UPDATE") {
+          } else if (payload.type === "YARD_UPDATE") {
             // Handle yard changes optimistically if data available
-            if (data.action === "UPDATE" && data.data.name) {
+            if (payload.action === "UPDATE" && payload.data?.name) {
               // Potentially refresh blocks or update state
             }
           }
 
           // Trigger full refresh after a small delay to ensure backend consistency
-          console.log("[Socket] Scheduling full data refresh in 1s");
           setTimeout(() => {
             dispatch(fetchKPIData());
             dispatch(fetchBlocks());
@@ -92,12 +100,10 @@ export default function AdminDashboard() {
           break;
 
         case "new_activity":
-          console.log("[Socket] Processing new_activity");
           dispatch(fetchKPIData());
           break;
 
         case "new_alert":
-          console.log("[Socket] Processing new_alert");
           dispatch(fetchKPIData());
           break;
 
@@ -205,13 +211,13 @@ export default function AdminDashboard() {
                   <Bar
                     dataKey="gateIn"
                     name="Gate In"
-                    fill="hsl(142, 76%, 36%)"
+                    fill="hsl(var(--success))"
                     radius={[4, 4, 0, 0]}
                   />
                   <Bar
                     dataKey="gateOut"
                     name="Gate Out"
-                    fill="hsl(217, 91%, 35%)"
+                    fill="hsl(var(--primary))"
                     radius={[4, 4, 0, 0]}
                   />
                 </BarChart>

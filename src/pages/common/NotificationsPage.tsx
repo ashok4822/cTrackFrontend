@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
 import { fetchNotifications, markAsRead, markAllAsRead, removeNotification } from "@/store/slices/notificationSlice";
+import type { Notification } from "@/types";
 import {
     Bell,
     CheckCheck,
@@ -45,8 +46,8 @@ const NotificationsPage = () => {
         }
     };
 
-    const handleNotificationClick = (notification: any) => {
-        if (!notification.read) {
+    const handleNotificationClick = (notification: Notification) => {
+        if (!notification.read && notification.id) {
             handleMarkAsRead(notification.id);
         }
         if (notification.link) {
@@ -152,7 +153,7 @@ const NotificationsPage = () => {
                                                     variant="link"
                                                     size="sm"
                                                     className="h-auto p-0 text-muted-foreground hover:text-foreground"
-                                                    onClick={() => handleMarkAsRead(notification.id)}
+                                                    onClick={() => notification.id && handleMarkAsRead(notification.id)}
                                                 >
                                                     Mark as read
                                                 </Button>
@@ -162,7 +163,7 @@ const NotificationsPage = () => {
                                             variant="ghost"
                                             size="icon"
                                             className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                                            onClick={() => handleDelete(notification.id)}
+                                            onClick={() => notification.id && handleDelete(notification.id)}
                                         >
                                             <Trash2 className="h-4 w-4" />
                                         </Button>

@@ -1,5 +1,5 @@
 import api from "./api";
-import type { Equipment } from "@/types";
+import type { Equipment, EquipmentHistory } from "@/types";
 import { API_ENDPOINTS } from "@/constants/apiEndpoints";
 
 export const equipmentService = {
@@ -27,8 +27,8 @@ export const equipmentService = {
         return response.data;
     },
 
-    async getEquipmentHistory(id: string): Promise<any[]> {
-        const response = await api.get<any[]>(API_ENDPOINTS.EQUIPMENT.HISTORY(id));
+    async getEquipmentHistory(id: string): Promise<EquipmentHistory[]> {
+        const response = await api.get<EquipmentHistory[]>(API_ENDPOINTS.EQUIPMENT.HISTORY(id));
         return response.data;
     },
 };

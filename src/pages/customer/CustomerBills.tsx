@@ -30,7 +30,7 @@ import {
 import { billingService, type BillRecord, type BillTransaction } from "@/services/billingService";
 import { generateBillPDF } from "@/utils/pdfGenerator";
 import { useState, useEffect, useCallback } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/useToast";
 import { useNavigate } from "react-router-dom";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 

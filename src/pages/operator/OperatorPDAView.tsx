@@ -45,7 +45,7 @@ export default function OperatorPDAView() {
       setLoading(true);
       const data = await pdaService.getAllPDAs();
       setPDAs(data);
-    } catch (error: any) {
+    } catch (error) {
       toast.error("Failed to fetch PDA accounts");
       console.error(error);
     } finally {
@@ -54,7 +54,7 @@ export default function OperatorPDAView() {
   };
 
   const totalBalance = pdas.reduce((sum, pda) => sum + pda.balance, 0);
-  const lowBalanceAccounts = pdas.filter((pda) => pda.balance < ((pda as any).lowBalanceThreshold || 10000));
+  const lowBalanceAccounts = pdas.filter((pda) => pda.balance < (pda.lowBalanceThreshold || 10000));
 
   const filteredPDAs = pdas.filter((pda) =>
     pda.customer.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -68,7 +68,7 @@ export default function OperatorPDAView() {
       sortable: true,
       render: (item) => (
         <span
-          className={`font-medium ${item.balance < ((item as any).lowBalanceThreshold || 10000) ? "text-destructive" : "text-success"}`}
+          className={`font-medium ${item.balance < (item.lowBalanceThreshold || 10000) ? "text-destructive" : "text-success"}`}
         >
           ₹{item.balance.toLocaleString()}
         </span>
@@ -83,7 +83,7 @@ export default function OperatorPDAView() {
       key: "status",
       header: "Status",
       render: (item) => (
-        <StatusBadge status={item.balance < ((item as any).lowBalanceThreshold || 10000) ? "warning" : "active"} />
+        <StatusBadge status={item.balance < (item.lowBalanceThreshold || 10000) ? "warning" : "active"} />
       ),
     },
     {
@@ -108,13 +108,13 @@ export default function OperatorPDAView() {
                     Current Balance
                   </p>
                   <p
-                    className={`text-3xl font-bold ${item.balance < ((item as any).lowBalanceThreshold || 10000) ? "text-destructive" : "text-success"}`}
+                    className={`text-3xl font-bold ${item.balance < (item.lowBalanceThreshold || 10000) ? "text-destructive" : "text-success"}`}
                   >
                     ₹{item.balance.toLocaleString()}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  {item.balance < ((item as any).lowBalanceThreshold || 10000) ? (
+                  {item.balance < (item.lowBalanceThreshold || 10000) ? (
                     <TrendingDown className="h-8 w-8 text-destructive" />
                   ) : (
                     <TrendingUp className="h-8 w-8 text-success" />
@@ -249,18 +249,18 @@ export default function OperatorPDAView() {
             {pdas.map((pda) => (
               <div
                 key={pda.id}
-                className={`rounded-lg border p-4 ${pda.balance < ((pda as any).lowBalanceThreshold || 10000) ? "border-destructive/50 bg-destructive/5" : ""}`}
+                className={`rounded-lg border p-4 ${pda.balance < (pda.lowBalanceThreshold || 10000) ? "border-destructive/50 bg-destructive/5" : ""}`}
               >
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="font-semibold truncate">{pda.customer}</h4>
-                  {pda.balance < ((pda as any).lowBalanceThreshold || 10000) && (
+                  {pda.balance < (pda.lowBalanceThreshold || 10000) && (
                     <span className="text-xs text-destructive font-medium">
                       Low
                     </span>
                   )}
                 </div>
                 <p
-                  className={`text-2xl font-bold ${pda.balance < ((pda as any).lowBalanceThreshold || 10000) ? "text-destructive" : "text-foreground"}`}
+                  className={`text-2xl font-bold ${pda.balance < (pda.lowBalanceThreshold || 10000) ? "text-destructive" : "text-foreground"}`}
                 >
                   ₹{pda.balance.toLocaleString()}
                 </p>

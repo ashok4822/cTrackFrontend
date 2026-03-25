@@ -83,7 +83,6 @@ const adminSlice = createSlice({
             .addCase(fetchAllUsers.fulfilled, (state, action: PayloadAction<User[]>) => {
                 state.isLoading = false;
                 state.users = action.payload;
-                console.log("AdminSlice: Users fetched successfully", action.payload);
             })
             .addCase(fetchAllUsers.rejected, (state, action) => {
                 state.isLoading = false;

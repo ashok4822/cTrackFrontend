@@ -9,7 +9,6 @@ import {
   Receipt,
   FileText,
   Users,
-  Settings,
   ScrollText,
   UserCircle,
   PackagePlus,

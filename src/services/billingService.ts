@@ -71,6 +71,41 @@ export interface BillRecord {
     createdAt: string;
 }
 
+export interface BillTransaction {
+    id: string;
+    billId: string;
+    userId: string;
+    amount: number;
+    method: "pda" | "online";
+    status: "pending" | "success" | "failed";
+    transactionId?: string;
+    orderId?: string;
+    errorDetails?: string;
+    timestamp: string;
+}
+
+export interface CreateBillRequest {
+    customer: string;
+    containerNumber: string;
+    shippingLine: string;
+    remarks?: string;
+    lineItems: BillLineItem[];
+    totalAmount: number;
+}
+
+export interface RazorpayOrder {
+    id: string;
+    amount: number;
+    currency: string;
+    [key: string]: unknown;
+}
+
+export interface RazorpayPaymentData {
+    razorpay_order_id: string;
+    razorpay_payment_id: string;
+    razorpay_signature: string;
+}
+
 export const billingService = {
     async fetchActivities(): Promise<Activity[]> {
         const response = await api.get<Activity[]>(API_ENDPOINTS.BILLING.ACTIVITIES);
@@ -137,7 +172,7 @@ export const billingService = {
         return response.data.bill;
     },
 
-    async createBill(billData: any): Promise<BillRecord> {
+    async createBill(billData: CreateBillRequest): Promise<BillRecord> {
         const response = await api.post<BillRecord>(API_ENDPOINTS.BILLING.BILLS, billData);
         return response.data;
     },
@@ -152,12 +187,12 @@ export const billingService = {
         return response.data;
     },
 
-    async createRazorpayOrder(id: string): Promise<any> {
-        const response = await api.post(API_ENDPOINTS.BILLING.BILL_RAZORPAY_ORDER(id));
+    async createRazorpayOrder(id: string): Promise<RazorpayOrder> {
+        const response = await api.post<RazorpayOrder>(API_ENDPOINTS.BILLING.BILL_RAZORPAY_ORDER(id));
         return response.data;
     },
 
-    async verifyRazorpayPayment(id: string, paymentData: any): Promise<BillRecord> {
+    async verifyRazorpayPayment(id: string, paymentData: RazorpayPaymentData): Promise<BillRecord> {
         const response = await api.post<{ message: string; bill: BillRecord }>(API_ENDPOINTS.BILLING.BILL_RAZORPAY_VERIFY(id), paymentData);
         return response.data.bill;
     },
@@ -168,15 +203,3 @@ export const billingService = {
     },
 };
 
-export interface BillTransaction {
-    id: string;
-    billId: string;
-    userId: string;
-    amount: number;
-    method: "pda" | "online";
-    status: "pending" | "success" | "failed";
-    transactionId?: string;
-    orderId?: string;
-    errorDetails?: string;
-    timestamp: string;
-}

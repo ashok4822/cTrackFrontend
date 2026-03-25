@@ -28,8 +28,8 @@ import { Package, PackagePlus, PackageMinus, Clock } from "lucide-react";
 import { containerRequestService } from "@/services/containerRequestService";
 import { equipmentService } from "@/services/equipmentService";
 import type { ContainerRequest, Equipment } from "@/types";
-import { useState, useMemo, useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { useState, useMemo, useEffect, useCallback } from "react";
+import { useToast } from "@/hooks/useToast";
 import { Truck } from "lucide-react";
 
 export default function OperatorStuffingDestuffing() {
@@ -44,7 +44,7 @@ export default function OperatorStuffingDestuffing() {
     equipmentId: "",
   });
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const [reqData, equipData] = await Promise.all([
@@ -64,8 +64,6 @@ export default function OperatorStuffingDestuffing() {
         ].includes(req.status),
       );
 
-      console.log("Raw API Response:", reqData);
-      console.log("Active Requests Filtered:", activeRequests);
 
       setRequests(activeRequests);
       setEquipment(equipData);
@@ -79,11 +77,11 @@ export default function OperatorStuffingDestuffing() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   const counts = useMemo(() => {
     return {

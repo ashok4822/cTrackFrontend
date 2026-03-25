@@ -30,6 +30,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { logoutUser } from "@/store/slices/authSlice";
 import { markAsRead, markAllAsRead } from "@/store/slices/notificationSlice";
 import { formatDistanceToNow } from "date-fns";
+import { ThemeToggle } from "./ThemeToggle";
 
 interface HeaderProps {
   onMenuToggle?: () => void;
@@ -39,7 +40,9 @@ interface HeaderProps {
 export function Header({ onMenuToggle, isSidebarOpen }: HeaderProps) {
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
-  const { notifications, unreadCount } = useAppSelector((state) => state.notifications);
+  const { notifications, unreadCount } = useAppSelector(
+    (state) => state.notifications,
+  );
   const navigate = useNavigate();
   const [showSearch, setShowSearch] = useState(false);
 
@@ -152,6 +155,9 @@ export function Header({ onMenuToggle, isSidebarOpen }: HeaderProps) {
         <Search className="h-5 w-5" />
       </Button>
 
+      {/* Theme Toggle */}
+      <ThemeToggle />
+
       {/* Notifications */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -169,7 +175,9 @@ export function Header({ onMenuToggle, isSidebarOpen }: HeaderProps) {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-80 bg-card p-0">
           <div className="flex items-center justify-between p-4 pb-2">
-            <DropdownMenuLabel className="p-0 font-bold">Notifications</DropdownMenuLabel>
+            <DropdownMenuLabel className="p-0 font-bold">
+              Notifications
+            </DropdownMenuLabel>
             {unreadCount > 0 && (
               <Button
                 variant="ghost"
@@ -187,22 +195,31 @@ export function Header({ onMenuToggle, isSidebarOpen }: HeaderProps) {
             {notifications.length > 0 ? (
               notifications.map((notification) => (
                 <DropdownMenuItem
-                  key={notification.id || (notification as any)._id}
+                  key={notification.id || notification._id}
                   className={cn(
                     "flex cursor-pointer items-start gap-3 p-4 focus:bg-muted",
                     !notification.read && "bg-muted/30",
                   )}
-                  onClick={() => handleNotificationClick(notification.id || (notification as any)._id, notification.link)}
+                  onClick={() =>
+                    handleNotificationClick(
+                      (notification.id || notification._id) as string,
+                      notification.link,
+                    )
+                  }
                 >
                   <div className="mt-1 shrink-0">
                     {getNotificationIcon(notification.type)}
                   </div>
                   <div className="flex flex-col gap-1 overflow-hidden">
                     <div className="flex items-center justify-between gap-2">
-                      <span className={cn(
-                        "text-sm font-semibold truncate",
-                        !notification.read ? "text-foreground" : "text-muted-foreground"
-                      )}>
+                      <span
+                        className={cn(
+                          "text-sm font-semibold truncate",
+                          !notification.read
+                            ? "text-foreground"
+                            : "text-muted-foreground",
+                        )}
+                      >
                         {notification.title}
                       </span>
                       {!notification.read && (
@@ -213,7 +230,12 @@ export function Header({ onMenuToggle, isSidebarOpen }: HeaderProps) {
                       {notification.message}
                     </span>
                     <span className="text-[10px] text-muted-foreground/60">
-                      {notification.timestamp ? formatDistanceToNow(new Date(notification.timestamp), { addSuffix: true }) : "just now"}
+                      {notification.timestamp
+                        ? formatDistanceToNow(
+                            new Date(notification.timestamp),
+                            { addSuffix: true },
+                          )
+                        : "just now"}
                     </span>
                   </div>
                 </DropdownMenuItem>
@@ -221,7 +243,9 @@ export function Header({ onMenuToggle, isSidebarOpen }: HeaderProps) {
             ) : (
               <div className="flex flex-col items-center justify-center py-8 text-center">
                 <Bell className="mb-2 h-8 w-8 text-muted-foreground/20" />
-                <p className="text-sm text-muted-foreground">No notifications yet</p>
+                <p className="text-sm text-muted-foreground">
+                  No notifications yet
+                </p>
               </div>
             )}
           </div>

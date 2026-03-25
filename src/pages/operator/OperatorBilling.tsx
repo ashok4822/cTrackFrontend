@@ -43,7 +43,7 @@ import {
 import { billingService, type BillRecord, type Charge } from "@/services/billingService";
 import { containerService } from "@/services/containerService";
 import { useState, useEffect, useCallback } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/useToast";
 import { generateBillPDF } from "@/utils/pdfGenerator";
 
 interface MiscLineItem {
@@ -58,6 +58,15 @@ interface MiscLineItem {
 interface CustomerOption {
   id: string;
   name: string;
+}
+
+interface ApiUser {
+  id?: string;
+  _id?: string;
+  role?: string;
+  companyName?: string;
+  name?: string;
+  email?: string;
 }
 
 
@@ -104,10 +113,10 @@ export default function OperatorBilling() {
         (response.data?.users && Array.isArray(response.data.users)) ? response.data.users : [];
 
       const customerUsers = data.filter(
-        (u: any) => u.role?.toLowerCase() === "customer",
+        (u: ApiUser) => u.role?.toLowerCase() === "customer",
       );
       setCustomers(
-        customerUsers.map((u: any) => ({
+        customerUsers.map((u: ApiUser) => ({
           id: u.id || u._id,
           name: u.companyName || u.name || u.email || "Unknown",
         })),

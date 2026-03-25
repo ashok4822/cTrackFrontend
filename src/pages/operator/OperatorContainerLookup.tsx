@@ -9,6 +9,13 @@ import { DataTable } from "@/components/common/DataTable";
 import type { Column } from "@/components/common/DataTable";
 import { Badge } from "@/components/ui/badge";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Container,
   MapPin,
   Calendar,
@@ -16,13 +23,19 @@ import {
   ArrowLeft,
   History as HistoryIcon,
   Eye,
+  RotateCcw,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchContainers, fetchContainerHistory } from "@/store/slices/containerSlice";
-import type { Container as ContainerType } from "@/types";
+import type { Container as ContainerType, ContainerStatus, ContainerSize, ContainerType as ContainerTypeEnum } from "@/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+
+type LoadFilter = "all" | "empty" | "loaded";
+type HazardousFilter = "all" | "yes" | "no";
+
+const ALL = "all";
 
 export default function OperatorContainerLookup() {
   const dispatch = useAppDispatch();
@@ -32,6 +45,41 @@ export default function OperatorContainerLookup() {
 
   const [selectedContainer, setSelectedContainer] =
     useState<ContainerType | null>(null);
+
+  // Filter state
+  const [statusFilter, setStatusFilter] = useState<ContainerStatus | "all">(ALL);
+  const [typeFilter, setTypeFilter] = useState<ContainerTypeEnum | "all">(ALL);
+  const [sizeFilter, setSizeFilter] = useState<ContainerSize | "all">(ALL);
+  const [loadFilter, setLoadFilter] = useState<LoadFilter>(ALL);
+  const [hazardousFilter, setHazardousFilter] = useState<HazardousFilter>(ALL);
+
+  const hasActiveFilters =
+    statusFilter !== ALL ||
+    typeFilter !== ALL ||
+    sizeFilter !== ALL ||
+    loadFilter !== ALL ||
+    hazardousFilter !== ALL;
+
+  const resetFilters = () => {
+    setStatusFilter(ALL);
+    setTypeFilter(ALL);
+    setSizeFilter(ALL);
+    setLoadFilter(ALL);
+    setHazardousFilter(ALL);
+  };
+
+  const filteredContainers = useMemo(() => {
+    return containers.filter((c) => {
+      if (statusFilter !== ALL && c.status !== statusFilter) return false;
+      if (typeFilter !== ALL && c.type !== typeFilter) return false;
+      if (sizeFilter !== ALL && c.size !== sizeFilter) return false;
+      if (loadFilter === "empty" && !c.empty) return false;
+      if (loadFilter === "loaded" && c.empty) return false;
+      if (hazardousFilter === "yes" && !c.hazardousClassification) return false;
+      if (hazardousFilter === "no" && c.hazardousClassification) return false;
+      return true;
+    });
+  }, [containers, statusFilter, typeFilter, sizeFilter, loadFilter, hazardousFilter]);
 
   useEffect(() => {
     dispatch(fetchContainers());
@@ -352,13 +400,115 @@ export default function OperatorContainerLookup() {
           </Tabs>
         </div>
       ) : (
-        <DataTable
-          data={containers}
-          isLoading={isLoading}
-          columns={columns}
-          searchPlaceholder="Search containers..."
-          onRowClick={(item) => setSelectedContainer(item)}
-        />
+        <div className="space-y-4">
+          {/* Filter Bar */}
+          <div className="flex flex-wrap items-end gap-3 rounded-lg border bg-card p-4">
+            {/* Status */}
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs text-muted-foreground">Status</Label>
+              <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as ContainerStatus | "all")}>
+                <SelectTrigger className="h-8 w-[140px]">
+                  <SelectValue placeholder="All Statuses" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="in-yard">In Yard</SelectItem>
+                  <SelectItem value="in-transit">In Transit</SelectItem>
+                  <SelectItem value="at-port">At Port</SelectItem>
+                  <SelectItem value="at-factory">At Factory</SelectItem>
+                  <SelectItem value="gate-in">Gate In</SelectItem>
+                  <SelectItem value="gate-out">Gate Out</SelectItem>
+                  <SelectItem value="damaged">Damaged</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Type */}
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs text-muted-foreground">Type</Label>
+              <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as ContainerTypeEnum | "all")}>
+                <SelectTrigger className="h-8 w-[130px]">
+                  <SelectValue placeholder="All Types" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="standard">Standard</SelectItem>
+                  <SelectItem value="reefer">Reefer</SelectItem>
+                  <SelectItem value="tank">Tank</SelectItem>
+                  <SelectItem value="open-top">Open Top</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Size */}
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs text-muted-foreground">Size</Label>
+              <Select value={sizeFilter} onValueChange={(v) => setSizeFilter(v as ContainerSize | "all")}>
+                <SelectTrigger className="h-8 w-[110px]">
+                  <SelectValue placeholder="All Sizes" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Sizes</SelectItem>
+                  <SelectItem value="20ft">20ft</SelectItem>
+                  <SelectItem value="40ft">40ft</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Load */}
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs text-muted-foreground">Load</Label>
+              <Select value={loadFilter} onValueChange={(v) => setLoadFilter(v as LoadFilter)}>
+                <SelectTrigger className="h-8 w-[120px]">
+                  <SelectValue placeholder="All" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="empty">Empty</SelectItem>
+                  <SelectItem value="loaded">Loaded</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Hazardous */}
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs text-muted-foreground">Hazardous</Label>
+              <Select value={hazardousFilter} onValueChange={(v) => setHazardousFilter(v as HazardousFilter)}>
+                <SelectTrigger className="h-8 w-[120px]">
+                  <SelectValue placeholder="All" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="yes">Yes</SelectItem>
+                  <SelectItem value="no">No</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Reset */}
+            {hasActiveFilters && (
+              <Button variant="ghost" size="sm" onClick={resetFilters} className="h-8 gap-1 text-muted-foreground hover:text-foreground">
+                <RotateCcw className="h-3.5 w-3.5" />
+                Reset
+              </Button>
+            )}
+
+            {hasActiveFilters && (
+              <span className="ml-auto text-sm text-muted-foreground self-end pb-1">
+                {filteredContainers.length} of {containers.length} containers
+              </span>
+            )}
+          </div>
+
+          <DataTable
+            data={filteredContainers}
+            isLoading={isLoading}
+            columns={columns}
+            searchPlaceholder="Search containers..."
+            onRowClick={(item) => setSelectedContainer(item)}
+          />
+        </div>
       )}
     </DashboardLayout>
   );
