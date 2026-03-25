@@ -64,8 +64,6 @@ export default function OperatorStuffingDestuffing() {
         ].includes(req.status),
       );
 
-      console.log("Raw API Response:", reqData);
-      console.log("Active Requests Filtered:", activeRequests);
 
       setRequests(activeRequests);
       setEquipment(equipData);

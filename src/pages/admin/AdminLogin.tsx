@@ -30,10 +30,8 @@ const AdminLogin = () => {
   const [password, setPassword] = useState("");
 
   useEffect(() => {
-    console.log("AdminLogin UI State:", { user, accessToken });
     if (user && accessToken) {
       if (user.role === "admin") {
-        console.log("AdminLogin: Admin user found, navigating to dashboard");
         navigate("/admin/dashboard", { replace: true });
       } else {
         console.warn(
@@ -48,12 +46,10 @@ const AdminLogin = () => {
     e.preventDefault();
 
     try {
-      console.log("AdminLogin: Attempting login for", email);
       const resultAction = await dispatch(
         login({ email, password, role: "admin" }),
       );
       if (login.fulfilled.match(resultAction)) {
-        console.log("AdminLogin: Login fulfilled, navigating to dashboard");
         navigate("/admin/dashboard");
       } else {
         console.warn(

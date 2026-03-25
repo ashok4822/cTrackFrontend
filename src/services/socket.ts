@@ -18,11 +18,9 @@ class SocketService {
     });
 
     this.socket.on("connect", () => {
-      console.log("Connected to WebSocket server");
     });
 
-    this.socket.on("disconnect", (reason) => {
-      console.log("Disconnected from WebSocket server:", reason);
+    this.socket.on("disconnect", () => {
     });
 
     this.socket.on("connect_error", (error) => {

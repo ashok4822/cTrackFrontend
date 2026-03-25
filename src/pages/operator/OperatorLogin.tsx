@@ -28,12 +28,8 @@ const OperatorLogin = () => {
   const [password, setPassword] = useState("");
 
   useEffect(() => {
-    console.log("OperatorLogin UI State:", { user, accessToken });
     if (user && accessToken) {
       if (user.role === "operator") {
-        console.log(
-          "OperatorLogin: Operator user found, navigating to dashboard",
-        );
         navigate("/operator/dashboard", { replace: true });
       } else {
         console.warn(
@@ -48,12 +44,10 @@ const OperatorLogin = () => {
     e.preventDefault();
 
     try {
-      console.log("OperatorLogin: Attempting login for", email);
       const resultAction = await dispatch(
         login({ email, password, role: "operator" }),
       );
       if (login.fulfilled.match(resultAction)) {
-        console.log("OperatorLogin: Login fulfilled, navigating to dashboard");
         navigate("/operator/dashboard");
       } else {
         console.warn("OperatorLogin: Login action failed or not fulfilled", resultAction);

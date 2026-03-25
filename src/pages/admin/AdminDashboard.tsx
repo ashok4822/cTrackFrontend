@@ -73,18 +73,12 @@ export default function AdminDashboard() {
 
   const handleSocketEvent = useCallback(
     (event: string, data: unknown) => {
-      console.log(`[Socket] Event Received in Dashboard: ${event}`, data);
-
       const payload = isSocketEventPayload(data) ? data : {};
 
       switch (event) {
         case "kpi_update":
-          console.log("[Socket] Processing kpi_update", payload.type);
           // Apply optimistic update for immediate feedback
           if (payload.type === "GATE_OPERATION" && payload.data) {
-            console.log(
-              "[Socket] Triggering optimistic update for GATE_OPERATION",
-            );
             dispatch(
               updateKPIOptimistically({
                 eventType: "GATE_OPERATION",
@@ -99,7 +93,6 @@ export default function AdminDashboard() {
           }
 
           // Trigger full refresh after a small delay to ensure backend consistency
-          console.log("[Socket] Scheduling full data refresh in 1s");
           setTimeout(() => {
             dispatch(fetchKPIData());
             dispatch(fetchBlocks());
@@ -107,12 +100,10 @@ export default function AdminDashboard() {
           break;
 
         case "new_activity":
-          console.log("[Socket] Processing new_activity");
           dispatch(fetchKPIData());
           break;
 
         case "new_alert":
-          console.log("[Socket] Processing new_alert");
           dispatch(fetchKPIData());
           break;
 
