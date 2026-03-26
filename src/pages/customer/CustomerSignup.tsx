@@ -25,7 +25,7 @@ const CustomerSignup = () => {
     confirmPassword: "",
     otp: "",
   });
-  const [timeLeft, setTimeLeft] = useState(300); // 300 seconds countdown
+  const [timeLeft, setTimeLeft] = useState(60); // 60 seconds countdown
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -112,7 +112,7 @@ const CustomerSignup = () => {
     try {
       const resultAction = await dispatch(initiateSignup(formData.email));
       if (initiateSignup.fulfilled.match(resultAction)) {
-        setTimeLeft(300);
+        setTimeLeft(60);
       } else {
         if (resultAction.payload) {
           setError(resultAction.payload as string);
