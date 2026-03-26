@@ -8,7 +8,7 @@ interface Task {
     type: string;
     status: string;
     containerNumber: string;
-    createdAt: Date;
+    createdAt: string | Date;
 }
 
 interface JobQueueBoardProps {

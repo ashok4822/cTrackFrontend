@@ -9,7 +9,7 @@ interface ActiveOperation {
     containerNumber: string;
     status: string;
     type: string;
-    updatedAt: Date;
+    updatedAt: string | Date;
 }
 
 interface ActiveOperationsTableProps {
