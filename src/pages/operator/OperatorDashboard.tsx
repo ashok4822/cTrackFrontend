@@ -4,7 +4,17 @@ import { fetchKPIData } from "@/store/slices/dashboardSlice";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { KPICard } from "@/components/common/KPICard";
 import { operatorNavItems } from "@/config/navigation";
-import { DoorOpen, Container, Truck, Loader2, BarChart3, Plus, Search, AlertCircle, ListChecks } from "lucide-react";
+import {
+  DoorOpen,
+  Container,
+  Truck,
+  Loader2,
+  BarChart3,
+  Plus,
+  Search,
+  AlertCircle,
+  ListChecks,
+} from "lucide-react";
 import { ActiveOperationsTable } from "@/components/operator/ActiveOperationsTable";
 import { JobQueueBoard } from "@/components/operator/JobQueueBoard";
 import { EquipmentStatusGrid } from "@/components/operator/EquipmentStatusGrid";
@@ -22,7 +32,10 @@ export default function OperatorDashboard() {
 
   if (isLoading || !kpiData) {
     return (
-      <DashboardLayout navItems={operatorNavItems} pageTitle="Operator Dashboard">
+      <DashboardLayout
+        navItems={operatorNavItems}
+        pageTitle="Operator Dashboard"
+      >
         <div className="flex h-[400px] items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-warning" />
         </div>
@@ -72,7 +85,9 @@ export default function OperatorDashboard() {
         {/* Main Column */}
         <div className="lg:col-span-2 space-y-6">
           <ActiveOperationsTable operations={kpiData.liveQueue || []} />
-          <EquipmentStatusGrid equipment={kpiData.equipmentStatusSummary || []} />
+          <EquipmentStatusGrid
+            equipment={kpiData.equipmentStatusSummary || []}
+          />
 
           {/* Active Alerts */}
           <Card>
@@ -85,12 +100,18 @@ export default function OperatorDashboard() {
             <CardContent>
               <div className="space-y-3">
                 {(kpiData.recentAlerts || []).slice(0, 3).map((alert) => (
-                  <div key={alert.id} className="text-xs p-3 rounded-lg border bg-muted/20">
+                  <div
+                    key={alert.id}
+                    className="text-xs p-3 rounded-lg border bg-muted/20"
+                  >
                     <p className="font-bold mb-1">{alert.title}</p>
-                    <p className="text-muted-foreground leading-tight">{alert.message}</p>
+                    <p className="text-muted-foreground leading-tight">
+                      {alert.message}
+                    </p>
                   </div>
                 ))}
-                {(!kpiData.recentAlerts || kpiData.recentAlerts.length === 0) && (
+                {(!kpiData.recentAlerts ||
+                  kpiData.recentAlerts.length === 0) && (
                   <p className="text-xs text-center text-muted-foreground py-4">
                     No active alerts
                   </p>
@@ -105,25 +126,43 @@ export default function OperatorDashboard() {
           {/* Quick Actions */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base font-semibold">Quick Actions</CardTitle>
+              <CardTitle className="text-base font-semibold">
+                Quick Actions
+              </CardTitle>
             </CardHeader>
             <CardContent className="grid gap-2">
-              <Button asChild className="w-full justify-start gap-2" variant="outline">
+              <Button
+                asChild
+                className="w-full justify-start gap-2"
+                variant="outline"
+              >
                 <Link to="/operator/gate">
                   <Plus className="h-4 w-4" /> Start Gate-In
                 </Link>
               </Button>
-              <Button asChild className="w-full justify-start gap-2" variant="outline">
+              <Button
+                asChild
+                className="w-full justify-start gap-2"
+                variant="outline"
+              >
                 <Link to="/operator/gate">
                   <Plus className="h-4 w-4" /> Start Gate-Out
                 </Link>
               </Button>
-              <Button asChild className="w-full justify-start gap-2" variant="outline">
+              <Button
+                asChild
+                className="w-full justify-start gap-2"
+                variant="outline"
+              >
                 <Link to="/operator/lookup">
                   <Search className="h-4 w-4" /> Locate Container
                 </Link>
               </Button>
-              <Button asChild className="w-full justify-start gap-2" variant="outline">
+              <Button
+                asChild
+                className="w-full justify-start gap-2"
+                variant="outline"
+              >
                 <Link to="/operator/cargo-requests">
                   <ListChecks className="h-4 w-4" /> Process Requests
                 </Link>
@@ -132,7 +171,6 @@ export default function OperatorDashboard() {
           </Card>
 
           <JobQueueBoard tasks={kpiData.activeTasks || []} />
-
         </div>
       </div>
     </DashboardLayout>
