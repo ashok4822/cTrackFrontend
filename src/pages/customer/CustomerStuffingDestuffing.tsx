@@ -169,7 +169,7 @@ export default function CustomerStuffingDestuffing() {
       header: "Category",
       sortable: true,
       render: (item) => (
-        <span className="capitalize">{item.cargoCategoryName || "General / Default"}</span>
+        <span className="capitalize">{item.cargoCategoryName || "N/A"}</span>
       ),
     },
     {
@@ -343,7 +343,7 @@ export default function CustomerStuffingDestuffing() {
                     Cargo Category
                   </p>
                   <p className="capitalize font-medium">
-                    {selectedOperation.cargoCategoryName || "General / Default"}
+                    {selectedOperation.cargoCategoryName || "N/A"}
                   </p>
                 </div>
               </div>

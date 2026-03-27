@@ -116,6 +116,14 @@ export default function CustomerRequestContainer() {
 
   const handleStuffingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!stuffingForm.cargoCategoryId || stuffingForm.cargoCategoryId === "none") {
+      toast({
+        title: "Error",
+        description: "Please select a cargo category",
+        variant: "destructive",
+      });
+      return;
+    }
     setIsLoading(true);
     try {
       await containerRequestService.createRequest({
@@ -313,7 +321,7 @@ export default function CustomerRequestContainer() {
                   </h3>
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label>Cargo Category</Label>
+                      <Label>Cargo Category *</Label>
                       <Select
                         value={stuffingForm.cargoCategoryId}
                         onValueChange={(value) =>
@@ -324,12 +332,9 @@ export default function CustomerRequestContainer() {
                         }
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="General / Default" />
+                          <SelectValue placeholder="Select Cargo Category" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="none">
-                            General / Default
-                          </SelectItem>
                           {cargoCategories.map((cat) => (
                             <SelectItem key={cat.id} value={cat.id || ""}>
                               {cat.name}
@@ -612,7 +617,7 @@ export default function CustomerRequestContainer() {
                           Cargo Category
                         </p>
                         <p className="capitalize font-medium text-primary">
-                          {selectedContainerDetails.cargoCategory || "General / Default"}
+                          {selectedContainerDetails.cargoCategory || "N/A"}
                         </p>
                       </div>
                     </CardContent>
