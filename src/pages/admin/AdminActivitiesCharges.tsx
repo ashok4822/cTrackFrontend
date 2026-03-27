@@ -97,7 +97,6 @@ const AdminActivitiesCharges = () => {
     containerType: "all",
     rate: 0,
     currency: "INR",
-    cargoCategoryId: "none",
   });
 
   useEffect(() => {
@@ -1172,32 +1171,6 @@ const AdminActivitiesCharges = () => {
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="cargoCategory">Cargo Category</Label>
-                <Select
-                  value={newCharge.cargoCategoryId}
-                  onValueChange={(value) =>
-                    setNewCharge({ ...newCharge, cargoCategoryId: value })
-                  }
-                >
-                  <SelectTrigger id="cargoCategory">
-                    <SelectValue placeholder="Select cargo category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">General / Default</SelectItem>
-                    {cargoCategories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id!}>
-                        {cat.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-[10px] text-muted-foreground">
-                  Specific rates for this cargo category. Leave as "General" for
-                  default base rate.
-                </p>
               </div>
 
               <div className="space-y-2">
