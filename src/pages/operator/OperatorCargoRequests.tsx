@@ -340,7 +340,7 @@ export default function OperatorCargoRequests() {
       header: "Category",
       render: (item) => (
         <Badge variant="outline" className="capitalize">
-          {item.cargoCategoryName || "General / Default"}
+          {item.cargoCategoryName || "N/A"}
         </Badge>
       ),
     },
@@ -583,7 +583,7 @@ export default function OperatorCargoRequests() {
                   <div>
                     <p className="text-muted-foreground text-xs">Initial Cargo Category</p>
                     <p className="font-medium">
-                      {selectedRequest.cargoCategoryName || "General / Default"}
+                      {selectedRequest.cargoCategoryName || "N/A"}
                     </p>
                   </div>
                 </div>
@@ -681,7 +681,6 @@ export default function OperatorCargoRequests() {
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">General / Default</SelectItem>
                     {cargoCategories.map((cat) => (
                       <SelectItem key={cat.id} value={cat.id || ""}>
                         {cat.name}
@@ -692,7 +691,7 @@ export default function OperatorCargoRequests() {
                 <p className="text-[10px] text-muted-foreground">
                   You can change the category here to apply different charge rates during allocation if needed.
                 </p>
-                {selectedCargoCategoryId !== "none" && (
+                {selectedCargoCategoryId !== "none" && selectedCargoCategoryId !== "" && (
                   <div className="mt-2 p-2 bg-primary/5 border border-primary/10 rounded">
                     <div className="flex justify-between items-center text-xs">
                       <span className="text-muted-foreground font-medium">Calculated Cargo Charge:</span>
