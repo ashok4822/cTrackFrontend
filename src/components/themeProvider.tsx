@@ -22,17 +22,6 @@ export function ThemeProvider({
     const root = window.document.documentElement;
 
     root.classList.remove("light", "dark");
-
-    if (theme === "light") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: light)")
-        .matches
-        ? "light"
-        : "dark";
-
-      root.classList.add(systemTheme);
-      return;
-    }
-
     root.classList.add(theme);
   }, [theme]);
 
