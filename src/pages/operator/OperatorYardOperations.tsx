@@ -41,13 +41,12 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchBlocks } from "@/store/slices/yardSlice";
 import { fetchEquipment } from "@/store/slices/equipmentSlice";
-import {
-  fetchContainers,
-  updateContainer,
-} from "@/store/slices/containerSlice";
+import { fetchContainers, updateContainer } from "@/store/slices/containerSlice";
 import { toast } from "sonner";
+import { UI_MESSAGES } from "@/constants/messages";
 
 export default function OperatorYardOperations() {
+  const allowedStatuses = ["gate-in", "in-yard"];
   const dispatch = useAppDispatch();
   const { blocks, isLoading: yardLoading } = useAppSelector(
     (state) => state.yard,
@@ -67,8 +66,13 @@ export default function OperatorYardOperations() {
   const [blockFilter, setBlockFilter] = useState("all");
 
   // Filter labels/options
-  const sizes = ["20ft", "40ft"];
-  const types = ["Standard", "Reefer", "Tank", "Open-Top"];
+  const sizes = [UI_MESSAGES.CONTAINER.SIZE_20FT, UI_MESSAGES.CONTAINER.SIZE_40FT];
+  const types = [
+    UI_MESSAGES.CONTAINER.STANDARD,
+    UI_MESSAGES.CONTAINER.REEFER,
+    UI_MESSAGES.CONTAINER.TANK,
+    UI_MESSAGES.CONTAINER.OPEN_TOP,
+  ];
 
   // Form states for assign
   const [assignForm, setAssignForm] = useState({
@@ -129,7 +133,7 @@ export default function OperatorYardOperations() {
 
   const handleAssignContainer = async () => {
     if (!assignForm.containerNumber || !assignForm.block || !assignForm.equipment) {
-      toast.error("Please fill in all fields including equipment");
+      toast.error(UI_MESSAGES.YARD.FILL_ALL_FIELDS);
       return;
     }
 
@@ -149,28 +153,26 @@ export default function OperatorYardOperations() {
             assignForm.containerNumber.toLowerCase(),
         );
       } catch {
-        toast.error("Error searching for container");
+        toast.error(UI_MESSAGES.YARD.SEARCH_FAILED);
         return;
       }
     }
 
     if (!container) {
-      toast.error("Container not found in terminal");
+      toast.error(UI_MESSAGES.YARD.CONTAINER_NOT_FOUND);
       return;
     }
 
-    // Status validation
-    const allowedStatuses = ["gate-in", "in-yard", "damaged"];
     if (!allowedStatuses.includes(container.status)) {
       toast.error(
-        `Container ${container.containerNumber} cannot be assigned to a block (Status: ${container.status})`,
+        UI_MESSAGES.YARD.CANNOT_ASSIGN_STATUS(container.containerNumber, container.status),
       );
       return;
     }
 
     if (container.yardLocation?.block) {
       toast.error(
-        `Container ${container.containerNumber} is already in block ${container.yardLocation.block}. Use 'Shift' to move it.`,
+        UI_MESSAGES.YARD.ALREADY_IN_BLOCK(container.containerNumber, container.yardLocation.block),
       );
       return;
     }
@@ -186,7 +188,7 @@ export default function OperatorYardOperations() {
           },
         }),
       ).unwrap();
-      toast.success("Container assigned successfully");
+      toast.success(UI_MESSAGES.YARD.ASSIGN_SUCCESS);
       setAssignDialogOpen(false);
       setAssignForm({ containerNumber: "", block: "", equipment: "" });
       dispatch(fetchBlocks()); // Refresh blocks for updated occupancy
@@ -200,18 +202,18 @@ export default function OperatorYardOperations() {
         }),
       );
     } catch {
-      toast.error("Failed to assign container");
+      toast.error(UI_MESSAGES.YARD.ASSIGN_FAILED);
     }
   };
 
   const handleShiftContainer = async () => {
     if (!shiftForm.id || !shiftForm.toBlock) {
-      toast.error("Please select a target block");
+      toast.error(UI_MESSAGES.YARD.SELECT_TARGET_BLOCK);
       return;
     }
 
     if (!shiftForm.equipment) {
-      toast.error("Please select equipment for the move");
+      toast.error(UI_MESSAGES.YARD.SELECT_EQUIPMENT);
       return;
     }
 
@@ -226,7 +228,7 @@ export default function OperatorYardOperations() {
           },
         }),
       ).unwrap();
-      toast.success("Container shifted successfully");
+      toast.success(UI_MESSAGES.YARD.SHIFT_SUCCESS);
       setShiftDialogOpen(false);
       setShiftForm({
         id: "",
@@ -246,47 +248,47 @@ export default function OperatorYardOperations() {
         }),
       );
     } catch {
-      toast.error("Failed to shift container");
+      toast.error(UI_MESSAGES.YARD.SHIFT_FAILED);
     }
   };
 
   const columns: Column<ContainerType>[] = [
-    { key: "containerNumber", header: "Container No.", sortable: true },
-    { key: "size", header: "Size" },
+    { key: "containerNumber", header: UI_MESSAGES.TABLE.CONTAINER_NO, sortable: true },
+    { key: "size", header: UI_MESSAGES.TABLE.SIZE },
     {
       key: "type",
-      header: "Type",
+      header: UI_MESSAGES.TABLE.TYPE,
       render: (item) => <span className="capitalize">{item.type}</span>,
     },
     {
       key: "empty",
-      header: "Load",
+      header: UI_MESSAGES.TABLE.LOAD,
       render: (item) => (
-        <Badge variant="secondary">{item.empty ? "Empty" : "Loaded"}</Badge>
+        <Badge variant="secondary">{item.empty ? UI_MESSAGES.TABLE.EMPTY : UI_MESSAGES.TABLE.LOADED}</Badge>
       ),
     },
-    { key: "shippingLine", header: "Shipping Line" },
+    { key: "shippingLine", header: UI_MESSAGES.TABLE.SHIPPING_LINE },
     {
       key: "yardLocation",
-      header: "Block",
-      render: (item) => item.yardLocation?.block || "N/A",
+      header: UI_MESSAGES.TABLE.BLOCK,
+      render: (item) => item.yardLocation?.block || UI_MESSAGES.COMMON.NA,
     },
     {
       key: "status",
-      header: "Status",
+      header: UI_MESSAGES.TABLE.STATUS,
       render: (item) => <StatusBadge status={item.status} />,
     },
     {
       key: "dwellTime",
-      header: "Dwell Time",
-      render: (item) => (item.dwellTime ? `${item.dwellTime} days` : "N/A"),
+      header: UI_MESSAGES.TABLE.DWELL_TIME,
+      render: (item) => (item.dwellTime ? `${item.dwellTime} ${UI_MESSAGES.COMMON.DAYS}` : UI_MESSAGES.COMMON.NA),
     },
     {
       key: "actions",
-      header: "Actions",
+      header: UI_MESSAGES.TABLE.ACTIONS,
       render: (item) => (
         <div className="flex gap-2">
-          <Button
+            <Button
             size="sm"
             variant="outline"
             onClick={() => {
@@ -301,7 +303,7 @@ export default function OperatorYardOperations() {
             }}
           >
             <ArrowRightLeft className="h-3 w-3 mr-1" />
-            Shift
+            {UI_MESSAGES.COMMON.EDIT}
           </Button>
         </div>
       ),
@@ -311,28 +313,28 @@ export default function OperatorYardOperations() {
   const isLoading = yardLoading || containerLoading;
 
   return (
-    <DashboardLayout navItems={operatorNavItems} pageTitle="Yard Operations">
+    <DashboardLayout navItems={operatorNavItems} pageTitle={UI_MESSAGES.TITLES.YARD_OPERATIONS}>
       {/* Action Buttons */}
       <div className="mb-6 flex flex-wrap gap-3">
         <Dialog open={assignDialogOpen} onOpenChange={setAssignDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              Assign Container to Block
+              {UI_MESSAGES.TITLES.ADD_NEW}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Assign Container to Yard Block</DialogTitle>
+              <DialogTitle>{UI_MESSAGES.YARD.BLOCK_OCCUPANCY}</DialogTitle>
               <DialogDescription>
-                Assign a container to a specific yard block
+                {UI_MESSAGES.BILLING.MISC_BILL_DESC}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Container Number</Label>
+                <Label>{UI_MESSAGES.TABLE.CONTAINER_NO}</Label>
                 <Input
-                  placeholder="e.g., MSCU1234567"
+                  placeholder={UI_MESSAGES.COMMON.PLACEHOLDERS.CONTAINER_NO_EG}
                   value={assignForm.containerNumber}
                   onChange={(e) =>
                     setAssignForm({
@@ -343,7 +345,7 @@ export default function OperatorYardOperations() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Block</Label>
+                <Label>{UI_MESSAGES.TABLE.BLOCK}</Label>
                 <Select
                   value={assignForm.block}
                   onValueChange={(v) =>
@@ -351,7 +353,7 @@ export default function OperatorYardOperations() {
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select Block" />
+                    <SelectValue placeholder={UI_MESSAGES.TABLE.SELECT_BLOCK} />
                   </SelectTrigger>
                   <SelectContent>
                     {blocks.map((block) => (
@@ -363,7 +365,7 @@ export default function OperatorYardOperations() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Equipment *</Label>
+                <Label>{UI_MESSAGES.DIALOG.EQUIPMENT_REQUIRED}</Label>
                 <Select
                   value={assignForm.equipment}
                   onValueChange={(v) =>
@@ -371,7 +373,7 @@ export default function OperatorYardOperations() {
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select equipment" />
+                    <SelectValue placeholder={UI_MESSAGES.DIALOG.EQUIPMENT_ID_PLACEHOLDER} />
                   </SelectTrigger>
                   <SelectContent>
                     {equipment
@@ -390,9 +392,9 @@ export default function OperatorYardOperations() {
                 variant="outline"
                 onClick={() => setAssignDialogOpen(false)}
               >
-                Cancel
+                {UI_MESSAGES.COMMON.CANCEL}
               </Button>
-              <Button onClick={handleAssignContainer}>Assign Container</Button>
+              <Button onClick={handleAssignContainer}>{UI_MESSAGES.TITLES.ADD_NEW}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -401,25 +403,25 @@ export default function OperatorYardOperations() {
           <DialogTrigger asChild> </DialogTrigger>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Shift Container Between Blocks</DialogTitle>
+              <DialogTitle>{UI_MESSAGES.STUFFING.SHIFT_CONTAINER}</DialogTitle>
               <DialogDescription>
-                Move a container from one yard block to another
+                {UI_MESSAGES.DESTUFFING.DISPATCH_CONTAINER_DESC(shiftForm.containerNumber)}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Container Number</Label>
+                <Label>{UI_MESSAGES.TABLE.CONTAINER_NO}</Label>
                 <Input disabled value={shiftForm.containerNumber} />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>From Block</Label>
-                  <Input disabled value={shiftForm.fromBlock || "N/A"} />
+                  <Label>{UI_MESSAGES.STUFFING.FROM_LOCATION}</Label>
+                  <Input disabled value={shiftForm.fromBlock || UI_MESSAGES.COMMON.NA} />
                 </div>
 
                 <div className="space-y-2">
-                  <Label>To Block</Label>
+                  <Label>{UI_MESSAGES.DIALOG.TO_BLOCK}</Label>
                   <Select
                     value={shiftForm.toBlock}
                     onValueChange={(v) =>
@@ -427,7 +429,7 @@ export default function OperatorYardOperations() {
                     }
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Target Block" />
+                      <SelectValue placeholder={UI_MESSAGES.TABLE.TARGET_BLOCK} />
                     </SelectTrigger>
                     <SelectContent>
                       {blocks.map((block) => (
@@ -441,7 +443,7 @@ export default function OperatorYardOperations() {
               </div>
 
               <div className="space-y-2">
-                <Label>Equipment *</Label>
+                <Label>{UI_MESSAGES.DIALOG.EQUIPMENT_REQUIRED}</Label>
                 <Select
                   value={shiftForm.equipment}
                   onValueChange={(v) =>
@@ -449,7 +451,7 @@ export default function OperatorYardOperations() {
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select equipment for move" />
+                    <SelectValue placeholder={UI_MESSAGES.DIALOG.SELECT_EQUIPMENT_STATUS} />
                   </SelectTrigger>
                   <SelectContent>
                     {equipment
@@ -468,9 +470,9 @@ export default function OperatorYardOperations() {
                 variant="outline"
                 onClick={() => setShiftDialogOpen(false)}
               >
-                Cancel
+                {UI_MESSAGES.COMMON.CANCEL}
               </Button>
-              <Button onClick={handleShiftContainer}>Confirm Shift</Button>
+              <Button onClick={handleShiftContainer}>{UI_MESSAGES.STUFFING.SHIFT_CONTAINER}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -479,24 +481,24 @@ export default function OperatorYardOperations() {
       {/* KPI Cards */}
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KPICard
-          title="Containers in Yard"
+          title={UI_MESSAGES.DASHBOARD.KPI.CONTAINERS_IN_YARD}
           value={inYardContainers.length}
           icon={Container}
           variant="primary"
         />
         <KPICard
-          title="Yard Utilization"
+          title={UI_MESSAGES.DASHBOARD.KPI.YARD_UTILIZATION}
           value={`${yardUtilization}%`}
           icon={MapPin}
           variant="success"
         />
         <KPICard
-          title="Open Requests"
+          title={UI_MESSAGES.KPI.TOTAL_REQUESTS}
           value={containers.filter((c) => c.status === "pending").length}
           icon={ArrowRightLeft}
         />
         <KPICard
-          title="Available Slots"
+          title={UI_MESSAGES.YARD.FREE}
           value={freeSlots}
           icon={Grid3X3}
           variant="success"
@@ -506,15 +508,15 @@ export default function OperatorYardOperations() {
       {/* Tabs for different views */}
       <Tabs defaultValue="blocks" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="blocks">Block Overview</TabsTrigger>
-          <TabsTrigger value="containers">Containers</TabsTrigger>
+          <TabsTrigger value="blocks">{UI_MESSAGES.YARD.BLOCK_OCCUPANCY}</TabsTrigger>
+          <TabsTrigger value="containers">{UI_MESSAGES.CONTAINER_DETAILS.TITLE}</TabsTrigger>
         </TabsList>
 
         {/* Block Overview Tab */}
         <TabsContent value="blocks" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Yard Block Status</CardTitle>
+              <CardTitle>{UI_MESSAGES.YARD.BLOCK_OCCUPANCY}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -545,12 +547,12 @@ export default function OperatorYardOperations() {
                       </div>
                       <Progress value={utilization} className="mb-2" />
                       <div className="flex justify-between text-sm text-muted-foreground">
-                        <span>{occupied} occupied</span>
-                        <span>{block.capacity - occupied} free</span>
+                        <span>{occupied} {UI_MESSAGES.YARD.OCCUPIED}</span>
+                        <span>{block.capacity - occupied} {UI_MESSAGES.YARD.FREE}</span>
                       </div>
                       <div className="mt-3 pt-3 border-t">
                         <p className="text-xs text-muted-foreground">
-                          Total Capacity: {block.capacity} containers
+                          {UI_MESSAGES.YARD.TOTAL_CAPACITY}: {block.capacity}
                         </p>
                       </div>
                     </div>
@@ -558,7 +560,7 @@ export default function OperatorYardOperations() {
                 })}
                 {blocks.length === 0 && !isLoading && (
                   <p className="text-muted-foreground col-span-full text-center py-8">
-                    No yard blocks configured.
+                    {UI_MESSAGES.TABLE.NO_YARD_BLOCKS}
                   </p>
                 )}
               </div>
@@ -571,12 +573,12 @@ export default function OperatorYardOperations() {
           <Card>
             <CardHeader>
               <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <CardTitle>Containers in Yard</CardTitle>
+                <CardTitle>{UI_MESSAGES.TABLE.CONTAINERS_IN_YARD}</CardTitle>
                 <div className="flex flex-wrap items-center gap-2">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
-                      placeholder="Search No..."
+                      placeholder={UI_MESSAGES.TABLE.SEARCH_CONTAINERS}
                       className="w-40 pl-9"
                       value={containerSearch}
                       onChange={(e) => setContainerSearch(e.target.value)}
@@ -584,10 +586,10 @@ export default function OperatorYardOperations() {
                   </div>
                   <Select value={sizeFilter} onValueChange={setSizeFilter}>
                     <SelectTrigger className="w-24">
-                      <SelectValue placeholder="Size" />
+                      <SelectValue placeholder={UI_MESSAGES.COMMON.SIZE} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Sizes</SelectItem>
+                      <SelectItem value="all">{UI_MESSAGES.TABLE.ALL_SIZES}</SelectItem>
                       {sizes.map((s) => (
                         <SelectItem key={s} value={s}>
                           {s}
@@ -597,10 +599,10 @@ export default function OperatorYardOperations() {
                   </Select>
                   <Select value={typeFilter} onValueChange={setTypeFilter}>
                     <SelectTrigger className="w-28">
-                      <SelectValue placeholder="Type" />
+                      <SelectValue placeholder={UI_MESSAGES.TABLE.TYPE} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Types</SelectItem>
+                      <SelectItem value="all">{UI_MESSAGES.TABLE.ALL_TYPES}</SelectItem>
                       {types.map((t) => (
                         <SelectItem key={t} value={t}>
                           {t}
@@ -610,10 +612,10 @@ export default function OperatorYardOperations() {
                   </Select>
                   <Select value={blockFilter} onValueChange={setBlockFilter}>
                     <SelectTrigger className="w-28">
-                      <SelectValue placeholder="Block" />
+                      <SelectValue placeholder={UI_MESSAGES.TABLE.BLOCK} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Blocks</SelectItem>
+                      <SelectItem value="all">{UI_MESSAGES.TABLE.ALL_BLOCKS}</SelectItem>
                       {blocks.map((b) => (
                         <SelectItem key={b.id} value={b.name}>
                           {b.name}
@@ -635,7 +637,7 @@ export default function OperatorYardOperations() {
                           setBlockFilter("all");
                         }}
                       >
-                        Reset
+                        {UI_MESSAGES.COMMON.RESET}
                       </Button>
                     )}
                 </div>
@@ -653,8 +655,8 @@ export default function OperatorYardOperations() {
                     sizeFilter !== "all" ||
                     typeFilter !== "all" ||
                     blockFilter !== "all"
-                    ? "No containers match your filters"
-                    : "No containers in yard"
+                    ? UI_MESSAGES.TABLE.NO_CONTAINERS_FILTER
+                    : UI_MESSAGES.TABLE.NO_CONTAINERS_YARD
                 }
               />
             </CardContent>

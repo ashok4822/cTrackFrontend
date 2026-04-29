@@ -3,6 +3,7 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 import { vehicleService } from "@/services/vehicleService";
 import type { Vehicle } from "@/types";
 import { AxiosError } from "axios";
+import { UI_MESSAGES } from "@/constants/messages";
 
 interface VehicleState {
     vehicles: Vehicle[];
@@ -32,7 +33,7 @@ export const fetchVehicles = createAsyncThunk(
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
             return rejectWithValue(
-                axiosError.response?.data?.message || "Failed to fetch vehicles"
+                axiosError.response?.data?.message || UI_MESSAGES.VEHICLE.FETCH_FAILED
             );
         }
     }
@@ -48,7 +49,7 @@ export const addVehicle = createAsyncThunk(
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
             return rejectWithValue(
-                axiosError.response?.data?.message || "Failed to add vehicle"
+                axiosError.response?.data?.message || UI_MESSAGES.VEHICLE.ADD_FAILED
             );
         }
     }
@@ -67,7 +68,7 @@ export const updateVehicle = createAsyncThunk(
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
             return rejectWithValue(
-                axiosError.response?.data?.message || "Failed to update vehicle"
+                axiosError.response?.data?.message || UI_MESSAGES.VEHICLE.UPDATE_FAILED
             );
         }
     }
@@ -83,7 +84,7 @@ export const deleteVehicle = createAsyncThunk(
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
             return rejectWithValue(
-                axiosError.response?.data?.message || "Failed to delete vehicle"
+                axiosError.response?.data?.message || UI_MESSAGES.VEHICLE.DELETE_FAILED
             );
         }
     }

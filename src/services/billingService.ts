@@ -132,8 +132,8 @@ export const billingService = {
         return response.data;
     },
 
-    async updateChargeRate(id: string, rate: number, effectiveFrom?: string): Promise<Charge> {
-        const response = await api.patch<Charge>(API_ENDPOINTS.BILLING.CHARGE_BY_ID(id), { rate, effectiveFrom });
+    async updateChargeRate(id: string, rate: number, effectiveFrom?: string, active?: boolean): Promise<Charge> {
+        const response = await api.patch<Charge>(API_ENDPOINTS.BILLING.CHARGE_BY_ID(id), { rate, effectiveFrom, active });
         return response.data;
     },
 
@@ -168,8 +168,8 @@ export const billingService = {
     },
 
     async markBillPaid(id: string): Promise<BillRecord> {
-        const response = await api.patch<{ message: string; bill: BillRecord }>(API_ENDPOINTS.BILLING.BILL_MARK_PAID(id));
-        return response.data.bill;
+        const response = await api.patch<BillRecord>(API_ENDPOINTS.BILLING.BILL_MARK_PAID(id));
+        return response.data;
     },
 
     async createBill(billData: CreateBillRequest): Promise<BillRecord> {
@@ -178,8 +178,8 @@ export const billingService = {
     },
 
     async payBill(id: string): Promise<BillRecord> {
-        const response = await api.post<{ message: string; bill: BillRecord }>(API_ENDPOINTS.BILLING.BILL_PAY(id));
-        return response.data.bill;
+        const response = await api.post<BillRecord>(API_ENDPOINTS.BILLING.BILL_PAY(id));
+        return response.data;
     },
 
     async fetchBillById(id: string): Promise<BillRecord> {
@@ -193,8 +193,8 @@ export const billingService = {
     },
 
     async verifyRazorpayPayment(id: string, paymentData: RazorpayPaymentData): Promise<BillRecord> {
-        const response = await api.post<{ message: string; bill: BillRecord }>(API_ENDPOINTS.BILLING.BILL_RAZORPAY_VERIFY(id), paymentData);
-        return response.data.bill;
+        const response = await api.post<BillRecord>(API_ENDPOINTS.BILLING.BILL_RAZORPAY_VERIFY(id), paymentData);
+        return response.data;
     },
 
     async fetchBillTransactions(id: string): Promise<BillTransaction[]> {

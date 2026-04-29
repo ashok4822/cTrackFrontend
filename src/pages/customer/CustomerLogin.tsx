@@ -14,6 +14,7 @@ import { Factory, ChevronLeft, Eye, EyeOff } from "lucide-react";
 import { login, clearError, googleLogin } from "@/store/slices/authSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useGoogleLogin } from "@react-oauth/google";
+import { UI_MESSAGES } from "@/constants/messages";
 
 const CustomerLogin = () => {
   const navigate = useNavigate();
@@ -75,7 +76,7 @@ const CustomerLogin = () => {
             className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
           >
             <ChevronLeft className="h-4 w-4" />
-            Back to Home
+            {UI_MESSAGES.AUTH.BACK_TO_HOME}
           </Link>
         </div>
       </header>
@@ -87,20 +88,20 @@ const CustomerLogin = () => {
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-success/10">
               <Factory className="h-8 w-8 text-success" />
             </div>
-            <CardTitle className="text-2xl">Customer Portal</CardTitle>
+            <CardTitle className="text-2xl">{UI_MESSAGES.AUTH.CUSTOMER_PORTAL}</CardTitle>
             <CardDescription>
-              Sign in to view your containers and submit requests
+              {UI_MESSAGES.AUTH.CUSTOMER_LOGIN_DESC}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-6">
               {/* Email */}
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{UI_MESSAGES.PROFILE.EMAIL}</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder={UI_MESSAGES.AUTH.ENTER_EMAIL}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
@@ -108,12 +109,12 @@ const CustomerLogin = () => {
 
               {/* Password */}
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{UI_MESSAGES.AUTH.PASSWORD}</Label>
                 <div className="relative">
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
+                    placeholder={UI_MESSAGES.AUTH.ENTER_PASSWORD}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
@@ -141,7 +142,7 @@ const CustomerLogin = () => {
                   className="h-auto p-0 text-sm text-muted-foreground hover:text-success"
                   asChild
                 >
-                  <Link to="/forgot-password?role=customer">Forgot Password?</Link>
+                  <Link to="/forgot-password?role=customer">{UI_MESSAGES.AUTH.FORGOT_PASSWORD}</Link>
                 </Button>
               </div>
 
@@ -152,7 +153,7 @@ const CustomerLogin = () => {
                 size="lg"
                 disabled={isLoading}
               >
-                {isLoading ? "Signing In..." : "Sign In"}
+                {isLoading ? UI_MESSAGES.AUTH.SIGNING_IN : UI_MESSAGES.AUTH.SIGN_IN}
               </Button>
 
               {/* Error Message */}
@@ -168,7 +169,7 @@ const CustomerLogin = () => {
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
                   <span className="bg-card px-2 text-muted-foreground">
-                    Or continue with
+                    {UI_MESSAGES.AUTH.OR_CONTINUE_WITH}
                   </span>
                 </div>
               </div>
@@ -197,18 +198,18 @@ const CustomerLogin = () => {
                     d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"
                   ></path>
                 </svg>
-                {isLoading ? "Signing In..." : "Sign in with Google"}
+                {isLoading ? UI_MESSAGES.AUTH.SIGNING_IN : UI_MESSAGES.AUTH.SIGN_IN_GOOGLE}
               </Button>
 
               <div className="text-center text-sm">
                 <span className="text-muted-foreground">
-                  Don't have an account?{" "}
+                  {UI_MESSAGES.AUTH.DONT_HAVE_ACCOUNT}{" "}
                 </span>
                 <Link
                   to="/customer/signup"
                   className="text-success hover:underline font-medium"
                 >
-                  Create an account
+                  {UI_MESSAGES.AUTH.CREATE_ACCOUNT}
                 </Link>
               </div>
             </form>

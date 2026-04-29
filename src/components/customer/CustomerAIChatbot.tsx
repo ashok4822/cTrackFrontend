@@ -290,7 +290,7 @@ export const CustomerAIChatbot: React.FC = () => {
         className="overflow-hidden border-2 border-primary/10 hover:border-primary/30 transition-all group shadow-sm hover:shadow-md cursor-pointer"
         onClick={() => setIsOpen(true)}
       >
-        <CardHeader className="pb-3 bg-gradient-to-br from-primary/5 to-white">
+        <CardHeader className="pb-3 bg-gradient-to-br from-primary/5 to-card">
           <CardTitle className="text-base font-bold flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="relative">
@@ -363,7 +363,7 @@ export const CustomerAIChatbot: React.FC = () => {
         </div>
       </CardHeader>
 
-      <CardContent className="flex-1 overflow-hidden p-0 flex flex-col bg-slate-50">
+      <CardContent className="flex-1 overflow-hidden p-0 flex flex-col bg-muted/30">
         {/* Messages */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
           {messages.map((m) => (
@@ -373,7 +373,7 @@ export const CustomerAIChatbot: React.FC = () => {
                 "max-w-[85%] rounded-2xl p-3 text-xs shadow-sm",
                 m.role === "user"
                   ? "bg-primary text-primary-foreground ml-auto rounded-tr-none"
-                  : "bg-white text-foreground mr-auto border rounded-tl-none whitespace-pre-wrap",
+                  : "bg-card text-foreground mr-auto border rounded-tl-none whitespace-pre-wrap",
               )}
             >
               {m.content ||
@@ -391,7 +391,7 @@ export const CustomerAIChatbot: React.FC = () => {
         {/* Input */}
         <form
           onSubmit={handleSubmit}
-          className="p-3 bg-white border-t shrink-0"
+          className="p-3 bg-card border-t shrink-0"
         >
           <div className="flex gap-2">
             <Input

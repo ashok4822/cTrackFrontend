@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { ShieldAlert, ArrowLeft, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { UI_MESSAGES } from "@/constants/messages";
 
 const Unauthorized: React.FC = () => {
     const navigate = useNavigate();
@@ -17,10 +18,10 @@ const Unauthorized: React.FC = () => {
 
                 <div className="space-y-3">
                     <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">
-                        Access Denied
+                        {UI_MESSAGES.UNAUTHORIZED.ACCESS_DENIED}
                     </h1>
                     <p className="text-lg text-gray-600">
-                        You don't have permission to access this page. Please contact your administrator if you believe this is an error.
+                        {UI_MESSAGES.UNAUTHORIZED.CONTACT_ADMIN}
                     </p>
                 </div>
 
@@ -31,20 +32,20 @@ const Unauthorized: React.FC = () => {
                         className="flex items-center justify-center gap-2 px-6 py-2 transition-all duration-200 hover:bg-gray-100"
                     >
                         <ArrowLeft className="w-4 h-4" />
-                        Go Back
+                        {UI_MESSAGES.AUTH.GO_BACK}
                     </Button>
                     <Button
                         onClick={() => navigate("/")}
                         className="flex items-center justify-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white transition-all duration-200"
                     >
                         <Home className="w-4 h-4" />
-                        Home Page
+                        {UI_MESSAGES.TITLES.HOME_PAGE}
                     </Button>
                 </div>
 
                 <div className="pt-8 border-t border-gray-100 mt-8">
                     <p className="text-sm text-gray-400">
-                        Error Code: 403 Forbidden
+                        {UI_MESSAGES.UNAUTHORIZED.ERROR_403}
                     </p>
                 </div>
             </div>

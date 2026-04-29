@@ -19,11 +19,13 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   fetchGateOperations,
   createGateOperation,
+  clearError,
 } from "@/store/slices/gateOperationSlice";
 import { toast } from "sonner";
 import type { CreateGateOperationData } from "@/services/gateOperationService";
 import { GateInDialog } from "@/components/gate/GateInDialog";
 import { GateOutDialog } from "@/components/gate/GateOutDialog";
+import { UI_MESSAGES } from "@/constants/messages";
 
 export default function OperatorGateOperations() {
   const dispatch = useAppDispatch();
@@ -47,13 +49,14 @@ export default function OperatorGateOperations() {
   useEffect(() => {
     if (reduxError) {
       toast.error(reduxError);
+      dispatch(clearError());
     }
-  }, [reduxError]);
+  }, [reduxError, dispatch]);
 
   const handleGateOperationSubmit = async (data: CreateGateOperationData) => {
     await dispatch(createGateOperation(data)).unwrap();
     toast.success(
-      `Gate-${data.type === "gate-in" ? "In" : "Out"} recorded successfully`,
+      `Gate-${data.type === "gate-in" ? "In" : "Out"} ${UI_MESSAGES.COMMON.UPDATED_SUCCESS("")}`.trim(),
     );
     if (data.type === "gate-in") {
       setIsGateInDialogOpen(false);
@@ -83,10 +86,10 @@ export default function OperatorGateOperations() {
   ).length;
 
   const columns: Column<GateOperation>[] = [
-    { key: "containerNumber", header: "Container No.", sortable: true },
+    { key: "containerNumber", header: UI_MESSAGES.TABLE.CONTAINER_NO, sortable: true },
     {
       key: "type",
-      header: "Type",
+      header: UI_MESSAGES.TABLE.TYPE,
       render: (item) => (
         <div className="flex items-center gap-2">
           {item.type === "gate-in" ? (
@@ -98,21 +101,21 @@ export default function OperatorGateOperations() {
         </div>
       ),
     },
-    { key: "vehicleNumber", header: "Vehicle", sortable: true },
-    { key: "driverName", header: "Driver" },
+    { key: "vehicleNumber", header: UI_MESSAGES.TABLE.VEHICLE_NO, sortable: true },
+    { key: "driverName", header: UI_MESSAGES.TABLE.DRIVER },
     {
       key: "purpose",
-      header: "Purpose",
+      header: UI_MESSAGES.REPORTS.GATE_PURPOSE,
       render: (item) => (
         <span className="capitalize">
-          {item.type === "gate-in" ? "From " : "To "}
+          {item.type === "gate-in" ? `${UI_MESSAGES.KPI.FROM} ` : `${UI_MESSAGES.KPI.TO} `}
           {item.purpose}
         </span>
       ),
     },
     {
       key: "timestamp",
-      header: "Time",
+      header: UI_MESSAGES.TABLE.TIMESTAMP,
       render: (item) => new Date(item.timestamp).toLocaleString(),
     },
   ];
@@ -120,24 +123,24 @@ export default function OperatorGateOperations() {
   return (
     <DashboardLayout
       navItems={operatorNavItems}
-      pageTitle="Container Gate Operations"
+      pageTitle={UI_MESSAGES.TITLES.GATE_OPERATIONS}
     >
       {/* KPI Cards */}
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <KPICard
-          title="Gate-Ins Today"
+          title={UI_MESSAGES.DASHBOARD.KPI.GATE_IN_TODAY}
           value={gateInsToday}
           icon={ArrowDownToLine}
           variant="success"
         />
         <KPICard
-          title="Gate-Outs Today"
+          title={UI_MESSAGES.DASHBOARD.KPI.GATE_OUT_TODAY}
           value={gateOutsToday}
           icon={ArrowUpFromLine}
           variant="primary"
         />
         <KPICard
-          title="Total Today"
+          title={UI_MESSAGES.KPI.TOTAL_TODAY}
           value={totalOperationsToday}
           icon={DoorOpen}
           variant="default"
@@ -148,12 +151,12 @@ export default function OperatorGateOperations() {
       <div className="mb-6 flex flex-wrap gap-3">
         <Button onClick={() => setIsGateInDialogOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
-          New Gate-In
+          {UI_MESSAGES.TITLES.NEW_GATE_IN}
         </Button>
 
         <Button variant="outline" onClick={() => setIsGateOutDialogOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
-          New Gate-Out
+          {UI_MESSAGES.TITLES.NEW_GATE_OUT}
         </Button>
 
         <GateInDialog
@@ -176,19 +179,19 @@ export default function OperatorGateOperations() {
       {/* Gate Operations Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Container Gate Operations</CardTitle>
+          <CardTitle>{UI_MESSAGES.TITLES.GATE_OPERATIONS}</CardTitle>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="all">
             <TabsList className="mb-4">
               <TabsTrigger value="all">
-                All ({containerOperations.length})
+                {UI_MESSAGES.COMMON.ALL} ({containerOperations.length})
               </TabsTrigger>
               <TabsTrigger value="gate-in">
-                Gate-In ({gateIns.length})
+                {UI_MESSAGES.DASHBOARD.CHARTS.GATE_IN} ({gateIns.length})
               </TabsTrigger>
               <TabsTrigger value="gate-out">
-                Gate-Out ({gateOuts.length})
+                {UI_MESSAGES.DASHBOARD.CHARTS.GATE_OUT} ({gateOuts.length})
               </TabsTrigger>
             </TabsList>
 
@@ -198,7 +201,7 @@ export default function OperatorGateOperations() {
                 columns={columns}
                 isLoading={loading}
                 searchable
-                searchPlaceholder="Search..."
+                searchPlaceholder={UI_MESSAGES.COMMON.PLACEHOLDERS.SEARCH || "Search..."}
               />
             </TabsContent>
             <TabsContent value="gate-in">

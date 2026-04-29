@@ -30,7 +30,7 @@ export const profileService = {
     },
 
     updateProfile: async (data: UpdateProfileRequest) => {
-        const response = await api.put<{ message: string; user: ProfileData }>(
+        const response = await api.put<ProfileData>(
             API_ENDPOINTS.USERS.PROFILE,
             data
         );

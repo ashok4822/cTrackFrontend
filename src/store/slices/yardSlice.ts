@@ -3,6 +3,7 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 import { yardService } from "@/services/yardService";
 import type { Block } from "@/types";
 import { AxiosError } from "axios";
+import { UI_MESSAGES } from "@/constants/messages";
 
 interface YardState {
     blocks: Block[];
@@ -26,7 +27,7 @@ export const fetchBlocks = createAsyncThunk(
             const message =
                 axiosError.response?.data?.message ||
                 axiosError.message ||
-                "Failed to fetch blocks";
+                UI_MESSAGES.YARD.FETCH_FAILED;
             return rejectWithValue(message);
         }
     }
@@ -44,7 +45,7 @@ export const createBlock = createAsyncThunk(
             const message =
                 axiosError.response?.data?.message ||
                 axiosError.message ||
-                "Failed to create block";
+                UI_MESSAGES.YARD.BLOCK_CREATE_FAILED;
             return rejectWithValue(message);
         }
     }
@@ -61,7 +62,7 @@ export const updateBlock = createAsyncThunk(
             const message =
                 axiosError.response?.data?.message ||
                 axiosError.message ||
-                "Failed to update block";
+                UI_MESSAGES.YARD.BLOCK_UPDATE_FAILED;
             return rejectWithValue(message);
         }
     }

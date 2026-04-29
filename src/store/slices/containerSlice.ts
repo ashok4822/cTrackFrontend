@@ -3,6 +3,7 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 import { containerService } from "@/services/containerService";
 import type { Container, ContainerHistory } from "@/types";
 import { AxiosError } from "axios";
+import { UI_MESSAGES } from "@/constants/messages";
 
 interface ContainerState {
     containers: Container[];
@@ -33,7 +34,7 @@ export const fetchContainers = createAsyncThunk(
             return await containerService.getContainers(filters);
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
-            return rejectWithValue(axiosError.response?.data?.message || "Failed to fetch containers");
+            return rejectWithValue(axiosError.response?.data?.message || UI_MESSAGES.CONTAINER.FETCH_CONTAINERS_FAILED);
         }
     }
 );
@@ -45,7 +46,7 @@ export const fetchCustomerContainers = createAsyncThunk(
             return await containerService.getCustomerContainers();
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
-            return rejectWithValue(axiosError.response?.data?.message || "Failed to fetch your containers");
+            return rejectWithValue(axiosError.response?.data?.message || UI_MESSAGES.CONTAINER.FETCH_CUSTOMER_CONTAINERS_FAILED);
         }
     }
 );
@@ -57,7 +58,7 @@ export const fetchContainerById = createAsyncThunk(
             return await containerService.getContainerById(id);
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
-            return rejectWithValue(axiosError.response?.data?.message || "Failed to fetch container");
+            return rejectWithValue(axiosError.response?.data?.message || UI_MESSAGES.CONTAINER.FETCH_FAILED);
         }
     }
 );
@@ -71,7 +72,7 @@ export const createContainer = createAsyncThunk(
             return response;
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
-            return rejectWithValue(axiosError.response?.data?.message || "Failed to create container");
+            return rejectWithValue(axiosError.response?.data?.message || UI_MESSAGES.CONTAINER.CREATE_FAILED);
         }
     }
 );
@@ -85,7 +86,7 @@ export const updateContainer = createAsyncThunk(
             return response;
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
-            return rejectWithValue(axiosError.response?.data?.message || "Failed to update container");
+            return rejectWithValue(axiosError.response?.data?.message || UI_MESSAGES.CONTAINER.UPDATE_FAILED);
         }
     }
 );
@@ -98,7 +99,7 @@ export const blacklistContainer = createAsyncThunk(
             return { id, ...response };
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
-            return rejectWithValue(axiosError.response?.data?.message || "Failed to blacklist container");
+            return rejectWithValue(axiosError.response?.data?.message || UI_MESSAGES.CONTAINER.BLACKLIST_FAILED);
         }
     }
 );
@@ -111,7 +112,7 @@ export const unblacklistContainer = createAsyncThunk(
             return { id, ...response };
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
-            return rejectWithValue(axiosError.response?.data?.message || "Failed to unblacklist container");
+            return rejectWithValue(axiosError.response?.data?.message || UI_MESSAGES.CONTAINER.UNBLACKLIST_FAILED);
         }
     }
 );
@@ -123,7 +124,7 @@ export const fetchContainerHistory = createAsyncThunk(
             return await containerService.getContainerHistory(id);
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
-            return rejectWithValue(axiosError.response?.data?.message || "Failed to fetch container history");
+            return rejectWithValue(axiosError.response?.data?.message || UI_MESSAGES.CONTAINER.HISTORY_FAILED);
         }
     }
 );

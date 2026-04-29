@@ -20,6 +20,7 @@ import { fetchCustomerContainers } from "@/store/slices/containerSlice";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useOverdueStatus } from "@/hooks/useOverdueStatus";
 import { OverdueBlocker } from "@/components/common/OverdueBlocker";
+import { UI_MESSAGES } from "@/constants/messages";
 
 export default function CustomerMyContainers() {
   const dispatch = useAppDispatch();
@@ -38,7 +39,7 @@ export default function CustomerMyContainers() {
 
   if (checkingOverdue || (isLoading && containers.length === 0)) {
     return (
-      <DashboardLayout navItems={customerNavItems} pageTitle="My Containers">
+      <DashboardLayout navItems={customerNavItems} pageTitle={UI_MESSAGES.TITLES.MY_CONTAINERS}>
         <div className="space-y-4 p-6">
           <Skeleton className="h-10 w-full" />
           <Skeleton className="h-40 w-full" />
@@ -49,7 +50,7 @@ export default function CustomerMyContainers() {
 
   if (hasOverdueBills) {
     return (
-      <DashboardLayout navItems={customerNavItems} pageTitle="My Containers">
+      <DashboardLayout navItems={customerNavItems} pageTitle={UI_MESSAGES.TITLES.MY_CONTAINERS}>
         <OverdueBlocker />
       </DashboardLayout>
     );
@@ -66,7 +67,7 @@ export default function CustomerMyContainers() {
   const columns: Column<ContainerType>[] = [
     {
       key: "containerNumber",
-      header: "Container No.",
+      header: UI_MESSAGES.TABLE.CONTAINER_NO,
       sortable: true,
       render: (item) => (
         <span className="font-mono font-medium text-foreground">
@@ -76,42 +77,42 @@ export default function CustomerMyContainers() {
     },
     {
       key: "size",
-      header: "Size",
+      header: UI_MESSAGES.COMMON.SIZE,
       sortable: true,
     },
     {
       key: "type",
-      header: "Type",
+      header: UI_MESSAGES.TABLE.TYPE,
       sortable: true,
       render: (item) => <span className="capitalize">{item.type}</span>,
     },
     {
       key: "empty",
-      header: "Load Status",
+      header: UI_MESSAGES.CONTAINER_DETAILS.LOAD_STATUS,
       sortable: true,
       render: (item) => (
-        <span>{item.empty ? "Empty" : "Loaded"}</span>
+        <span>{item.empty ? UI_MESSAGES.CONTAINER_DETAILS.EMPTY : UI_MESSAGES.CONTAINER_DETAILS.LOADED}</span>
       ),
     },
     {
       key: "shippingLine",
-      header: "Shipping Line",
+      header: UI_MESSAGES.TITLES.SHIPPING_LINE,
       sortable: true,
     },
     {
       key: "status",
-      header: "Status",
+      header: UI_MESSAGES.TABLE.STATUS,
       sortable: true,
       render: (item) => <StatusBadge status={item.status} />,
     },
     {
       key: "yardLocation",
-      header: "Location",
+      header: UI_MESSAGES.CONTAINER_DETAILS.LOCATION,
       render: (item) => (item.yardLocation ? item.yardLocation.block : "-"),
     },
     {
       key: "actions",
-      header: "Actions",
+      header: UI_MESSAGES.TABLE.ACTIONS,
       render: (item) => (
         <Button
           variant="ghost"
@@ -128,28 +129,28 @@ export default function CustomerMyContainers() {
   ];
 
   return (
-    <DashboardLayout navItems={customerNavItems} pageTitle="My Containers">
+    <DashboardLayout navItems={customerNavItems} pageTitle={UI_MESSAGES.TITLES.MY_CONTAINERS}>
       {/* KPI Cards */}
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KPICard
-          title="Total Containers"
+          title={UI_MESSAGES.KPI.TOTAL_CONTAINERS}
           value={isLoading ? "..." : containers.length}
           icon={Container}
           variant="primary"
         />
         <KPICard
-          title="At Factory"
+          title={UI_MESSAGES.TITLES.AT_FACTORY}
           value={isLoading ? "..." : atFactory}
           icon={Factory}
           variant="success"
         />
         <KPICard
-          title="In Transit"
+          title={UI_MESSAGES.KPI.IN_TRANSIT}
           value={isLoading ? "..." : inTransit}
           icon={Truck}
         />
         <KPICard
-          title="In Yard"
+          title={UI_MESSAGES.KPI.CONTAINERS_IN_YARD}
           value={isLoading ? "..." : inYard}
           icon={MapPin}
           variant="warning"
@@ -169,7 +170,7 @@ export default function CustomerMyContainers() {
           data={containers}
           columns={columns}
           searchable
-          searchPlaceholder="Search containers..."
+          searchPlaceholder={UI_MESSAGES.TABLE.SEARCH_CONTAINERS}
           onRowClick={setSelectedContainer}
           emptyMessage="No containers found"
         />
@@ -182,7 +183,7 @@ export default function CustomerMyContainers() {
       >
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Container Details</DialogTitle>
+            <DialogTitle>{UI_MESSAGES.CONTAINER_DETAILS.TITLE}</DialogTitle>
             <DialogDescription>
               Detailed information about container {selectedContainer?.containerNumber}
             </DialogDescription>
@@ -192,67 +193,67 @@ export default function CustomerMyContainers() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">
-                    Container Number
+                    {UI_MESSAGES.CONTAINER_DETAILS.NUMBER_LABEL}
                   </p>
                   <p className="font-mono font-medium">
                     {selectedContainer.containerNumber}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Status</p>
+                  <p className="text-sm text-muted-foreground">{UI_MESSAGES.CONTAINER_DETAILS.STATUS_LABEL}</p>
                   <StatusBadge status={selectedContainer.status} />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Size</p>
+                  <p className="text-sm text-muted-foreground">{UI_MESSAGES.COMMON.SIZE}</p>
                   <p className="font-medium">{selectedContainer.size}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Type</p>
+                  <p className="text-sm text-muted-foreground">{UI_MESSAGES.TABLE.TYPE}</p>
                   <p className="font-medium capitalize">
                     {selectedContainer.type}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Shipping Line</p>
+                  <p className="text-sm text-muted-foreground">{UI_MESSAGES.TITLES.SHIPPING_LINE}</p>
                   <p className="font-medium">
                     {selectedContainer.shippingLine}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Movement Type</p>
+                  <p className="text-sm text-muted-foreground">{UI_MESSAGES.CONTAINER_DETAILS.MOVEMENT_TYPE}</p>
                   <p className="font-medium capitalize">
                     {selectedContainer.movementType}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Load Status</p>
+                  <p className="text-sm text-muted-foreground">{UI_MESSAGES.CONTAINER_DETAILS.LOAD_STATUS}</p>
                   <p className="font-medium">
-                    {selectedContainer.empty ? "Empty" : "Loaded"}
+                    {selectedContainer.empty ? UI_MESSAGES.CONTAINER_DETAILS.EMPTY : UI_MESSAGES.CONTAINER_DETAILS.LOADED}
                   </p>
                 </div>
                 {selectedContainer.yardLocation && (
                   <div className="col-span-2">
                     <p className="text-sm text-muted-foreground">
-                      Yard Location
+                      {UI_MESSAGES.CONTAINER_DETAILS.YARD_LOCATION_LABEL}
                     </p>
                     <p className="font-medium">
-                      Block {selectedContainer.yardLocation.block}
+                      {UI_MESSAGES.YARD.BLOCK} {selectedContainer.yardLocation.block}
                     </p>
                   </div>
                 )}
                 {selectedContainer.gateInTime && (
                   <div>
-                    <p className="text-sm text-muted-foreground">Gate In</p>
+                    <p className="text-sm text-muted-foreground">{UI_MESSAGES.GATE.GATE_IN_TIME}</p>
                     <p className="font-medium">
                       {new Date(selectedContainer.gateInTime).toLocaleString()}
                     </p>
                   </div>
                 )}
-                {selectedContainer.dwellTime && (
+                {selectedContainer.dwellTime !== undefined && (
                   <div>
-                    <p className="text-sm text-muted-foreground">Dwell Time</p>
+                    <p className="text-sm text-muted-foreground">{UI_MESSAGES.CONTAINER_DETAILS.DWELL_TIME}</p>
                     <p className="font-medium">
-                      {selectedContainer.dwellTime} days
+                      {selectedContainer.dwellTime} {UI_MESSAGES.COMMON.DAYS}
                     </p>
                   </div>
                 )}

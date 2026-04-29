@@ -38,6 +38,7 @@ import {
 import { useOverdueStatus } from "@/hooks/useOverdueStatus";
 import { OverdueBlocker } from "@/components/common/OverdueBlocker";
 import { Skeleton } from "@/components/ui/skeleton";
+import { UI_MESSAGES } from "@/constants/messages";
 
 export default function CustomerProfile() {
   const dispatch = useAppDispatch();
@@ -79,7 +80,7 @@ export default function CustomerProfile() {
 
     try {
       await dispatch(updateProfileImage(file)).unwrap();
-      toast.success("Profile image updated successfully");
+      toast.success(UI_MESSAGES.PROFILE.IMAGE_UPDATE_SUCCESS);
     } catch (error) {
       toast.error(error as string);
     }
@@ -88,7 +89,7 @@ export default function CustomerProfile() {
   const handleSaveProfile = async () => {
     try {
       await dispatch(updateProfile({ name, phone, companyName })).unwrap();
-      toast.success("Profile updated successfully");
+      toast.success(UI_MESSAGES.PROFILE.UPDATE_SUCCESS);
     } catch (error) {
       toast.error(error as string);
     }
@@ -99,7 +100,7 @@ export default function CustomerProfile() {
       await dispatch(
         updatePassword({ currentPassword, newPassword, confirmPassword }),
       ).unwrap();
-      toast.success("Password updated successfully");
+      toast.success(UI_MESSAGES.PROFILE.PASSWORD_UPDATE_SUCCESS);
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
@@ -120,7 +121,7 @@ export default function CustomerProfile() {
     if (email) {
       return email.slice(0, 2).toUpperCase();
     }
-    return "CU";
+    return UI_MESSAGES.TITLES.CUSTOMER.slice(0, 2).toUpperCase();
   };
 
   const getImageUrl = (path?: string) => {
@@ -136,7 +137,7 @@ export default function CustomerProfile() {
 
   if (checkingOverdue || (isLoading && !profile)) {
     return (
-      <DashboardLayout navItems={customerNavItems} pageTitle="Profile">
+      <DashboardLayout navItems={customerNavItems} pageTitle={UI_MESSAGES.TITLES.PROFILE}>
         <div className="space-y-4 p-6">
           <Skeleton className="h-10 w-full" />
           <Skeleton className="h-64 w-full" />
@@ -147,27 +148,27 @@ export default function CustomerProfile() {
 
   if (hasOverdueBills) {
     return (
-      <DashboardLayout navItems={customerNavItems} pageTitle="Profile">
+      <DashboardLayout navItems={customerNavItems} pageTitle={UI_MESSAGES.TITLES.PROFILE}>
         <OverdueBlocker />
       </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout navItems={customerNavItems} pageTitle="Profile">
+    <DashboardLayout navItems={customerNavItems} pageTitle={UI_MESSAGES.TITLES.PROFILE}>
       <div className="max-w-4xl">
         <Tabs defaultValue="profile" className="space-y-6">
           <TabsList>
-            <TabsTrigger value="profile">Profile</TabsTrigger>
-            <TabsTrigger value="security">Security</TabsTrigger>
+            <TabsTrigger value="profile">{UI_MESSAGES.PROFILE.PROFILE_TAB}</TabsTrigger>
+            <TabsTrigger value="security">{UI_MESSAGES.PROFILE.SECURITY}</TabsTrigger>
           </TabsList>
 
           {/* Profile Tab */}
           <TabsContent value="profile">
             <Card>
               <CardHeader>
-                <CardTitle>Personal Information</CardTitle>
-                <CardDescription>Update your personal details</CardDescription>
+                <CardTitle>{UI_MESSAGES.PROFILE.PERSONAL_INFO}</CardTitle>
+                <CardDescription>{UI_MESSAGES.PROFILE.UPDATE_PERSONAL_DETAILS}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Avatar */}
@@ -187,7 +188,7 @@ export default function CustomerProfile() {
                       className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3 gap-2 cursor-pointer"
                     >
                       <Upload className="h-4 w-4" />
-                      Upload Photo
+                      {UI_MESSAGES.PROFILE.UPLOAD_PHOTO}
                       <Input
                         id="profile-image"
                         type="file"
@@ -197,7 +198,7 @@ export default function CustomerProfile() {
                       />
                     </Label>
                     <p className="text-sm text-muted-foreground">
-                      JPG, PNG or GIF. Max 2MB.
+                      {UI_MESSAGES.PROFILE.PHOTO_SPECS}
                     </p>
                   </div>
                 </div>
@@ -207,7 +208,7 @@ export default function CustomerProfile() {
                 {/* Form Fields */}
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Name</Label>
+                    <Label htmlFor="name">{UI_MESSAGES.PROFILE.NAME}</Label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
@@ -215,13 +216,13 @@ export default function CustomerProfile() {
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         className="pl-10"
-                        placeholder="Your Name"
+                        placeholder={UI_MESSAGES.PROFILE.NAME_PLACEHOLDER}
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email">{UI_MESSAGES.PROFILE.EMAIL}</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
@@ -234,7 +235,7 @@ export default function CustomerProfile() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Phone</Label>
+                    <Label htmlFor="phone">{UI_MESSAGES.PROFILE.PHONE}</Label>
                     <div className="relative">
                       <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
@@ -243,12 +244,12 @@ export default function CustomerProfile() {
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         className="pl-10"
-                        placeholder="Phone Number"
+                        placeholder={UI_MESSAGES.PROFILE.PHONE_PLACEHOLDER}
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="companyName">Company Name</Label>
+                    <Label htmlFor="companyName">{UI_MESSAGES.PROFILE.COMPANY}</Label>
                     <div className="relative">
                       <Building2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
@@ -256,12 +257,12 @@ export default function CustomerProfile() {
                         value={companyName}
                         onChange={(e) => setCompanyName(e.target.value)}
                         className="pl-10"
-                        placeholder="ABC Manufacturing"
+                        placeholder={UI_MESSAGES.PROFILE.COMPANY_PLACEHOLDER}
                       />
                     </div>
                   </div>
                   <div className="space-y-2 sm:col-span-2">
-                    <Label>Address</Label>
+                    <Label>{UI_MESSAGES.PROFILE.ADDRESS}</Label>
                     <div className="relative">
                       <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -284,7 +285,7 @@ export default function CustomerProfile() {
                     ) : (
                       <Save className="h-4 w-4" />
                     )}
-                    Save Changes
+                    {UI_MESSAGES.PROFILE.SAVE_CHANGES}
                   </Button>
                 </div>
               </CardContent>
@@ -295,13 +296,13 @@ export default function CustomerProfile() {
           <TabsContent value="security">
             <Card>
               <CardHeader>
-                <CardTitle>Security Settings</CardTitle>
-                <CardDescription>Manage your account security</CardDescription>
+                <CardTitle>{UI_MESSAGES.PROFILE.SECURITY_SETTINGS}</CardTitle>
+                <CardDescription>{UI_MESSAGES.PROFILE.MANAGE_SECURITY}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="currentPassword">Current Password</Label>
+                    <Label htmlFor="currentPassword">{UI_MESSAGES.PROFILE.CURRENT_PASSWORD}</Label>
                     <div className="relative">
                       <Shield className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
@@ -329,7 +330,7 @@ export default function CustomerProfile() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="newPassword">New Password</Label>
+                    <Label htmlFor="newPassword">{UI_MESSAGES.PROFILE.NEW_PASSWORD}</Label>
                     <div className="relative">
                       <Shield className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
@@ -356,7 +357,7 @@ export default function CustomerProfile() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="confirmPassword">
-                      Confirm New Password
+                      {UI_MESSAGES.PROFILE.CONFIRM_NEW_PASSWORD}
                     </Label>
                     <div className="relative">
                       <Shield className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -399,7 +400,7 @@ export default function CustomerProfile() {
                     ) : (
                       <Save className="h-4 w-4" />
                     )}
-                    Update Password
+                    {UI_MESSAGES.PROFILE.UPDATE_PASSWORD}
                   </Button>
                 </div>
               </CardContent>

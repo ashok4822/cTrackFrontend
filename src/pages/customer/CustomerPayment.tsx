@@ -33,6 +33,8 @@ import { billingService, type BillRecord } from "@/services/billingService";
 import { pdaService } from "@/services/pdaService";
 import { useToast } from "@/hooks/useToast";
 import { useEffect, useCallback } from "react";
+import { UI_MESSAGES } from "@/constants/messages";
+
 import type { RazorpayOptions, RazorpayResponse } from "@/types/razorpay";
 import {
   AlertDialog,
@@ -68,8 +70,8 @@ export default function CustomerPayment() {
       setPdaBalance(pdaData.balance);
     } catch {
       toast({
-        title: "Error",
-        description: "Failed to load payment details",
+        title: UI_MESSAGES.TITLES.ERROR,
+        description: UI_MESSAGES.BILLING.FETCH_FAILED,
         variant: "destructive",
       });
     } finally {
@@ -85,10 +87,10 @@ export default function CustomerPayment() {
 
   if (loading) {
     return (
-      <DashboardLayout navItems={customerNavItems} pageTitle="Payment">
+      <DashboardLayout navItems={customerNavItems} pageTitle={UI_MESSAGES.BILLING.PAYMENT_DETAILS}>
         <div className="flex flex-col items-center justify-center py-32">
           <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-          <p className="text-muted-foreground">Loading payment details...</p>
+          <p className="text-muted-foreground">{UI_MESSAGES.BILLING.LOADING_PAYMENT_DETAILS}</p>
         </div>
       </DashboardLayout>
     );
@@ -96,16 +98,16 @@ export default function CustomerPayment() {
 
   if (!bill) {
     return (
-      <DashboardLayout navItems={customerNavItems} pageTitle="Payment">
+      <DashboardLayout navItems={customerNavItems} pageTitle={UI_MESSAGES.BILLING.PAYMENT_DETAILS}>
         <Card>
           <CardContent className="py-16 text-center">
             <AlertCircle className="h-12 w-12 mx-auto text-destructive mb-4" />
-            <h2 className="text-xl font-semibold mb-2">Bill Not Found</h2>
+            <h2 className="text-xl font-semibold mb-2">{UI_MESSAGES.BILLING.BILL_NOT_FOUND}</h2>
             <p className="text-muted-foreground mb-4">
-              The bill you're looking for doesn't exist.
+              {UI_MESSAGES.BILLING.BILL_NOT_FOUND_DESC}
             </p>
             <Button onClick={() => navigate("/customer/bills")}>
-              Back to Bills
+              {UI_MESSAGES.BILLING.BACK_TO_BILLS}
             </Button>
           </CardContent>
         </Card>
@@ -115,16 +117,16 @@ export default function CustomerPayment() {
 
   if (bill.status === "paid") {
     return (
-      <DashboardLayout navItems={customerNavItems} pageTitle="Payment">
+      <DashboardLayout navItems={customerNavItems} pageTitle={UI_MESSAGES.BILLING.PAYMENT_DETAILS}>
         <Card>
           <CardContent className="py-16 text-center">
             <CheckCircle className="h-12 w-12 mx-auto text-success mb-4" />
-            <h2 className="text-xl font-semibold mb-2">Bill Already Paid</h2>
+            <h2 className="text-xl font-semibold mb-2">{UI_MESSAGES.BILLING.BILL_ALREADY_PAID}</h2>
             <p className="text-muted-foreground mb-4">
-              This bill has already been paid.
+              {UI_MESSAGES.BILLING.BILL_ALREADY_PAID_DESC}
             </p>
             <Button onClick={() => navigate("/customer/bills")}>
-              Back to Bills
+              {UI_MESSAGES.BILLING.BACK_TO_BILLS}
             </Button>
           </CardContent>
         </Card>
@@ -135,8 +137,8 @@ export default function CustomerPayment() {
   const handlePayment = async () => {
     if (paymentMethod === "pda" && !hasSufficientBalance) {
       toast({
-        title: "Insufficient Balance",
-        description: "Your PDA balance is insufficient for this payment.",
+        title: UI_MESSAGES.BILLING.INSUFFICIENT_BALANCE,
+        description: UI_MESSAGES.BILLING.INSUFFICIENT_BALANCE_DESC,
         variant: "destructive",
       });
       return;
@@ -169,8 +171,8 @@ export default function CustomerPayment() {
 
         if (!isScriptLoaded) {
           toast({
-            title: "Error",
-            description: "Razorpay SDK failed to load. Are you online?",
+            title: UI_MESSAGES.TITLES.ERROR,
+            description: UI_MESSAGES.PDA.SDK_LOAD_FAILED,
             variant: "destructive",
           });
           return;
@@ -199,8 +201,8 @@ export default function CustomerPayment() {
 
               if (verificationResult) {
                 toast({
-                  title: "Payment Successful",
-                  description: "Your payment has been verified successfully.",
+                  title: UI_MESSAGES.BILLING.PAYMENT_VERIFIED,
+                  description: UI_MESSAGES.BILLING.PAYMENT_SUCCESS_DESC,
                 });
                 navigate(
                   `/customer/payment-confirmation/${billId}?status=success&method=${paymentMethod}`,
@@ -215,7 +217,7 @@ export default function CustomerPayment() {
                     "Payment verification failed. Please contact support.";
 
               toast({
-                title: "Verification Failed",
+                title: UI_MESSAGES.BILLING.VERIFICATION_FAILED,
                 description: errorMessage,
                 variant: "destructive",
               });
@@ -267,16 +269,18 @@ export default function CustomerPayment() {
         rzp.open();
         return; // SDK handler will take over
       }
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : (error as { response?: { data?: { message?: string } } })?.response
+              ?.data?.message || "There was an error initiating the payment.";
 
       toast({
-        title: "Payment Successful",
-        description: "Your payment has been processed successfully.",
+        title: UI_MESSAGES.BILLING.PAYMENT_FAILED,
+        description: errorMessage,
+        variant: "destructive",
       });
-
-      // Navigate to confirmation page
-      navigate(
-        `/customer/payment-confirmation/${billId}?status=success&method=${paymentMethod}`,
-      );
     } finally {
       setIsProcessing(false);
     }
@@ -289,8 +293,8 @@ export default function CustomerPayment() {
     try {
       await billingService.payBill(billId);
       toast({
-        title: "Payment Successful",
-        description: "Your payment has been processed successfully.",
+        title: UI_MESSAGES.BILLING.PAYMENT_SUCCESSFUL,
+        description: UI_MESSAGES.BILLING.PAYMENT_SUCCESS_DESC,
       });
       navigate(
         `/customer/payment-confirmation/${billId}?status=success&method=pda`,
@@ -303,7 +307,7 @@ export default function CustomerPayment() {
               ?.data?.message || "There was an error processing your payment.";
 
       toast({
-        title: "Payment Failed",
+        title: UI_MESSAGES.BILLING.PAYMENT_FAILED,
         description: errorMessage,
         variant: "destructive",
       });
@@ -313,23 +317,23 @@ export default function CustomerPayment() {
   };
 
   return (
-    <DashboardLayout navItems={customerNavItems} pageTitle="Payment">
+    <DashboardLayout navItems={customerNavItems} pageTitle={UI_MESSAGES.BILLING.PAYMENT_DETAILS}>
       <Button
         variant="ghost"
         className="mb-4"
         onClick={() => navigate("/customer/bills")}
       >
         <ArrowLeft className="h-4 w-4 mr-2" />
-        Back to Bills
+        {UI_MESSAGES.BILLING.BACK_TO_BILLS}
       </Button>
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Bill Summary */}
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Bill Summary</CardTitle>
+            <CardTitle>{UI_MESSAGES.BILLING.BILL_SUMMARY}</CardTitle>
             <CardDescription>
-              Bill Number:{" "}
+              {UI_MESSAGES.BILLING.BILL_NUMBER}:{" "}
               <span className="font-mono font-medium text-foreground">
                 {bill.billNumber}
               </span>
@@ -338,11 +342,11 @@ export default function CustomerPayment() {
           <CardContent>
             <div className="grid grid-cols-2 gap-4 mb-6 p-4 bg-muted/50 rounded-lg">
               <div>
-                <p className="text-sm text-muted-foreground">Container</p>
+                <p className="text-sm text-muted-foreground">{UI_MESSAGES.TABLE.CONTAINER}</p>
                 <p className="font-mono font-medium">{bill.containerNumber}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Due Date</p>
+                <p className="text-sm text-muted-foreground">{UI_MESSAGES.BILLING.DUE_DATE}</p>
                 <p className="font-medium">
                   {new Date(bill.dueDate).toLocaleDateString()}
                 </p>
@@ -352,10 +356,10 @@ export default function CustomerPayment() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Activity</TableHead>
-                  <TableHead className="text-right">Qty</TableHead>
-                  <TableHead className="text-right">Unit Price</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
+                  <TableHead>{UI_MESSAGES.BILLING.DESCRIPTION}</TableHead>
+                  <TableHead className="text-right">{UI_MESSAGES.BILLING.QUANTITY_SHORT}</TableHead>
+                  <TableHead className="text-right">{UI_MESSAGES.BILLING.UNIT_PRICE}</TableHead>
+                  <TableHead className="text-right">{UI_MESSAGES.BILLING.AMOUNT}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -366,10 +370,10 @@ export default function CustomerPayment() {
                       {activity.quantity}
                     </TableCell>
                     <TableCell className="text-right">
-                      ₹{activity.unitPrice.toLocaleString()}
+                      {UI_MESSAGES.COMMON.CURRENCY_SYMBOL}{activity.unitPrice.toLocaleString()}
                     </TableCell>
                     <TableCell className="text-right">
-                      ₹{activity.amount.toLocaleString()}
+                      {UI_MESSAGES.COMMON.CURRENCY_SYMBOL}{activity.amount.toLocaleString()}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -377,10 +381,10 @@ export default function CustomerPayment() {
               <TableFooter>
                 <TableRow>
                   <TableCell colSpan={3} className="text-right font-semibold">
-                    Total Amount
+                    {UI_MESSAGES.BILLING.TOTAL_AMOUNT}
                   </TableCell>
                   <TableCell className="text-right font-bold text-lg">
-                    ₹{bill.totalAmount.toLocaleString()}
+                    {UI_MESSAGES.COMMON.CURRENCY_SYMBOL}{bill.totalAmount.toLocaleString()}
                   </TableCell>
                 </TableRow>
               </TableFooter>
@@ -391,9 +395,9 @@ export default function CustomerPayment() {
         {/* Payment Options */}
         <Card>
           <CardHeader>
-            <CardTitle>Payment Method</CardTitle>
+            <CardTitle>{UI_MESSAGES.BILLING.PAYMENT_METHOD}</CardTitle>
             <CardDescription>
-              Select your preferred payment option
+              {UI_MESSAGES.BILLING.SELECT_PAYMENT_METHOD}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -414,11 +418,11 @@ export default function CustomerPayment() {
                   >
                     <Wallet className="h-5 w-5" />
                     <span className="font-medium">
-                      Pre-Deposit Account (PDA)
+                      {UI_MESSAGES.COMMON.PDA_FULL}
                     </span>
                   </Label>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Available Balance:{" "}
+                    {UI_MESSAGES.PDA.AVAILABLE_BALANCE}:{" "}
                     <span
                       className={
                         hasSufficientBalance
@@ -426,12 +430,12 @@ export default function CustomerPayment() {
                           : "text-destructive"
                       }
                     >
-                      ₹{pdaBalance.toLocaleString()}
+                      {UI_MESSAGES.COMMON.CURRENCY_SYMBOL}{pdaBalance.toLocaleString()}
                     </span>
                   </p>
                   {!hasSufficientBalance && (
                     <p className="text-xs text-destructive mt-1">
-                      Insufficient balance
+                      {UI_MESSAGES.PDA.LOW_BALANCE_ALERT}
                     </p>
                   )}
                 </div>
@@ -452,10 +456,10 @@ export default function CustomerPayment() {
                     className="flex items-center gap-2 cursor-pointer"
                   >
                     <CreditCard className="h-5 w-5" />
-                    <span className="font-medium">Online Payment</span>
+                    <span className="font-medium">{UI_MESSAGES.BILLING.ONLINE_PAYMENT}</span>
                   </Label>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Credit/Debit Card, UPI, Net Banking
+                    {UI_MESSAGES.BILLING.ONLINE_PAYMENT_METHODS}
                   </p>
                 </div>
               </div>
@@ -464,20 +468,19 @@ export default function CustomerPayment() {
             {paymentMethod === "online" && (
               <div className="p-4 bg-primary/5 rounded-lg border border-primary/20 text-center">
                 <p className="text-sm font-medium">
-                  Secure Payment via Razorpay
+                  {UI_MESSAGES.BILLING.SECURE_PAYMENT_RAZORPAY}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  You will be redirected to the secure Razorpay payment gateway
-                  to complete your transaction.
+                  {UI_MESSAGES.BILLING.SECURE_PAYMENT_DESC}
                 </p>
               </div>
             )}
 
             <div className="pt-4 border-t">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-muted-foreground">Amount to Pay</span>
+                <span className="text-muted-foreground">{UI_MESSAGES.BILLING.AMOUNT_TO_PAY}</span>
                 <span className="text-2xl font-bold">
-                  ₹{bill.totalAmount.toLocaleString()}
+                  {UI_MESSAGES.COMMON.CURRENCY_SYMBOL}{bill.totalAmount.toLocaleString()}
                 </span>
               </div>
               <Button
@@ -490,7 +493,7 @@ export default function CustomerPayment() {
                 }
               >
                 {isProcessing ? (
-                  <>Processing...</>
+                  <>{UI_MESSAGES.BILLING.PROCESSING}</>
                 ) : (
                   <>
                     {paymentMethod === "pda" ? (
@@ -498,7 +501,7 @@ export default function CustomerPayment() {
                     ) : (
                       <CreditCard className="h-4 w-4 mr-2" />
                     )}
-                    Pay ₹{bill.totalAmount.toLocaleString()}
+                    {UI_MESSAGES.BILLING.PAY_AMOUNT(bill.totalAmount.toLocaleString())}
                   </>
                 )}
               </Button>
@@ -510,20 +513,18 @@ export default function CustomerPayment() {
       <AlertDialog open={showConfirmPDA} onOpenChange={setShowConfirmPDA}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirm PDA Payment</AlertDialogTitle>
+            <AlertDialogTitle>{UI_MESSAGES.BILLING.CONFIRM_PDA_PAYMENT}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to pay ₹{bill.totalAmount.toLocaleString()}{" "}
-              using your Pre-Deposit Account? This amount will be deducted from
-              your current balance of ₹{pdaBalance.toLocaleString()}.
+              {UI_MESSAGES.BILLING.CONFIRM_PDA_PAYMENT_DESC(bill.totalAmount.toLocaleString(), pdaBalance.toLocaleString())}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{UI_MESSAGES.COMMON.CANCEL}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-blue-600 hover:bg-blue-700"
               onClick={processPDAPayment}
             >
-              Confirm Payment
+              {UI_MESSAGES.BILLING.CONFIRM_PAYMENT}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

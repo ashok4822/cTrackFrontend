@@ -47,6 +47,36 @@ const processQueue = (
 // Response interceptor: handle 401s and other global errors
 api.interceptors.response.use(
   (response) => {
+    // If the response has the ApiResponse structure, unwrap it
+    const apiRes = response.data;
+    if (
+      apiRes &&
+      typeof apiRes === "object" &&
+      "success" in apiRes &&
+      "data" in apiRes
+    ) {
+      // If data is present and not null/undefined, return just the data
+      // This matches the expectations of most frontend services and thunks
+      if (apiRes.data !== null && apiRes.data !== undefined) {
+        let unwrappedData = apiRes.data;
+
+        // Also unwrap collection-style responses (items + total)
+        // Many thunks expect an array directly instead of the collection object
+        if (
+          unwrappedData &&
+          typeof unwrappedData === "object" &&
+          "items" in unwrappedData &&
+          Array.isArray(unwrappedData.items)
+        ) {
+          unwrappedData = unwrappedData.items;
+        }
+
+        return {
+          ...response,
+          data: unwrappedData,
+        };
+      }
+    }
     return response;
   },
   async (error: AxiosError) => {

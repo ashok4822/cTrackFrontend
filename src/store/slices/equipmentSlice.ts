@@ -3,6 +3,7 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 import { equipmentService } from "@/services/equipmentService";
 import type { Equipment, EquipmentHistory } from "@/types";
 import { AxiosError } from "axios";
+import { UI_MESSAGES } from "@/constants/messages";
 
 interface EquipmentState {
     equipment: Equipment[];
@@ -37,7 +38,7 @@ export const fetchEquipment = createAsyncThunk(
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
             return rejectWithValue(
-                axiosError.response?.data?.message || "Failed to fetch equipment"
+                axiosError.response?.data?.message || UI_MESSAGES.EQUIPMENT.FETCH_FAILED
             );
         }
     }
@@ -51,7 +52,7 @@ export const fetchEquipmentHistory = createAsyncThunk(
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
             return rejectWithValue(
-                axiosError.response?.data?.message || "Failed to fetch equipment history"
+                axiosError.response?.data?.message || UI_MESSAGES.EQUIPMENT.HISTORY_FAILED
             );
         }
     }
@@ -67,7 +68,7 @@ export const addEquipment = createAsyncThunk(
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
             return rejectWithValue(
-                axiosError.response?.data?.message || "Failed to add equipment"
+                axiosError.response?.data?.message || UI_MESSAGES.EQUIPMENT.ADD_FAILED
             );
         }
     }
@@ -86,7 +87,7 @@ export const updateEquipment = createAsyncThunk(
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
             return rejectWithValue(
-                axiosError.response?.data?.message || "Failed to update equipment"
+                axiosError.response?.data?.message || UI_MESSAGES.EQUIPMENT.UPDATE_FAILED
             );
         }
     }
@@ -102,7 +103,7 @@ export const deleteEquipment = createAsyncThunk(
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
             return rejectWithValue(
-                axiosError.response?.data?.message || "Failed to delete equipment"
+                axiosError.response?.data?.message || UI_MESSAGES.EQUIPMENT.DELETE_FAILED
             );
         }
     }

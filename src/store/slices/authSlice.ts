@@ -4,6 +4,7 @@ import { authService } from "@/services/authService";
 import type { LoginResponse } from "@/services/authService";
 import type { User, UserRole } from "@/types";
 import { AxiosError } from "axios";
+import { UI_MESSAGES } from "@/constants/messages";
 import { getProfile, updateProfile, updateProfileImage } from "./profileSlice";
 
 interface AuthState {
@@ -35,7 +36,7 @@ export const login = createAsyncThunk(
       const message =
         axiosError.response?.data?.message ||
         axiosError.message ||
-        "Login failed";
+        UI_MESSAGES.AUTH.LOGIN_FAILED;
       return rejectWithValue(message);
     }
   },
@@ -54,7 +55,7 @@ export const googleLogin = createAsyncThunk(
       const message =
         axiosError.response?.data?.message ||
         axiosError.message ||
-        "Google login failed";
+        UI_MESSAGES.AUTH.GOOGLE_LOGIN_FAILED;
       return rejectWithValue(message);
     }
   },
@@ -70,7 +71,7 @@ export const initiateSignup = createAsyncThunk(
       const message =
         axiosError.response?.data?.message ||
         axiosError.message ||
-        "Failed to send OTP";
+        UI_MESSAGES.AUTH.OTP_SEND_FAILED;
       return rejectWithValue(message);
     }
   },
@@ -89,7 +90,7 @@ export const signup = createAsyncThunk(
       const message =
         axiosError.response?.data?.message ||
         axiosError.message ||
-        "Signup failed";
+        UI_MESSAGES.AUTH.SIGNUP_FAILED;
       return rejectWithValue(message);
     }
   },
@@ -118,7 +119,7 @@ export const forgotPassword = createAsyncThunk(
       const message =
         axiosError.response?.data?.message ||
         axiosError.message ||
-        "Failed to send reset email";
+        UI_MESSAGES.AUTH.RESET_EMAIL_FAILED;
       return rejectWithValue(message);
     }
   },
@@ -141,7 +142,7 @@ export const resetPassword = createAsyncThunk(
       const message =
         axiosError.response?.data?.message ||
         axiosError.message ||
-        "Failed to reset password";
+        UI_MESSAGES.AUTH.RESET_PASSWORD_FAILED;
       return rejectWithValue(message);
     }
   },
@@ -160,7 +161,7 @@ export const verifyResetOtp = createAsyncThunk(
       const message =
         axiosError.response?.data?.message ||
         axiosError.message ||
-        "Invalid or expired OTP";
+        UI_MESSAGES.AUTH.INVALID_OTP;
       return rejectWithValue(message);
     }
   },
@@ -280,16 +281,16 @@ const authSlice = createSlice({
       })
       // Sync profile changes to user state
       .addCase(getProfile.fulfilled, (state, action) => {
-        if (state.user) {
+        if (state.user && action.payload) {
           state.user.name = action.payload.name || state.user.name;
-          state.user.profileImage = action.payload.profileImage;
+          state.user.profileImage = action.payload.profileImage || state.user.profileImage;
           localStorage.setItem("user", JSON.stringify(state.user));
         }
       })
       .addCase(updateProfile.fulfilled, (state, action) => {
-        if (state.user) {
+        if (state.user && action.payload) {
           state.user.name = action.payload.name || state.user.name;
-          state.user.profileImage = action.payload.profileImage;
+          state.user.profileImage = action.payload.profileImage || state.user.profileImage;
           localStorage.setItem("user", JSON.stringify(state.user));
         }
       })

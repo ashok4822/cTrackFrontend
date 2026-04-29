@@ -47,6 +47,7 @@ import {
   History,
 } from "lucide-react";
 import { toast } from "sonner";
+import { UI_MESSAGES } from "@/constants/messages";
 
 export default function ContainerDetails() {
   const { id } = useParams<{ id: string }>();
@@ -96,10 +97,10 @@ export default function ContainerDetails() {
     return (
       <DashboardLayout
         navItems={adminNavItems}
-        pageTitle="Loading Container..."
+        pageTitle={UI_MESSAGES.TITLES.LOADING}
       >
         <div className="flex items-center justify-center py-12">
-          <p>Loading container details...</p>
+          <p>{UI_MESSAGES.CONTAINER_DETAILS.LOADING_DESC}</p>
         </div>
       </DashboardLayout>
     );
@@ -107,16 +108,16 @@ export default function ContainerDetails() {
 
   if (!container && !isLoading) {
     return (
-      <DashboardLayout navItems={adminNavItems} pageTitle="Container Not Found">
+      <DashboardLayout navItems={adminNavItems} pageTitle={UI_MESSAGES.CONTAINER_DETAILS.NOT_FOUND}>
         <div className="flex flex-col items-center justify-center py-12">
           <AlertTriangle className="h-12 w-12 text-muted-foreground mb-4" />
-          <h2 className="text-xl font-semibold mb-2">Container Not Found</h2>
+          <h2 className="text-xl font-semibold mb-2">{UI_MESSAGES.CONTAINER_DETAILS.NOT_FOUND}</h2>
           <p className="text-muted-foreground mb-4">
-            The container you're looking for doesn't exist.
+            {UI_MESSAGES.CONTAINER_DETAILS.NOT_FOUND_DESC}
           </p>
           <Button onClick={() => navigate("/admin/containers")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Containers
+            {UI_MESSAGES.CONTAINER_DETAILS.BACK_TO_CONTAINERS}
           </Button>
         </div>
       </DashboardLayout>
@@ -139,10 +140,10 @@ export default function ContainerDetails() {
     try {
       await dispatch(updateContainer({ id, data: editData })).unwrap();
       setIsEditing(false);
-      toast.success("Container updated successfully");
+      toast.success(UI_MESSAGES.CONTAINER_DETAILS.UPDATE_SUCCESS);
     } catch (err: unknown) {
       const errorMessage =
-        typeof err === "string" ? err : "Failed to update container";
+        typeof err === "string" ? err : UI_MESSAGES.CONTAINER.UPDATE_FAILED;
       toast.error(errorMessage);
     } finally {
       setIsSaving(false);
@@ -154,7 +155,7 @@ export default function ContainerDetails() {
   return (
     <DashboardLayout
       navItems={adminNavItems}
-      pageTitle={`Container: ${container.containerNumber}`}
+      pageTitle={`${UI_MESSAGES.CONTAINER_DETAILS.TITLE}: ${container.containerNumber}`}
       pageActions={
         <div className="flex gap-2">
           {isEditing ? (
@@ -165,17 +166,17 @@ export default function ContainerDetails() {
                 disabled={isSaving}
               >
                 <X className="h-4 w-4 mr-2" />
-                Cancel
+                {UI_MESSAGES.COMMON.CANCEL}
               </Button>
               <Button onClick={handleSave} disabled={isSaving}>
                 <Save className="h-4 w-4 mr-2" />
-                {isSaving ? "Saving..." : "Save Changes"}
+                {isSaving ? UI_MESSAGES.CONTAINER_DETAILS.SAVING : UI_MESSAGES.CONTAINER_DETAILS.SAVE_CHANGES}
               </Button>
             </>
           ) : (
             <Button onClick={handleEdit}>
               <Edit className="h-4 w-4 mr-2" />
-              Edit Container
+              {UI_MESSAGES.CONTAINER_DETAILS.EDIT_CONTAINER}
             </Button>
           )}
         </div>
@@ -188,7 +189,7 @@ export default function ContainerDetails() {
           onClick={() => navigate("/admin/containers")}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Container List
+          {UI_MESSAGES.CONTAINER_DETAILS.BACK_TO_LIST}
         </Button>
       </div>
 
@@ -210,7 +211,7 @@ export default function ContainerDetails() {
                     {container.type}
                   </Badge>
                   <Badge variant="outline" className="capitalize">
-                    {container.empty ? "Empty" : "Loaded"}
+                    {container.empty ? UI_MESSAGES.KPI.EMPTY : UI_MESSAGES.KPI.LOADED}
                   </Badge>
                   <Badge variant="outline" className="capitalize">
                     {container.movementType}
@@ -222,7 +223,7 @@ export default function ContainerDetails() {
             {container.damaged && (
               <div className="flex items-center gap-2 text-destructive">
                 <AlertTriangle className="h-5 w-5" />
-                <span className="font-medium">Damaged</span>
+                <span className="font-medium">{UI_MESSAGES.DESTUFFING.DAMAGED}</span>
               </div>
             )}
           </div>
@@ -231,10 +232,10 @@ export default function ContainerDetails() {
 
       <Tabs defaultValue="details" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="details">Details</TabsTrigger>
-          <TabsTrigger value="history">History</TabsTrigger>
+          <TabsTrigger value="details">{UI_MESSAGES.TITLES.DETAILS}</TabsTrigger>
+          <TabsTrigger value="history">{UI_MESSAGES.CONTAINER_DETAILS.HISTORY}</TabsTrigger>
           {container.damaged && (
-            <TabsTrigger value="damage">Damage</TabsTrigger>
+              <TabsTrigger value="damage">{UI_MESSAGES.TABLE.DAMAGE}</TabsTrigger>
           )}
         </TabsList>
 
@@ -245,19 +246,19 @@ export default function ContainerDetails() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Box className="h-5 w-5" />
-                  Container Information
+                  {UI_MESSAGES.CONTAINER_DETAILS.INFO}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label className="text-muted-foreground">
-                      Container Number
+                      {UI_MESSAGES.CONTAINER_DETAILS.NUMBER_LABEL}
                     </Label>
                     <p className="font-medium">{container.containerNumber}</p>
                   </div>
                   <div>
-                    <Label className="text-muted-foreground">Size</Label>
+                    <Label className="text-muted-foreground">{UI_MESSAGES.TABLE.SIZE}</Label>
                     {isEditing ? (
                       <Select
                         value={editData.size}
@@ -281,7 +282,7 @@ export default function ContainerDetails() {
                     )}
                   </div>
                   <div>
-                    <Label className="text-muted-foreground">Type</Label>
+                    <Label className="text-muted-foreground">{UI_MESSAGES.TABLE.TYPE}</Label>
                     {isEditing ? (
                       <Select
                         value={editData.type}
@@ -296,10 +297,10 @@ export default function ContainerDetails() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="standard">Standard</SelectItem>
-                          <SelectItem value="reefer">Reefer</SelectItem>
-                          <SelectItem value="tank">Tank</SelectItem>
-                          <SelectItem value="open-top">Open Top</SelectItem>
+                          <SelectItem value="standard">{UI_MESSAGES.CONTAINER.STANDARD}</SelectItem>
+                          <SelectItem value="reefer">{UI_MESSAGES.CONTAINER.REEFER}</SelectItem>
+                          <SelectItem value="tank">{UI_MESSAGES.CONTAINER.TANK}</SelectItem>
+                          <SelectItem value="open-top">{UI_MESSAGES.CONTAINER.OPEN_TOP}</SelectItem>
                         </SelectContent>
                       </Select>
                     ) : (
@@ -307,7 +308,7 @@ export default function ContainerDetails() {
                     )}
                   </div>
                   <div>
-                    <Label className="text-muted-foreground">Load Status</Label>
+                    <Label className="text-muted-foreground">{UI_MESSAGES.CONTAINER_DETAILS.LOAD_STATUS}</Label>
                     {isEditing ? (
                       <Select
                         value={editData.empty?.toString()}
@@ -322,19 +323,19 @@ export default function ContainerDetails() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="true">Empty</SelectItem>
-                          <SelectItem value="false">Loaded</SelectItem>
+                          <SelectItem value="true">{UI_MESSAGES.KPI.EMPTY}</SelectItem>
+                          <SelectItem value="false">{UI_MESSAGES.KPI.LOADED}</SelectItem>
                         </SelectContent>
                       </Select>
                     ) : (
                       <p className="font-medium">
-                        {container.empty ? "Empty" : "Loaded"}
+                        {container.empty ? UI_MESSAGES.KPI.EMPTY : UI_MESSAGES.KPI.LOADED}
                       </p>
                     )}
                   </div>
                   <div>
                     <Label className="text-muted-foreground">
-                      Movement Type
+                      {UI_MESSAGES.DESTUFFING.MOVEMENT_TYPE}
                     </Label>
                     {isEditing ? (
                       <Select
@@ -350,9 +351,9 @@ export default function ContainerDetails() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="import">Import</SelectItem>
-                          <SelectItem value="export">Export</SelectItem>
-                          <SelectItem value="domestic">Domestic</SelectItem>
+                          <SelectItem value="import">{UI_MESSAGES.COMMON.IMPORT}</SelectItem>
+                          <SelectItem value="export">{UI_MESSAGES.COMMON.EXPORT}</SelectItem>
+                          <SelectItem value="domestic">{UI_MESSAGES.COMMON.DOMESTIC}</SelectItem>
                         </SelectContent>
                       </Select>
                     ) : (
@@ -362,7 +363,7 @@ export default function ContainerDetails() {
                     )}
                   </div>
                   <div>
-                    <Label className="text-muted-foreground">Status</Label>
+                    <Label className="text-muted-foreground">{UI_MESSAGES.TABLE.STATUS}</Label>
                     {isEditing ? (
                       <Select
                         value={editData.status}
@@ -377,14 +378,14 @@ export default function ContainerDetails() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="pending">Pending</SelectItem>
-                          <SelectItem value="gate-in">Gate In</SelectItem>
-                          <SelectItem value="in-yard">In Yard</SelectItem>
-                          <SelectItem value="in-transit">In Transit</SelectItem>
-                          <SelectItem value="at-port">At Port</SelectItem>
-                          <SelectItem value="at-factory">At Factory</SelectItem>
-                          <SelectItem value="gate-out">Gate Out</SelectItem>
-                          <SelectItem value="damaged">Damaged</SelectItem>
+                          <SelectItem value="pending">{UI_MESSAGES.COMMON.STATUSES.PENDING}</SelectItem>
+                          <SelectItem value="gate-in">{UI_MESSAGES.COMMON.STATUSES.GATE_IN}</SelectItem>
+                          <SelectItem value="in-yard">{UI_MESSAGES.COMMON.STATUSES.IN_YARD}</SelectItem>
+                          <SelectItem value="in-transit">{UI_MESSAGES.COMMON.STATUSES.IN_TRANSIT}</SelectItem>
+                          <SelectItem value="at-port">{UI_MESSAGES.COMMON.STATUSES.AT_PORT}</SelectItem>
+                          <SelectItem value="at-factory">{UI_MESSAGES.COMMON.STATUSES.AT_FACTORY}</SelectItem>
+                          <SelectItem value="gate-out">{UI_MESSAGES.COMMON.STATUSES.GATE_OUT}</SelectItem>
+                          <SelectItem value="damaged">{UI_MESSAGES.COMMON.STATUSES.DAMAGED}</SelectItem>
                         </SelectContent>
                       </Select>
                     ) : (
@@ -396,7 +397,7 @@ export default function ContainerDetails() {
                     : container.status === "in-yard") && (
                       <div>
                         <Label className="text-muted-foreground">
-                          Block
+                          {UI_MESSAGES.TABLE.BLOCK}
                         </Label>
                         {isEditing ? (
                           <Select
@@ -409,7 +410,7 @@ export default function ContainerDetails() {
                             }
                           >
                             <SelectTrigger className="mt-1">
-                              <SelectValue placeholder="Select block" />
+                              <SelectValue placeholder={UI_MESSAGES.TABLE.SELECT_BLOCK} />
                             </SelectTrigger>
                             <SelectContent>
                               {yardBlocks.map((block) => (
@@ -421,21 +422,21 @@ export default function ContainerDetails() {
                           </Select>
                         ) : (
                           <p className="font-medium">
-                            {container.yardLocation?.block || "Not Assigned"}
+                            {container.yardLocation?.block || UI_MESSAGES.STUFFING.NOT_ASSIGNED}
                           </p>
                         )}
                       </div>
                     )}
                   <div>
-                    <Label className="text-muted-foreground">Dwell Time</Label>
+                    <Label className="text-muted-foreground">{UI_MESSAGES.CONTAINER_DETAILS.DWELL_TIME}</Label>
                     <p className="font-medium">
                       {container.dwellTime
-                        ? `${container.dwellTime} days`
-                        : "-"}
+                        ? `${container.dwellTime} ${UI_MESSAGES.COMMON.DAYS}`
+                        : UI_MESSAGES.COMMON.NA}
                     </p>
                   </div>
                   <div className="flex items-center gap-2 mt-2">
-                    <Label className="text-muted-foreground">Blacklisted</Label>
+                    <Label className="text-muted-foreground">{UI_MESSAGES.CONTAINER_DETAILS.BLACKLISTED}</Label>
                     {isEditing ? (
                       <input
                         type="checkbox"
@@ -454,7 +455,7 @@ export default function ContainerDetails() {
                           container.blacklisted ? "destructive" : "outline"
                         }
                       >
-                        {container.blacklisted ? "Yes" : "No"}
+                        {container.blacklisted ? UI_MESSAGES.COMMON.YES : UI_MESSAGES.COMMON.NO}
                       </Badge>
                     )}
                   </div>
@@ -466,14 +467,14 @@ export default function ContainerDetails() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Truck className="h-5 w-5" />
-                  Shipping & Customer
+                  {UI_MESSAGES.CONTAINER_DETAILS.SHIP_CUST}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-4">
                   <div>
                     <Label className="text-muted-foreground">
-                      Shipping Line
+                      {UI_MESSAGES.TABLE.SHIPPING_LINE}
                     </Label>
                     {isEditing ? (
                       <Select
@@ -501,7 +502,7 @@ export default function ContainerDetails() {
                     )}
                   </div>
                   <div>
-                    <Label className="text-muted-foreground">Customer</Label>
+                    <Label className="text-muted-foreground">{UI_MESSAGES.TABLE.CUSTOMER}</Label>
                     {isEditing ? (
                       <Input
                         className="mt-1"
@@ -509,14 +510,14 @@ export default function ContainerDetails() {
                         onChange={(e) =>
                           setEditData({ ...editData, customer: e.target.value })
                         }
-                        placeholder="Enter customer name"
+                        placeholder={UI_MESSAGES.CONTAINER_DETAILS.ENTER_CUSTOMER}
                       />
                     ) : (
                       <p className="font-medium">{container.customer || "-"}</p>
                     )}
                   </div>
                   <div>
-                    <Label className="text-muted-foreground">Weight (kg)</Label>
+                    <Label className="text-muted-foreground">{UI_MESSAGES.TABLE.WEIGHT_KG}</Label>
                     {isEditing ? (
                       <Input
                         type="number"
@@ -530,18 +531,18 @@ export default function ContainerDetails() {
                               : undefined,
                           })
                         }
-                        placeholder="Enter weight"
+                        placeholder={UI_MESSAGES.CONTAINER_DETAILS.ENTER_WEIGHT}
                       />
                     ) : (
                       <p className="font-medium">
                         {container.weight
-                          ? `${container.weight.toLocaleString()} kg`
+                          ? `${container.weight.toLocaleString()} ${UI_MESSAGES.COMMON.KG}`
                           : "-"}
                       </p>
                     )}
                   </div>
                   <div>
-                    <Label className="text-muted-foreground">Seal Number</Label>
+                    <Label className="text-muted-foreground">{UI_MESSAGES.CONTAINER_DETAILS.SEAL_NUMBER}</Label>
                     {isEditing ? (
                       <Input
                         className="mt-1"
@@ -552,7 +553,7 @@ export default function ContainerDetails() {
                             sealNumber: e.target.value,
                           })
                         }
-                        placeholder="Enter seal number"
+                        placeholder={UI_MESSAGES.CONTAINER_DETAILS.ENTER_SEAL}
                       />
                     ) : (
                       <p className="font-medium">
@@ -572,7 +573,7 @@ export default function ContainerDetails() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <History className="h-5 w-5" />
-                Container History
+                {UI_MESSAGES.CONTAINER_DETAILS.HISTORY}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -602,7 +603,7 @@ export default function ContainerDetails() {
                 ) : (
                   <div className="text-center py-12 text-muted-foreground">
                     <History className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                    <p>No activity history recorded for this container.</p>
+                    <p>{UI_MESSAGES.CONTAINER_DETAILS.NO_HISTORY}</p>
                   </div>
                 )}
               </div>
@@ -618,14 +619,14 @@ export default function ContainerDetails() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-destructive">
                     <AlertTriangle className="h-5 w-5" />
-                    Damage Report
+                    {UI_MESSAGES.CONTAINER_DETAILS.DAMAGE_REPORT}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div>
                       <Label className="text-muted-foreground">
-                        Damage Details
+                        {UI_MESSAGES.TABLE.DAMAGE_DETAILS}
                       </Label>
                       {isEditing ? (
                         <Textarea
@@ -637,12 +638,12 @@ export default function ContainerDetails() {
                               damageDetails: e.target.value,
                             })
                           }
-                          placeholder="Describe the damage..."
+                          placeholder={UI_MESSAGES.CONTAINER_DETAILS.DESCRIBE_DAMAGE}
                           rows={4}
                         />
                       ) : (
                         <p className="font-medium mt-1">
-                          {container.damageDetails || "No details provided"}
+                          {container.damageDetails || UI_MESSAGES.CONTAINER_DETAILS.NO_DETAILS}
                         </p>
                       )}
                     </div>

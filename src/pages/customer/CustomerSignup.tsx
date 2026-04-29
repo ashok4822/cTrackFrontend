@@ -14,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Factory, ChevronLeft, Eye, EyeOff } from "lucide-react";
+import { UI_MESSAGES } from "@/constants/messages";
 
 const CustomerSignup = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -40,7 +41,7 @@ const CustomerSignup = () => {
     setError(null);
 
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match");
+      setError(UI_MESSAGES.AUTH.PASSWORDS_NOT_MATCH);
       return;
     }
 
@@ -53,7 +54,7 @@ const CustomerSignup = () => {
         if (resultAction.payload) {
           setError(resultAction.payload as string);
         } else {
-          setError("Failed to send OTP");
+          setError(UI_MESSAGES.AUTH.OTP_SEND_FAILED);
         }
       }
     } catch (err) {
@@ -95,7 +96,7 @@ const CustomerSignup = () => {
         if (resultAction.payload) {
           setError(resultAction.payload as string);
         } else {
-          setError("Signup failed");
+          setError(UI_MESSAGES.AUTH.SIGNUP_FAILED);
         }
       }
     } catch (err) {
@@ -117,7 +118,7 @@ const CustomerSignup = () => {
         if (resultAction.payload) {
           setError(resultAction.payload as string);
         } else {
-          setError("Failed to resend OTP");
+          setError(UI_MESSAGES.AUTH.OTP_SEND_FAILED);
         }
       }
     } catch (err) {
@@ -155,7 +156,7 @@ const CustomerSignup = () => {
             className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
           >
             <ChevronLeft className="h-4 w-4" />
-            Back to Home
+            {UI_MESSAGES.AUTH.BACK_TO_HOME}
           </Link>
         </div>
       </header>
@@ -167,9 +168,9 @@ const CustomerSignup = () => {
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-success/10">
               <Factory className="h-8 w-8 text-success" />
             </div>
-            <CardTitle className="text-2xl">Create Customer Account</CardTitle>
+            <CardTitle className="text-2xl">{UI_MESSAGES.AUTH.CREATE_CUSTOMER_ACCOUNT}</CardTitle>
             <CardDescription>
-              Register your organization to manage containers
+              {UI_MESSAGES.AUTH.CUSTOMER_SIGNUP_DESC}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -183,11 +184,11 @@ const CustomerSignup = () => {
               <form className="space-y-4" onSubmit={handleInitiateSignup}>
                 {/* Organization Name */}
                 <div className="space-y-2">
-                  <Label htmlFor="name">Name</Label>
+                  <Label htmlFor="name">{UI_MESSAGES.PROFILE.NAME}</Label>
                   <Input
                     id="name"
                     type="text"
-                    placeholder="Enter name"
+                    placeholder={UI_MESSAGES.AUTH.ENTER_NAME}
                     required
                     value={formData.name}
                     onChange={handleChange}
@@ -196,7 +197,7 @@ const CustomerSignup = () => {
 
                 {/* Email */}
                 <div className="space-y-2">
-                  <Label htmlFor="email">Work Email</Label>
+                  <Label htmlFor="email">{UI_MESSAGES.AUTH.WORK_EMAIL}</Label>
                   <Input
                     id="email"
                     type="email"
@@ -209,12 +210,12 @@ const CustomerSignup = () => {
 
                 {/* Password */}
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">{UI_MESSAGES.AUTH.PASSWORD}</Label>
                   <div className="relative">
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
-                      placeholder="Create a password"
+                      placeholder={UI_MESSAGES.AUTH.CREATE_PASSWORD_PLACEHOLDER}
                       required
                       value={formData.password}
                       onChange={handleChange}
@@ -237,12 +238,12 @@ const CustomerSignup = () => {
 
                 {/* Confirm Password */}
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <Label htmlFor="confirmPassword">{UI_MESSAGES.AUTH.CONFIRM_PASSWORD}</Label>
                   <div className="relative">
                     <Input
                       id="confirmPassword"
                       type={showPassword ? "text" : "password"}
-                      placeholder="Confirm your password"
+                      placeholder={UI_MESSAGES.AUTH.CONFIRM_PASSWORD_PLACEHOLDER}
                       required
                       value={formData.confirmPassword}
                       onChange={handleChange}
@@ -257,7 +258,7 @@ const CustomerSignup = () => {
                   size="lg"
                   disabled={loading}
                 >
-                  {loading ? "Sending OTP..." : "Get Verified"}
+                  {loading ? UI_MESSAGES.AUTH.SENDING_OTP : UI_MESSAGES.AUTH.GET_VERIFIED}
                 </Button>
 
                 <div className="relative my-4">
@@ -266,7 +267,7 @@ const CustomerSignup = () => {
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
                     <span className="bg-card px-2 text-muted-foreground">
-                      Or continue with
+                      {UI_MESSAGES.AUTH.OR_CONTINUE_WITH}
                     </span>
                   </div>
                 </div>
@@ -294,18 +295,18 @@ const CustomerSignup = () => {
                       d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"
                     ></path>
                   </svg>
-                  Sign up with Google
+                  {UI_MESSAGES.AUTH.SIGNUP_GOOGLE}
                 </Button>
 
                 <div className="text-center text-sm">
                   <span className="text-muted-foreground">
-                    Already have an account?{" "}
+                    {UI_MESSAGES.AUTH.ALREADY_HAVE_ACCOUNT}{" "}
                   </span>
                   <Link
                     to="/customer/login"
                     className="text-success hover:underline font-medium"
                   >
-                    Sign in
+                    {UI_MESSAGES.AUTH.SIGN_IN}
                   </Link>
                 </div>
               </form>
@@ -313,22 +314,22 @@ const CustomerSignup = () => {
               <form className="space-y-4" onSubmit={handleSignup}>
                 <div className="text-center mb-6">
                   <p className="text-sm text-muted-foreground">
-                    We sent a verification code to{" "}
+                    {UI_MESSAGES.AUTH.VERIFICATION_CODE_SENT}{" "}
                     <strong>{formData.email}</strong>
                   </p>
                   <p className="text-sm text-primary font-medium mt-2">
-                    Time remaining: {Math.floor(timeLeft / 60)}:
+                    {UI_MESSAGES.AUTH.TIME_REMAINING} {Math.floor(timeLeft / 60)}:
                     {(timeLeft % 60).toString().padStart(2, "0")}
                   </p>
                 </div>
 
                 {/* OTP Input */}
                 <div className="space-y-2">
-                  <Label htmlFor="otp">Verification Code</Label>
+                  <Label htmlFor="otp">{UI_MESSAGES.AUTH.VERIFICATION_CODE}</Label>
                   <Input
                     id="otp"
                     type="text"
-                    placeholder="Enter 6-digit code"
+                    placeholder={UI_MESSAGES.AUTH.ENTER_6_DIGIT_CODE}
                     required
                     value={formData.otp}
                     onChange={handleChange}
@@ -343,12 +344,12 @@ const CustomerSignup = () => {
                   size="lg"
                   disabled={loading}
                 >
-                  {loading ? "Verifying..." : "Verify & Create Account"}
+                  {loading ? UI_MESSAGES.AUTH.VERIFYING : UI_MESSAGES.AUTH.VERIFY_CREATE}
                 </Button>
 
                 {timeLeft === 0 && (
                   <p className="text-xs text-destructive text-center mt-2">
-                    OTP has expired. Please request a new one.
+                    {UI_MESSAGES.AUTH.OTP_EXPIRED}
                   </p>
                 )}
 
@@ -359,7 +360,7 @@ const CustomerSignup = () => {
                   onClick={handleResendOtp}
                   disabled={timeLeft > 0 || loading}
                 >
-                  Resend OTP
+                  {UI_MESSAGES.AUTH.RESEND_OTP}
                 </Button>
 
                 <Button
@@ -369,7 +370,7 @@ const CustomerSignup = () => {
                   onClick={() => setStep(1)}
                   disabled={loading}
                 >
-                  Back to Signup
+                  {UI_MESSAGES.AUTH.BACK_TO_SIGNUP}
                 </Button>
               </form>
             )}

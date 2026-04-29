@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { GateOperation } from "@/types";
 import { ArrowDownToLine, ArrowUpFromLine, DoorOpen } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { fetchGateOperations, createGateOperation } from "@/store/slices/gateOperationSlice";
+import { fetchGateOperations, createGateOperation, clearError } from "@/store/slices/gateOperationSlice";
 import { fetchShippingLines } from "@/store/slices/shippingLineSlice";
 import { Button } from "@/components/ui/button";
 import { GateInDialog } from "@/components/gate/GateInDialog";
@@ -17,11 +17,12 @@ import { KPICard } from "@/components/common/KPICard";
 import type { CreateGateOperationData } from "@/services/gateOperationService";
 import { toast } from "sonner";
 import { CardHeader, CardTitle } from "@/components/ui/card";
+import { UI_MESSAGES } from "@/constants/messages";
 
 const columns: Column<GateOperation>[] = [
   {
     key: "containerNumber",
-    header: "Container No.",
+    header: UI_MESSAGES.TABLE.CONTAINER_NO,
     sortable: true,
     render: (item) => (
       <span className="font-medium text-foreground">
@@ -31,7 +32,7 @@ const columns: Column<GateOperation>[] = [
   },
   {
     key: "type",
-    header: "Type",
+    header: UI_MESSAGES.TABLE.TYPE,
     render: (item) => (
       <div className="flex items-center gap-2">
         {item.type === "gate-in" ? (
@@ -45,16 +46,16 @@ const columns: Column<GateOperation>[] = [
   },
   {
     key: "vehicleNumber",
-    header: "Vehicle",
+    header: UI_MESSAGES.TABLE.VEHICLE_NO,
     sortable: true,
   },
   {
     key: "driverName",
-    header: "Driver",
+    header: UI_MESSAGES.TABLE.DRIVER,
   },
   {
     key: "purpose",
-    header: "Purpose",
+    header: UI_MESSAGES.TITLES.GATE_PURPOSE || "Purpose",
     render: (item) => (
       <span className="capitalize">
         {item.type === "gate-in" ? "From " : "To "}
@@ -64,7 +65,7 @@ const columns: Column<GateOperation>[] = [
   },
   {
     key: "timestamp",
-    header: "Time",
+    header: UI_MESSAGES.TABLE.TIMESTAMP || "Time",
     render: (item) => new Date(item.timestamp).toLocaleString(),
   },
 ];
@@ -88,8 +89,9 @@ export default function GateOperations() {
   useEffect(() => {
     if (error) {
       toast.error(error);
+      dispatch(clearError());
     }
-  }, [error]);
+  }, [error, dispatch]);
 
   const handleGateOperationSubmit = async (data: CreateGateOperationData) => {
     await dispatch(createGateOperation(data)).unwrap();
@@ -126,7 +128,7 @@ export default function GateOperations() {
   return (
     <DashboardLayout
       navItems={adminNavItems}
-      pageTitle="Gate Operations"
+      pageTitle={UI_MESSAGES.TITLES.GATE_OPERATIONS}
       pageActions={
         <div className="flex gap-2">
           <Button
@@ -135,14 +137,14 @@ export default function GateOperations() {
             onClick={() => setIsGateInDialogOpen(true)}
           >
             <ArrowDownToLine className="h-4 w-4" />
-            Gate-In
+            {UI_MESSAGES.TITLES.NEW_GATE_IN || "Gate-In"}
           </Button>
           <Button
             className="gap-2"
             onClick={() => setIsGateOutDialogOpen(true)}
           >
             <ArrowUpFromLine className="h-4 w-4" />
-            Gate-Out
+            {UI_MESSAGES.TITLES.NEW_GATE_OUT || "Gate-Out"}
           </Button>
         </div>
       }
@@ -150,19 +152,19 @@ export default function GateOperations() {
       {/* KPI Cards */}
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <KPICard
-          title="Gate-Ins Today"
+          title={UI_MESSAGES.DASHBOARD.KPI.GATE_IN_TODAY}
           value={gateInsToday}
           icon={ArrowDownToLine}
           variant="success"
         />
         <KPICard
-          title="Gate-Outs Today"
+          title={UI_MESSAGES.DASHBOARD.KPI.GATE_OUT_TODAY}
           value={gateOutsToday}
           icon={ArrowUpFromLine}
           variant="primary"
         />
         <KPICard
-          title="Total Today"
+          title={UI_MESSAGES.KPI.TOTAL_TODAY}
           value={totalToday}
           icon={DoorOpen}
           variant="default"
@@ -178,13 +180,13 @@ export default function GateOperations() {
           <Tabs defaultValue="all">
             <TabsList className="mb-4">
               <TabsTrigger value="all">
-                All ({containerOperations.length})
+                {UI_MESSAGES.COMMON.ALL} ({containerOperations.length})
               </TabsTrigger>
               <TabsTrigger value="gate-in">
-                Gate-In ({gateIns.length})
+                {UI_MESSAGES.TITLES.NEW_GATE_IN || "Gate-In"} ({gateIns.length})
               </TabsTrigger>
               <TabsTrigger value="gate-out">
-                Gate-Out ({gateOuts.length})
+                {UI_MESSAGES.TITLES.NEW_GATE_OUT || "Gate-Out"} ({gateOuts.length})
               </TabsTrigger>
             </TabsList>
 
@@ -194,7 +196,7 @@ export default function GateOperations() {
                 columns={columns}
                 isLoading={loading}
                 searchable
-                searchPlaceholder="Search operations..."
+                searchPlaceholder={UI_MESSAGES.TABLE.SEARCH_OPERATIONS}
               />
             </TabsContent>
             <TabsContent value="gate-in">

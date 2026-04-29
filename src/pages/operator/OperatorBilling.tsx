@@ -45,6 +45,7 @@ import { containerService } from "@/services/containerService";
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/useToast";
 import { generateBillPDF } from "@/utils/pdfGenerator";
+import { UI_MESSAGES } from "@/constants/messages";
 
 interface MiscLineItem {
   id: string;
@@ -97,8 +98,8 @@ export default function OperatorBilling() {
       setBills(data);
     } catch {
       toast({
-        title: "Error",
-        description: "Failed to load bills",
+        title: UI_MESSAGES.TITLES.ERROR,
+        description: UI_MESSAGES.BILLING.FETCH_FAILED,
         variant: "destructive",
       });
     } finally {
@@ -118,11 +119,11 @@ export default function OperatorBilling() {
       setCustomers(
         customerUsers.map((u: ApiUser) => ({
           id: u.id || u._id,
-          name: u.companyName || u.name || u.email || "Unknown",
+          name: u.companyName || u.name || u.email || UI_MESSAGES.COMMON.NA,
         })),
       );
     } catch (error) {
-      console.error("Failed to fetch customers:", error);
+      console.error(UI_MESSAGES.ACTIVITY.FETCH_FAILED, error);
     }
   }, []);
 
@@ -231,8 +232,8 @@ export default function OperatorBilling() {
   const handleGenerateMiscBill = async () => {
     if (!miscForm.customer || miscForm.customer === "none" || !miscForm.containerNumber) {
       toast({
-        title: "Error",
-        description: "Customer and Container Number are mandatory",
+        title: UI_MESSAGES.TITLES.ERROR,
+        description: UI_MESSAGES.BILLING.MANDATORY_FIELDS,
         variant: "destructive",
       });
       return;
@@ -240,8 +241,8 @@ export default function OperatorBilling() {
 
     if (lineItems.some((item) => !item.description || item.unitPrice < 0)) {
       toast({
-        title: "Error",
-        description: "Please fill all line items with valid amounts",
+        title: UI_MESSAGES.TITLES.ERROR,
+        description: UI_MESSAGES.BILLING.INVALID_LINE_ITEMS,
         variant: "destructive",
       });
       return;
@@ -251,7 +252,7 @@ export default function OperatorBilling() {
       const payload = {
         customer: miscForm.customer, // This is now an ID
         containerNumber: miscForm.containerNumber,
-        shippingLine: miscForm.shippingLine || "N/A",
+        shippingLine: miscForm.shippingLine || UI_MESSAGES.COMMON.NA,
         remarks: miscForm.remarks,
         lineItems: lineItems.map((item) => ({
           activityCode: item.activityCode || "MISC",
@@ -266,7 +267,7 @@ export default function OperatorBilling() {
       await billingService.createBill(payload);
 
       toast({
-        title: "Miscellaneous Bill Generated",
+        title: UI_MESSAGES.TITLES.BILL_GENERATED,
         description: `Bill created for ₹${getTotalAmount().toLocaleString()}`,
       });
 
@@ -284,8 +285,8 @@ export default function OperatorBilling() {
       fetchBills();
     } catch {
       toast({
-        title: "Error",
-        description: "Failed to generate miscellaneous bill",
+        title: UI_MESSAGES.TITLES.ERROR,
+        description: UI_MESSAGES.BILLING.GENERATE_FAILED,
         variant: "destructive",
       });
     }
@@ -295,73 +296,73 @@ export default function OperatorBilling() {
     try {
       await billingService.markBillPaid(bill.id);
       toast({
-        title: "Bill paid",
+        title: UI_MESSAGES.TITLES.BILL_PAID,
         description: `Bill ${bill.billNumber} marked as paid`,
       });
       fetchBills();
     } catch {
       toast({
-        title: "Error",
-        description: "Failed to mark bill as paid",
+        title: UI_MESSAGES.TITLES.ERROR,
+        description: UI_MESSAGES.BILLING.MARK_PAID_FAILED,
         variant: "destructive",
       });
     }
   };
 
   const columns: Column<BillRecord>[] = [
-    { key: "billNumber", header: "Bill No.", sortable: true },
-    { key: "containerNumber", header: "Container", sortable: true },
-    { key: "shippingLine", header: "Shipping Line" },
+    { key: "billNumber", header: UI_MESSAGES.BILLING.BILL_NO, sortable: true },
+    { key: "containerNumber", header: UI_MESSAGES.TABLE.CONTAINER, sortable: true },
+    { key: "shippingLine", header: UI_MESSAGES.TABLE.SHIPPING_LINE },
     {
       key: "customer",
-      header: "Customer",
+      header: UI_MESSAGES.TABLE.CUSTOMER,
       render: (item) => (
-        <span>{item.customerName || item.customer || "N/A"}</span>
+        <span>{item.customerName || item.customer || UI_MESSAGES.COMMON.NA}</span>
       ),
     },
     {
       key: "totalAmount",
-      header: "Amount",
+      header: UI_MESSAGES.TABLE.AMOUNT,
       render: (item) => (
         <span className="font-medium">
-          ₹{item.totalAmount.toLocaleString()}
+          {UI_MESSAGES.COMMON.CURRENCY_SYMBOL}{item.totalAmount.toLocaleString()}
         </span>
       ),
     },
     {
       key: "status",
-      header: "Status",
+      header: UI_MESSAGES.TABLE.STATUS,
       render: (item) => <StatusBadge status={item.status} />,
     },
     {
       key: "dueDate",
-      header: "Due Date",
+      header: UI_MESSAGES.BILLING.DUE_DATE,
       render: (item) => new Date(item.dueDate).toLocaleDateString(),
     },
     {
       key: "paidAt",
-      header: "Paid Date",
-      render: (item) => item.paidAt ? new Date(item.paidAt).toLocaleDateString() : "-",
+      header: UI_MESSAGES.BILLING.PAID_DATE,
+      render: (item) => item.paidAt ? new Date(item.paidAt).toLocaleDateString() : UI_MESSAGES.COMMON.NA,
     },
     {
       key: "actions",
-      header: "Actions",
+      header: UI_MESSAGES.TABLE.ACTIONS,
       render: (item) => (
         <Dialog>
           <DialogTrigger asChild>
             <Button size="sm" variant="outline">
-              View
+              {UI_MESSAGES.TABLE.VIEW}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-lg">
             <DialogHeader>
-              <DialogTitle>Bill Details</DialogTitle>
+              <DialogTitle>{UI_MESSAGES.BILLING.BILL_DETAILS}</DialogTitle>
               <DialogDescription>{item.billNumber}</DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Bill Number</p>
+                  <p className="text-sm text-muted-foreground">{UI_MESSAGES.BILLING.BILL_NUMBER}</p>
                   <p className="font-bold text-lg">{item.billNumber}</p>
                 </div>
                 <StatusBadge status={item.status} />
@@ -369,28 +370,28 @@ export default function OperatorBilling() {
               <Separator />
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-muted-foreground">Container</Label>
+                  <Label className="text-muted-foreground">{UI_MESSAGES.TABLE.CONTAINER}</Label>
                   <p className="font-medium">{item.containerNumber}</p>
                 </div>
                 <div>
-                  <Label className="text-muted-foreground">Shipping Line</Label>
+                  <Label className="text-muted-foreground">{UI_MESSAGES.TABLE.SHIPPING_LINE}</Label>
                   <p className="font-medium">{item.shippingLine}</p>
                 </div>
                 <div>
-                  <Label className="text-muted-foreground">Customer</Label>
+                  <Label className="text-muted-foreground">{UI_MESSAGES.TABLE.CUSTOMER}</Label>
                   <p className="font-medium">
-                    {item.customerName || item.customer || "N/A"}
+                    {item.customerName || item.customer || UI_MESSAGES.COMMON.NA}
                   </p>
                 </div>
                 <div>
-                  <Label className="text-muted-foreground">Due Date</Label>
+                  <Label className="text-muted-foreground">{UI_MESSAGES.BILLING.DUE_DATE}</Label>
                   <p className="font-medium">
                     {new Date(item.dueDate).toLocaleDateString()}
                   </p>
                 </div>
                 {item.status === "paid" && item.paidAt && (
                   <div>
-                    <Label className="text-muted-foreground">Paid Date</Label>
+                    <Label className="text-muted-foreground">{UI_MESSAGES.BILLING.PAID_DATE}</Label>
                     <p className="font-medium">
                       {new Date(item.paidAt).toLocaleDateString()}
                     </p>
@@ -400,7 +401,7 @@ export default function OperatorBilling() {
               <Separator />
               <div>
                 <Label className="text-muted-foreground mb-2 block">
-                  Charges
+                  {UI_MESSAGES.BILLING.CHARGES}
                 </Label>
                 <div className="space-y-2">
                   {item.lineItems.map((li, idx) => (
@@ -426,16 +427,16 @@ export default function OperatorBilling() {
                 <>
                   <Separator />
                   <div>
-                    <Label className="text-muted-foreground">Remarks</Label>
+                    <Label className="text-muted-foreground">{UI_MESSAGES.STUFFING.NOTES}</Label>
                     <p className="text-sm">{item.remarks.replace(/\s*\|?\s*REQ-[a-f0-9]+/gi, "").trim()}</p>
                   </div>
                 </>
               )}
               <Separator />
               <div className="flex justify-between items-center">
-                <span className="font-semibold">Total Amount</span>
+                <span className="font-semibold">{UI_MESSAGES.BILLING.TOTAL_AMOUNT}</span>
                 <span className="text-xl font-bold">
-                  ₹{item.totalAmount.toLocaleString()}
+                  {UI_MESSAGES.COMMON.CURRENCY_SYMBOL}{item.totalAmount.toLocaleString()}
                 </span>
               </div>
             </div>
@@ -445,12 +446,12 @@ export default function OperatorBilling() {
                 onClick={() => generateBillPDF(item)}
               >
                 <Printer className="mr-2 h-4 w-4" />
-                Download PDF
+                {UI_MESSAGES.BILLING.DOWNLOAD_PDF}
               </Button>
               {item.status === "pending" && (
                 <Button onClick={() => handleMarkPaid(item)}>
                   <CheckCircle className="mr-2 h-4 w-4" />
-                  Mark as Paid
+                  {UI_MESSAGES.BILLING.MARK_AS_PAID}
                 </Button>
               )}
             </DialogFooter>
@@ -461,24 +462,24 @@ export default function OperatorBilling() {
   ];
 
   return (
-    <DashboardLayout navItems={operatorNavItems} pageTitle="Billing">
+    <DashboardLayout navItems={operatorNavItems} pageTitle={UI_MESSAGES.TITLES.BILLING}>
       {/* KPI Cards */}
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <KPICard title="Total Bills" value={bills.length} icon={Receipt} />
+        <KPICard title={UI_MESSAGES.BILLING.TOTAL_BILLS} value={bills.length} icon={Receipt} />
         <KPICard
-          title="Pending Amount"
+          title={UI_MESSAGES.BILLING.PENDING_AMOUNT}
           value={`₹${totalPending.toLocaleString()}`}
           icon={Clock}
           variant="warning"
         />
         <KPICard
-          title="Collected (Paid)"
-          value={`₹${totalCollected.toLocaleString()}`}
+          title={UI_MESSAGES.BILLING.TOTAL_COLLECTED}
+          value={`${UI_MESSAGES.COMMON.CURRENCY_SYMBOL}${totalCollected.toLocaleString()}`}
           icon={IndianRupee}
           variant="success"
         />
         <KPICard
-          title="Overdue Bills"
+          title={UI_MESSAGES.BILLING.OVERDUE_BILLS}
           value={overdueBills.length}
           icon={Receipt}
           variant="danger"
@@ -491,28 +492,27 @@ export default function OperatorBilling() {
           <RefreshCw
             className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`}
           />
-          Refresh
+          {UI_MESSAGES.COMMON.REFRESH}
         </Button>
         <Dialog open={miscBillOpen} onOpenChange={setMiscBillOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              Generate Miscellaneous Bill
+              {UI_MESSAGES.BILLING.GENERATE_MISC}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Generate Miscellaneous Bill</DialogTitle>
+              <DialogTitle>{UI_MESSAGES.BILLING.GENERATE_MISC}</DialogTitle>
               <DialogDescription>
-                Create a bill for miscellaneous charges not linked to standard
-                activities
+                {UI_MESSAGES.BILLING.MISC_BILL_DESC}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               {/* Bill Info */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Customer <span className="text-destructive">*</span></Label>
+                  <Label>{UI_MESSAGES.TABLE.CUSTOMER} <span className="text-destructive">*</span></Label>
                   <Select
                     value={miscForm.customer}
                     onValueChange={(value) =>
@@ -520,12 +520,12 @@ export default function OperatorBilling() {
                     }
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select customer" />
+                      <SelectValue placeholder={UI_MESSAGES.COMMON.SELECT_CUSTOMER} />
                     </SelectTrigger>
                     <SelectContent>
                       {customers.length === 0 ? (
                         <SelectItem value="none" disabled>
-                          No customers found
+                          {UI_MESSAGES.COMMON.NO_DATA}
                         </SelectItem>
                       ) : (
                         customers.map((c) => (
@@ -538,9 +538,9 @@ export default function OperatorBilling() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Container Number <span className="text-destructive">*</span></Label>
+                  <Label>{UI_MESSAGES.TABLE.CONTAINER_NO} <span className="text-destructive">*</span></Label>
                   <Input
-                    placeholder="e.g., MSCU1234567"
+                    placeholder={UI_MESSAGES.COMMON.PLACEHOLDERS.CONTAINER_NO_EG}
                     value={miscForm.containerNumber}
                     onChange={(e) =>
                       setMiscForm({
@@ -551,9 +551,9 @@ export default function OperatorBilling() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Shipping Line</Label>
+                  <Label>{UI_MESSAGES.TABLE.SHIPPING_LINE}</Label>
                   <Input
-                    placeholder="Auto-fetched or enter manually"
+                    placeholder={UI_MESSAGES.BILLING.AUTO_FETCH_SHIP_LINE}
                     value={miscForm.shippingLine}
                     onChange={(e) =>
                       setMiscForm({
@@ -570,7 +570,7 @@ export default function OperatorBilling() {
               {/* Line Items */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <Label className="text-base font-semibold">Line Items</Label>
+                  <Label className="text-base font-semibold">{UI_MESSAGES.BILLING.LINE_ITEMS}</Label>
                   <Button
                     type="button"
                     variant="outline"
@@ -578,7 +578,7 @@ export default function OperatorBilling() {
                     onClick={addLineItem}
                   >
                     <Plus className="mr-1 h-3 w-3" />
-                    Add Item
+                    {UI_MESSAGES.BILLING.ADD_ITEM}
                   </Button>
                 </div>
 
@@ -591,7 +591,7 @@ export default function OperatorBilling() {
                       <div className="col-span-5 space-y-1">
                         {index === 0 && (
                           <Label className="text-xs text-muted-foreground">
-                            Description
+                            {UI_MESSAGES.BILLING.DESCRIPTION}
                           </Label>
                         )}
                         <Select
@@ -603,7 +603,7 @@ export default function OperatorBilling() {
                           }
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder="Select activity" />
+                            <SelectValue placeholder={UI_MESSAGES.BILLING.SELECT_ACTIVITY} />
                           </SelectTrigger>
                           <SelectContent>
                             {charges.map((c) => (
@@ -617,7 +617,7 @@ export default function OperatorBilling() {
                       <div className="col-span-2 space-y-1">
                         {index === 0 && (
                           <Label className="text-xs text-muted-foreground">
-                            Qty
+                            {UI_MESSAGES.BILLING.QUANTITY_SHORT}
                           </Label>
                         )}
                         <Input
@@ -636,13 +636,13 @@ export default function OperatorBilling() {
                       <div className="col-span-2 space-y-1">
                         {index === 0 && (
                           <Label className="text-xs text-muted-foreground">
-                            Unit Price
+                            {UI_MESSAGES.BILLING.UNIT_PRICE}
                           </Label>
                         )}
                         <Input
                           type="number"
                           min="0"
-                          placeholder="₹0"
+                          placeholder={`${UI_MESSAGES.COMMON.CURRENCY_SYMBOL}0`}
                           value={item.unitPrice || 0}
                           readOnly
                           className="bg-muted cursor-not-allowed"
@@ -651,11 +651,11 @@ export default function OperatorBilling() {
                       <div className="col-span-2 space-y-1">
                         {index === 0 && (
                           <Label className="text-xs text-muted-foreground">
-                            Amount
+                            {UI_MESSAGES.BILLING.AMOUNT}
                           </Label>
                         )}
                         <div className="h-10 flex items-center px-3 bg-muted rounded-md text-sm font-medium">
-                          ₹{item.amount.toLocaleString()}
+                          {UI_MESSAGES.COMMON.CURRENCY_SYMBOL}{item.amount.toLocaleString()}
                         </div>
                       </div>
                       <div className="col-span-1">
@@ -679,17 +679,17 @@ export default function OperatorBilling() {
 
               {/* Total */}
               <div className="flex justify-between items-center bg-muted/50 p-4 rounded-lg">
-                <span className="font-semibold">Total Amount</span>
+                <span className="font-semibold">{UI_MESSAGES.BILLING.TOTAL_AMOUNT}</span>
                 <span className="text-2xl font-bold">
-                  ₹{getTotalAmount().toLocaleString()}
+                  {UI_MESSAGES.COMMON.CURRENCY_SYMBOL}{getTotalAmount().toLocaleString()}
                 </span>
               </div>
 
               {/* Remarks */}
               <div className="space-y-2">
-                <Label>Remarks (Optional)</Label>
+                <Label>{UI_MESSAGES.STUFFING.NOTES}</Label>
                 <Textarea
-                  placeholder="Any additional notes or remarks..."
+                  placeholder={UI_MESSAGES.STUFFING.NOTES_PLACEHOLDER}
                   value={miscForm.remarks}
                   onChange={(e) =>
                     setMiscForm({ ...miscForm, remarks: e.target.value })
@@ -700,11 +700,11 @@ export default function OperatorBilling() {
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setMiscBillOpen(false)}>
-                Cancel
+                {UI_MESSAGES.COMMON.CANCEL}
               </Button>
               <Button onClick={handleGenerateMiscBill}>
                 <FileText className="mr-2 h-4 w-4" />
-                Generate Bill
+                {UI_MESSAGES.BILLING.GENERATE_BILL}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -714,18 +714,18 @@ export default function OperatorBilling() {
       {/* Bills Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Bills</CardTitle>
+          <CardTitle>{UI_MESSAGES.BILLING.BILLS}</CardTitle>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="all">
             <TabsList className="mb-4">
-              <TabsTrigger value="all">All ({bills.length})</TabsTrigger>
+              <TabsTrigger value="all">{UI_MESSAGES.KPI.ALL} ({bills.length})</TabsTrigger>
               <TabsTrigger value="pending">
-                Pending ({pendingBills.length})
+                {UI_MESSAGES.KPI.PENDING} ({pendingBills.length})
               </TabsTrigger>
-              <TabsTrigger value="paid">Paid ({paidBills.length})</TabsTrigger>
+              <TabsTrigger value="paid">{UI_MESSAGES.TITLES.PAID} ({paidBills.length})</TabsTrigger>
               <TabsTrigger value="overdue">
-                Overdue ({overdueBills.length})
+                {UI_MESSAGES.TITLES.OVERDUE} ({overdueBills.length})
               </TabsTrigger>
             </TabsList>
 
@@ -734,7 +734,7 @@ export default function OperatorBilling() {
                 data={bills}
                 columns={columns}
                 searchable
-                searchPlaceholder="Search bills..."
+                searchPlaceholder={UI_MESSAGES.BILLING.SEARCH_BILLS}
               />
             </TabsContent>
             <TabsContent value="pending">
@@ -748,7 +748,7 @@ export default function OperatorBilling() {
                 data={overdueBills}
                 columns={columns}
                 searchable
-                emptyMessage="No overdue bills"
+                emptyMessage={UI_MESSAGES.BILLING.NO_OVERDUE_BILLS}
               />
             </TabsContent>
           </Tabs>

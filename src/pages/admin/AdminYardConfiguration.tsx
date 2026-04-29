@@ -18,6 +18,7 @@ import type { Block } from "@/types";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchBlocks, createBlock, updateBlock } from "@/store/slices/yardSlice";
 import { fetchContainers } from "@/store/slices/containerSlice";
+import { UI_MESSAGES } from "@/constants/messages";
 
 export default function AdminYardConfiguration() {
   const dispatch = useAppDispatch();
@@ -69,7 +70,7 @@ export default function AdminYardConfiguration() {
             capacity: configForm.capacity,
           }),
         ).unwrap();
-        toast.success(`${configForm.name} updated successfully`);
+        toast.success(UI_MESSAGES.COMMON.UPDATED_SUCCESS(configForm.name));
       } else {
         await dispatch(
           createBlock({
@@ -77,7 +78,7 @@ export default function AdminYardConfiguration() {
             capacity: configForm.capacity,
           }),
         ).unwrap();
-        toast.success(`${configForm.name} created successfully`);
+        toast.success(UI_MESSAGES.COMMON.CREATED_SUCCESS(configForm.name));
       }
 
       setConfigDialogOpen(false);
@@ -108,11 +109,11 @@ export default function AdminYardConfiguration() {
   return (
     <DashboardLayout
       navItems={adminNavItems}
-      pageTitle="Yard Configuration"
+      pageTitle={UI_MESSAGES.TITLES.YARD_CONFIGURATION}
       pageActions={
         <Button className="gap-2" onClick={handleOpenAdd}>
           <Plus className="h-4 w-4" />
-          Add Block
+          {UI_MESSAGES.TITLES.ADD_NEW}
         </Button>
       }
     >
@@ -128,7 +129,7 @@ export default function AdminYardConfiguration() {
                 <p className="text-2xl font-bold text-foreground">
                   {blocks.length}
                 </p>
-                <p className="text-sm text-muted-foreground">Total Blocks</p>
+                <p className="text-sm text-muted-foreground">{UI_MESSAGES.YARD.TOTAL_BLOCKS}</p>
               </div>
             </div>
           </CardContent>
@@ -143,7 +144,7 @@ export default function AdminYardConfiguration() {
                 <p className="text-2xl font-bold text-foreground">
                   {totalCapacity}
                 </p>
-                <p className="text-sm text-muted-foreground">Total Capacity</p>
+                <p className="text-sm text-muted-foreground">{UI_MESSAGES.YARD.TOTAL_CAPACITY}</p>
               </div>
             </div>
           </CardContent>
@@ -158,7 +159,7 @@ export default function AdminYardConfiguration() {
                 <p className="text-2xl font-bold text-foreground">
                   {totalOccupied}
                 </p>
-                <p className="text-sm text-muted-foreground">Total Occupied</p>
+                <p className="text-sm text-muted-foreground">{UI_MESSAGES.YARD.TOTAL_OCCUPIED}</p>
               </div>
             </div>
           </CardContent>
@@ -173,7 +174,7 @@ export default function AdminYardConfiguration() {
                 <p className="text-2xl font-bold text-foreground">
                   {utilization}%
                 </p>
-                <p className="text-sm text-muted-foreground">Utilization</p>
+                <p className="text-sm text-muted-foreground">{UI_MESSAGES.DASHBOARD.KPI.YARD_UTILIZATION}</p>
               </div>
             </div>
           </CardContent>
@@ -214,7 +215,7 @@ export default function AdminYardConfiguration() {
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm text-muted-foreground">
-                          Utilization
+                          {UI_MESSAGES.DASHBOARD.KPI.YARD_UTILIZATION}
                         </span>
                         <span
                           className={`text-sm font-medium ${percentage > 80
@@ -243,7 +244,7 @@ export default function AdminYardConfiguration() {
                     {/* Block Details */}
                     <div className="grid grid-cols-1 gap-4 text-sm">
                       <div>
-                        <p className="text-muted-foreground">Total Capacity</p>
+                        <p className="text-muted-foreground">{UI_MESSAGES.YARD.TOTAL_CAPACITY}</p>
                         <p className="font-medium text-foreground">
                           {block.capacity}
                         </p>
@@ -253,7 +254,7 @@ export default function AdminYardConfiguration() {
                     {/* Occupancy */}
                     <div className="flex justify-between items-center pt-2 border-t">
                       <span className="text-sm text-muted-foreground">
-                        {occupied} / {block.capacity} slots used
+                        {occupied} / {block.capacity} {UI_MESSAGES.YARD.SLOTS_USED}
                       </span>
                     </div>
                   </div>
@@ -270,12 +271,12 @@ export default function AdminYardConfiguration() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               {dialogMode === "add" ? <Plus className="h-5 w-5" /> : <Settings className="h-5 w-5" />}
-              {dialogMode === "add" ? "Add New Block" : `Configure Block: ${selectedBlock?.name}`}
+              {dialogMode === "add" ? UI_MESSAGES.TITLES.ADD_NEW : `${UI_MESSAGES.DIALOG.UPDATE_YARD_BLOCK}: ${selectedBlock?.name}`}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="blockName">Block Name</Label>
+              <Label htmlFor="blockName">{UI_MESSAGES.TABLE.BLOCK_NAME}</Label>
               <Input
                 id="blockName"
                 value={configForm.name}
@@ -285,7 +286,7 @@ export default function AdminYardConfiguration() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="capacity">Capacity (Total Containers)</Label>
+              <Label htmlFor="capacity">{UI_MESSAGES.YARD.TOTAL_CAPACITY}</Label>
               <Input
                 id="capacity"
                 type="number"
@@ -306,11 +307,11 @@ export default function AdminYardConfiguration() {
               disabled={isLoading}
               onClick={() => setConfigDialogOpen(false)}
             >
-              Cancel
+              {UI_MESSAGES.COMMON.CANCEL}
             </Button>
             <Button onClick={handleSaveConfig} disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {dialogMode === "add" ? "Add Block" : "Save Configuration"}
+              {dialogMode === "add" ? UI_MESSAGES.TITLES.ADD_NEW : UI_MESSAGES.COMMON.SAVE_CHANGES}
             </Button>
           </DialogFooter>
         </DialogContent>

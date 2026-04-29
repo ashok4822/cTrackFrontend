@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { billingService, type BillRecord } from "@/services/billingService";
 import { generateBillPDF } from "@/utils/pdfGenerator";
+import { UI_MESSAGES } from "@/constants/messages";
+
 
 export default function CustomerPaymentConfirmation() {
   const { billId } = useParams();
@@ -49,7 +51,7 @@ export default function CustomerPaymentConfirmation() {
   return (
     <DashboardLayout
       navItems={customerNavItems}
-      pageTitle="Payment Confirmation"
+      pageTitle={isSuccess ? UI_MESSAGES.BILLING.PAYMENT_SUCCESSFUL : UI_MESSAGES.BILLING.PAYMENT_FAILED}
     >
       <div className="max-w-2xl mx-auto">
         <Card>
@@ -57,7 +59,7 @@ export default function CustomerPaymentConfirmation() {
             {loading ? (
               <div className="flex flex-col items-center justify-center py-12">
                 <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-                <p className="text-muted-foreground">Fetching transaction details...</p>
+                <p className="text-muted-foreground">{UI_MESSAGES.BILLING.FETCHING_TRANSACTION}</p>
               </div>
             ) : isSuccess ? (
               <div className="text-center">
@@ -65,51 +67,51 @@ export default function CustomerPaymentConfirmation() {
                   <CheckCircle className="h-12 w-12 text-success" />
                 </div>
                 <h1 className="text-2xl font-bold text-success mb-2">
-                  Payment Successful!
+                  {UI_MESSAGES.BILLING.PAYMENT_SUCCESSFUL}
                 </h1>
                 <p className="text-muted-foreground mb-8">
-                  Your payment has been processed successfully.
+                  {UI_MESSAGES.BILLING.PAYMENT_SUCCESS_DESC}
                 </p>
 
                 {bill && (
                   <div className="bg-muted/50 rounded-lg p-6 mb-8 text-left">
                     <h3 className="font-semibold mb-4 flex items-center gap-2">
                       <Receipt className="h-5 w-5" />
-                      Transaction Details
+                      {UI_MESSAGES.DIALOG.TRANSACTION_HISTORY}
                     </h3>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
-                        <p className="text-muted-foreground">Transaction ID</p>
+                        <p className="text-muted-foreground">{UI_MESSAGES.BILLING.TRANSACTION_ID}</p>
                         <p className="font-mono font-medium">{transactionId}</p>
                       </div>
                       <div>
-                        <p className="text-muted-foreground">Date & Time</p>
+                        <p className="text-muted-foreground">{UI_MESSAGES.BILLING.DATE_TIME}</p>
                         <p className="font-medium">{transactionDate}</p>
                       </div>
                       <div>
-                        <p className="text-muted-foreground">Bill Number</p>
+                        <p className="text-muted-foreground">{UI_MESSAGES.BILLING.BILL_NUMBER}</p>
                         <p className="font-mono font-medium">
                           {bill.billNumber}
                         </p>
                       </div>
                       <div>
-                        <p className="text-muted-foreground">Container</p>
+                        <p className="text-muted-foreground">{UI_MESSAGES.TABLE.CONTAINER}</p>
                         <p className="font-mono font-medium">
                           {bill.containerNumber}
                         </p>
                       </div>
                       <div>
-                        <p className="text-muted-foreground">Payment Method</p>
+                        <p className="text-muted-foreground">{UI_MESSAGES.BILLING.PAYMENT_METHOD}</p>
                         <p className="font-medium capitalize">
                           {method === "pda"
-                            ? "Pre-Deposit Account (PDA)"
-                            : "Online Payment"}
+                            ? UI_MESSAGES.COMMON.PDA_FULL
+                            : UI_MESSAGES.BILLING.ONLINE_PAYMENT}
                         </p>
                       </div>
                       <div>
-                        <p className="text-muted-foreground">Amount Paid</p>
+                        <p className="text-muted-foreground">{UI_MESSAGES.BILLING.AMOUNT_PAID}</p>
                         <p className="font-bold text-lg text-success">
-                          ₹{bill.totalAmount.toLocaleString()}
+                          {UI_MESSAGES.COMMON.CURRENCY_SYMBOL}{bill.totalAmount.toLocaleString()}
                         </p>
                       </div>
                     </div>
@@ -124,13 +126,13 @@ export default function CustomerPaymentConfirmation() {
                     disabled={!bill}
                   >
                     <Download className="h-4 w-4" />
-                    Download Receipt
+                    {UI_MESSAGES.BILLING.DOWNLOAD_RECEIPT}
                   </Button>
                   <Button
                     onClick={() => navigate("/customer/bills")}
                     className="gap-2"
                   >
-                    View All Bills
+                    {UI_MESSAGES.BILLING.VIEW_ALL_BILLS}
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </div>
@@ -141,32 +143,31 @@ export default function CustomerPaymentConfirmation() {
                   <XCircle className="h-12 w-12 text-destructive" />
                 </div>
                 <h1 className="text-2xl font-bold text-destructive mb-2">
-                  Payment Failed
+                  {UI_MESSAGES.BILLING.PAYMENT_FAILED}
                 </h1>
                 <p className="text-muted-foreground mb-8">
-                  We couldn't process your payment. Please try again.
+                  {UI_MESSAGES.BILLING.PAYMENT_FAILED_DESC}
                 </p>
 
                 {bill && (
                   <div className="bg-muted/50 rounded-lg p-6 mb-8 text-left">
-                    <h3 className="font-semibold mb-4">Payment Details</h3>
+                    <h3 className="font-semibold mb-4">{UI_MESSAGES.BILLING.PAYMENT_DETAILS}</h3>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
-                        <p className="text-muted-foreground">Bill Number</p>
+                        <p className="text-muted-foreground">{UI_MESSAGES.BILLING.BILL_NUMBER}</p>
                         <p className="font-mono font-medium">
                           {bill.billNumber}
                         </p>
                       </div>
                       <div>
-                        <p className="text-muted-foreground">Amount</p>
+                        <p className="text-muted-foreground">{UI_MESSAGES.TABLE.AMOUNT}</p>
                         <p className="font-bold">
-                          ₹{bill.totalAmount.toLocaleString()}
+                          {UI_MESSAGES.COMMON.CURRENCY_SYMBOL}{bill.totalAmount.toLocaleString()}
                         </p>
                       </div>
                     </div>
                     <div className="mt-4 p-3 bg-destructive/10 rounded text-sm text-destructive">
-                      Error: Transaction could not be completed. Please check
-                      your payment details or try a different payment method.
+                      {UI_MESSAGES.COMMON.ERROR_LABEL} {UI_MESSAGES.BILLING.PAYMENT_FAILED_ERROR}
                     </div>
                   </div>
                 )}
@@ -176,12 +177,12 @@ export default function CustomerPaymentConfirmation() {
                     variant="outline"
                     onClick={() => navigate("/customer/bills")}
                   >
-                    Back to Bills
+                    {UI_MESSAGES.BILLING.BACK_TO_BILLS}
                   </Button>
                   <Button
                     onClick={() => navigate(`/customer/payment/${billId}`)}
                   >
-                    Try Again
+                    {UI_MESSAGES.BILLING.TRY_AGAIN}
                   </Button>
                 </div>
               </div>

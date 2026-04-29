@@ -3,6 +3,7 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 import type { KPIData } from "@/types";
 import { dashboardService } from "@/services/dashboardService";
 import { AxiosError } from "axios";
+import { UI_MESSAGES } from "@/constants/messages";
 
 interface DashboardState {
   kpiData: KPIData | null;
@@ -27,7 +28,7 @@ export const fetchKPIData = createAsyncThunk(
       return rejectWithValue(
         axiosError.response?.data?.message ||
           axiosError.message ||
-          "Failed to fetch KPI data",
+          UI_MESSAGES.DASHBOARD.FETCH_KPI_FAILED,
       );
     }
   },

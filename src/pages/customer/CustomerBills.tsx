@@ -33,6 +33,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/useToast";
 import { useNavigate } from "react-router-dom";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { UI_MESSAGES } from "@/constants/messages";
+
 
 export default function CustomerBills() {
   const [bills, setBills] = useState<BillRecord[]>([]);
@@ -51,8 +53,8 @@ export default function CustomerBills() {
       setBills(data);
     } catch {
       toast({
-        title: "Error",
-        description: "Failed to load your bills",
+        title: UI_MESSAGES.TITLES.ERROR,
+        description: UI_MESSAGES.BILLING.FETCH_FAILED,
         variant: "destructive",
       });
     } finally {
@@ -71,8 +73,8 @@ export default function CustomerBills() {
       setTransactions(data);
     } catch {
       toast({
-        title: "Error",
-        description: "Failed to load transaction history",
+        title: UI_MESSAGES.TITLES.ERROR,
+        description: UI_MESSAGES.PDA.FETCH_FAILED,
         variant: "destructive",
       });
     } finally {
@@ -88,35 +90,35 @@ export default function CustomerBills() {
   const totalPaid = paidBills.reduce((sum, b) => sum + b.totalAmount, 0);
 
   const columns: Column<BillRecord>[] = [
-    { key: "billNumber", header: "Bill No.", sortable: true },
-    { key: "containerNumber", header: "Container", sortable: true },
+    { key: "billNumber", header: UI_MESSAGES.TABLE.BILL_NO, sortable: true },
+    { key: "containerNumber", header: UI_MESSAGES.TABLE.CONTAINER, sortable: true },
     {
       key: "totalAmount",
-      header: "Amount",
+      header: UI_MESSAGES.TABLE.AMOUNT,
       render: (item) => (
         <span className="font-medium">
-          ₹{item.totalAmount.toLocaleString()}
+          {UI_MESSAGES.COMMON.CURRENCY_SYMBOL}{item.totalAmount.toLocaleString()}
         </span>
       ),
     },
     {
       key: "status",
-      header: "Status",
+      header: UI_MESSAGES.TABLE.STATUS,
       render: (item) => <StatusBadge status={item.status} />,
     },
     {
       key: "dueDate",
-      header: "Due Date",
+      header: UI_MESSAGES.TABLE.DUE_DATE,
       render: (item) => new Date(item.dueDate).toLocaleDateString(),
     },
     {
       key: "paidAt",
-      header: "Paid Date",
-      render: (item) => item.paidAt ? new Date(item.paidAt).toLocaleDateString() : "-",
+      header: UI_MESSAGES.TABLE.PAID_DATE,
+      render: (item) => item.paidAt ? new Date(item.paidAt).toLocaleDateString() : UI_MESSAGES.COMMON.NA,
     },
     {
       key: "actions",
-      header: "Actions",
+      header: UI_MESSAGES.TABLE.ACTIONS,
       render: (item) => (
         <div className="flex gap-2">
           <Dialog open={selectedBill?.id === item.id} onOpenChange={(open) => setSelectedBill(open ? item : null)}>
@@ -126,18 +128,18 @@ export default function CustomerBills() {
                 variant="outline"
                 onClick={() => setSelectedBill(item)}
               >
-                View
+                {UI_MESSAGES.TABLE.VIEW}
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-lg">
               <DialogHeader>
-                <DialogTitle>Bill Details</DialogTitle>
+                <DialogTitle>{UI_MESSAGES.DIALOG.BILL_DETAILS}</DialogTitle>
                 <DialogDescription>{item.billNumber}</DialogDescription>
               </DialogHeader>
               <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Bill Number</p>
+                    <p className="text-sm text-muted-foreground">{UI_MESSAGES.BILLING.BILL_NUMBER}</p>
                     <p className="font-bold text-lg">{item.billNumber}</p>
                   </div>
                   <StatusBadge status={item.status} />
@@ -145,28 +147,28 @@ export default function CustomerBills() {
                 <Separator />
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-muted-foreground">Container</Label>
+                    <Label className="text-muted-foreground">{UI_MESSAGES.TABLE.CONTAINER}</Label>
                     <p className="font-medium">{item.containerNumber}</p>
                   </div>
                   <div>
-                    <Label className="text-muted-foreground">Date Issued</Label>
+                    <Label className="text-muted-foreground">{UI_MESSAGES.BILLING.DATE_ISSUED}</Label>
                     <p className="font-medium">
                       {new Date(item.createdAt).toLocaleDateString()}
                     </p>
                   </div>
                   <div>
-                    <Label className="text-muted-foreground">Due Date</Label>
+                    <Label className="text-muted-foreground">{UI_MESSAGES.BILLING.DUE_DATE}</Label>
                     <p className="font-medium">
                       {new Date(item.dueDate).toLocaleDateString()}
                     </p>
                   </div>
                   <div>
-                    <Label className="text-muted-foreground">Billed To</Label>
+                    <Label className="text-muted-foreground">{UI_MESSAGES.BILLING.BILLED_TO}</Label>
                     <p className="font-medium">{item.customerName || "You"}</p>
                   </div>
                   {item.status === "paid" && item.paidAt && (
                     <div>
-                      <Label className="text-muted-foreground">Paid Date</Label>
+                      <Label className="text-muted-foreground">{UI_MESSAGES.BILLING.PAID_DATE}</Label>
                       <p className="font-medium">
                         {new Date(item.paidAt).toLocaleDateString()}
                       </p>
@@ -174,9 +176,9 @@ export default function CustomerBills() {
                   )}
                   {item.status === "paid" && item.paymentMethod && (
                     <div>
-                      <Label className="text-muted-foreground">Payment Method</Label>
+                      <Label className="text-muted-foreground">{UI_MESSAGES.BILLING.PAYMENT_METHOD}</Label>
                       <p className="font-medium">
-                        {item.paymentMethod === "pda" ? "PDA (Pre-Deposit Account)" : "Online Payment"}
+                        {item.paymentMethod === "pda" ? UI_MESSAGES.COMMON.PDA_FULL : UI_MESSAGES.BILLING.ONLINE_PAYMENT}
                       </p>
                     </div>
                   )}
@@ -184,7 +186,7 @@ export default function CustomerBills() {
                 <Separator />
                 <div>
                   <Label className="text-muted-foreground mb-2 block">
-                    Charges
+                    {UI_MESSAGES.BILLING.CHARGES}
                   </Label>
                   <div className="space-y-2">
                     {item.lineItems.map((li, idx) => (
@@ -194,7 +196,7 @@ export default function CustomerBills() {
                       >
                         <span>{li.activityName} </span>
                         <span className="text-muted-foreground">
-                          {li.quantity} × ₹{li.unitPrice} = ₹
+                          {li.quantity} × {UI_MESSAGES.COMMON.CURRENCY_SYMBOL}{li.unitPrice} = {UI_MESSAGES.COMMON.CURRENCY_SYMBOL}
                           {li.amount.toLocaleString()}
                         </span>
                       </div>
@@ -205,16 +207,16 @@ export default function CustomerBills() {
                   <>
                     <Separator />
                     <div>
-                      <Label className="text-muted-foreground">Remarks</Label>
+                      <Label className="text-muted-foreground">{UI_MESSAGES.TABLE.REMARKS}</Label>
                       <p className="text-sm">{item.remarks.replace(/\s*\|?\s*REQ-[a-f0-9]+/gi, "").trim()}</p>
                     </div>
                   </>
                 )}
                 <Separator />
                 <div className="flex justify-between items-center">
-                  <span className="font-semibold">Total Due</span>
+                  <span className="font-semibold">{UI_MESSAGES.BILLING.TOTAL_DUE}</span>
                   <span className="text-xl font-bold">
-                    ₹{item.totalAmount.toLocaleString()}
+                    {UI_MESSAGES.COMMON.CURRENCY_SYMBOL}{item.totalAmount.toLocaleString()}
                   </span>
                 </div>
               </div>
@@ -225,7 +227,7 @@ export default function CustomerBills() {
                   onClick={() => generateBillPDF(item)}
                 >
                   <Printer className="mr-2 h-4 w-4" />
-                  Download PDF
+                  {UI_MESSAGES.BILLING.DOWNLOAD_PDF}
                 </Button>
                 {item.status !== "paid" && (
                   <Button
@@ -233,7 +235,7 @@ export default function CustomerBills() {
                     onClick={() => navigate(`/customer/payment/${item.id}`)}
                   >
                     <CreditCard className="mr-2 h-4 w-4" />
-                    Pay Now
+                    {UI_MESSAGES.BILLING.PAY_NOW}
                   </Button>
                 )}
               </DialogFooter>
@@ -259,7 +261,7 @@ export default function CustomerBills() {
             </DialogTrigger>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
-                <DialogTitle>Transaction History</DialogTitle>
+                <DialogTitle>{UI_MESSAGES.DIALOG.TRANSACTION_HISTORY}</DialogTitle>
                 <DialogDescription>
                   Payment attempts for Bill {item.billNumber}
                 </DialogDescription>
@@ -271,18 +273,18 @@ export default function CustomerBills() {
                   </div>
                 ) : transactions.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
-                    No transaction history found
+                    {UI_MESSAGES.PDA.NO_TRANSACTIONS}
                   </div>
                 ) : (
                   <div className="border rounded-md overflow-hidden">
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Method</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Amount</TableHead>
-                          <TableHead>Details</TableHead>
+                          <TableHead>{UI_MESSAGES.COMMON.DATE}</TableHead>
+                          <TableHead>{UI_MESSAGES.COMMON.METHOD}</TableHead>
+                          <TableHead>{UI_MESSAGES.TABLE.STATUS}</TableHead>
+                          <TableHead>{UI_MESSAGES.TABLE.AMOUNT}</TableHead>
+                          <TableHead>{UI_MESSAGES.TABLE.DETAILS}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -298,10 +300,10 @@ export default function CustomerBills() {
                               <StatusBadge status={tx.status} />
                             </TableCell>
                             <TableCell className="font-medium text-xs">
-                              ₹{tx.amount.toLocaleString()}
+                              {UI_MESSAGES.COMMON.CURRENCY_SYMBOL}{tx.amount.toLocaleString()}
                             </TableCell>
                             <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate">
-                              {tx.status === "failed" ? tx.errorDetails : (tx.transactionId || tx.orderId || "-")}
+                              {tx.status === "failed" ? tx.errorDetails : (tx.transactionId || tx.orderId || UI_MESSAGES.COMMON.NA)}
                             </TableCell>
                           </TableRow>
                         ))}
@@ -318,24 +320,24 @@ export default function CustomerBills() {
   ];
 
   return (
-    <DashboardLayout navItems={customerNavItems} pageTitle="My Bills">
+    <DashboardLayout navItems={customerNavItems} pageTitle={UI_MESSAGES.TABLE.BILL_NO.replace("No.", "Bills")}>
       {/* KPI Cards */}
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <KPICard title="Total Bills" value={bills.length} icon={Receipt} />
+        <KPICard title={UI_MESSAGES.BILLING.TOTAL_BILLS} value={bills.length} icon={Receipt} />
         <KPICard
-          title="Outstanding Balance"
-          value={`₹${totalPending.toLocaleString()}`}
+          title={UI_MESSAGES.KPI.OUTSTANDING_BALANCE}
+          value={`${UI_MESSAGES.COMMON.CURRENCY_SYMBOL}${totalPending.toLocaleString()}`}
           icon={Clock}
           variant="warning"
         />
         <KPICard
-          title="Total Paid"
-          value={`₹${totalPaid.toLocaleString()}`}
+          title={UI_MESSAGES.KPI.TOTAL_PAID}
+          value={`${UI_MESSAGES.COMMON.CURRENCY_SYMBOL}${totalPaid.toLocaleString()}`}
           icon={IndianRupee}
           variant="success"
         />
         <KPICard
-          title="Overdue"
+          title={UI_MESSAGES.KPI.OVERDUE}
           value={overdueBills.length}
           icon={Receipt}
           variant="danger"
@@ -347,31 +349,31 @@ export default function CustomerBills() {
           <RefreshCw
             className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`}
           />
-          Refresh
+          {UI_MESSAGES.COMMON.REFRESH}
         </Button>
       </div>
 
       {/* Bills Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Invoices</CardTitle>
+          <CardTitle>{UI_MESSAGES.BILLING.INVOICES}</CardTitle>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="all">
             <TabsList className="mb-4">
-              <TabsTrigger value="all">All ({bills.length})</TabsTrigger>
-              <TabsTrigger value="pending">
-                Pending ({pendingBills.length})
-              </TabsTrigger>
-              <TabsTrigger value="paid">Paid ({paidBills.length})</TabsTrigger>
-            </TabsList>
+            <TabsTrigger value="all">{UI_MESSAGES.COMMON.ALL} ({bills.length})</TabsTrigger>
+            <TabsTrigger value="pending">
+              {UI_MESSAGES.KPI.PENDING} ({pendingBills.length})
+            </TabsTrigger>
+            <TabsTrigger value="paid">{UI_MESSAGES.TITLES.PAID} ({paidBills.length})</TabsTrigger>
+          </TabsList>
 
             <TabsContent value="all">
               <DataTable
                 data={bills}
                 columns={columns}
                 searchable
-                searchPlaceholder="Search invoices..."
+                searchPlaceholder={UI_MESSAGES.TABLE.SEARCH_INVOICES}
               />
             </TabsContent>
             <TabsContent value="pending">
@@ -379,7 +381,7 @@ export default function CustomerBills() {
                 data={pendingBills}
                 columns={columns}
                 searchable
-                emptyMessage="No pending bills"
+                emptyMessage={UI_MESSAGES.TABLE.NO_PENDING_BILLS}
               />
             </TabsContent>
             <TabsContent value="paid">
@@ -387,7 +389,7 @@ export default function CustomerBills() {
                 data={paidBills}
                 columns={columns}
                 searchable
-                emptyMessage="No paid bills"
+                emptyMessage={UI_MESSAGES.TABLE.NO_PAID_BILLS}
               />
             </TabsContent>
           </Tabs>

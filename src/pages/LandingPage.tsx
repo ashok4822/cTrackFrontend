@@ -19,57 +19,43 @@ import {
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { useAppSelector } from "@/store/hooks";
 import { useEffect } from "react";
+import { UI_MESSAGES } from "@/constants/messages";
 
 const userTypes = [
   {
     id: "admin",
-    title: "Administrator",
-    description: "Full system access and configuration",
+    title: UI_MESSAGES.LANDING.USER_TYPES.ADMIN.TITLE,
+    description: UI_MESSAGES.LANDING.USER_TYPES.ADMIN.DESC,
     icon: Shield,
     href: "/admin/login",
     color: "bg-primary/10 text-primary",
-    features: [
-      "System configuration",
-      "User management",
-      "Reports & analytics",
-      "Equipment configuration",
-    ],
+    features: UI_MESSAGES.LANDING.USER_TYPES.ADMIN.FEATURES,
   },
   {
     id: "operator",
-    title: "Terminal Operator",
-    description: "Terminal operations management",
+    title: UI_MESSAGES.LANDING.USER_TYPES.OPERATOR.TITLE,
+    description: UI_MESSAGES.LANDING.USER_TYPES.OPERATOR.DESC,
     icon: Building2,
     href: "/operator/login",
     color: "bg-warning/10 text-warning",
-    features: [
-      "Gate operations",
-      "Yard management",
-      "Cargo requests",
-      "Equipment tracking",
-    ],
+    features: UI_MESSAGES.LANDING.USER_TYPES.OPERATOR.FEATURES,
   },
   {
     id: "customer",
-    title: "Customer / Factory",
-    description: "View and request operations",
+    title: UI_MESSAGES.LANDING.USER_TYPES.CUSTOMER.TITLE,
+    description: UI_MESSAGES.LANDING.USER_TYPES.CUSTOMER.DESC,
     icon: Factory,
     href: "/customer/login",
     color: "bg-success/10 text-success",
-    features: [
-      "Container status",
-      "Stuffing requests",
-      "Movement tracking",
-      "Bill payments",
-    ],
+    features: UI_MESSAGES.LANDING.USER_TYPES.CUSTOMER.FEATURES,
   },
 ];
 
 const stats = [
-  { label: "Containers Managed", value: "50,000+", icon: Container },
-  { label: "Daily Operations", value: "1,200+", icon: Truck },
-  { label: "Active Terminals", value: "15", icon: Building2 },
-  { label: "Uptime", value: "99.9%", icon: BarChart3 },
+  { label: UI_MESSAGES.LANDING.STATS.CONTAINERS, value: "50,000+", icon: Container },
+  { label: UI_MESSAGES.LANDING.STATS.DAILY_OPS, value: "1,200+", icon: Truck },
+  { label: UI_MESSAGES.LANDING.STATS.TERMINALS, value: "15", icon: Building2 },
+  { label: UI_MESSAGES.LANDING.STATS.UPTIME, value: "99.9%", icon: BarChart3 },
 ];
 
 const LandingPage = () => {
@@ -97,19 +83,19 @@ const LandingPage = () => {
               cT
             </div>
             <div>
-              <h1 className="font-bold text-foreground">cTrack</h1>
+              <h1 className="font-bold text-foreground">{UI_MESSAGES.COMMON.APP_NAME}</h1>
               <p className="text-xs text-muted-foreground">
-                Terminal Management System
+                {UI_MESSAGES.LANDING.SUBTITLE}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <ThemeToggle />
             <Button variant="ghost" asChild>
-              <Link to="/about">About</Link>
+              <Link to="/about">{UI_MESSAGES.LANDING.NAV.ABOUT}</Link>
             </Button>
             <Button variant="ghost" asChild>
-              <Link to="/contact">Contact</Link>
+              <Link to="/contact">{UI_MESSAGES.LANDING.NAV.CONTACT}</Link>
             </Button>
           </div>
         </div>
@@ -121,21 +107,19 @@ const LandingPage = () => {
           <div className="mx-auto max-w-3xl text-center">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm text-primary">
               <Shield className="h-4 w-4" />
-              Enterprise-Grade Container Yard Management
+              {UI_MESSAGES.LANDING.HERO_BADGE}
             </div>
             <h1 className="mb-6 text-4xl font-bold tracking-tight text-foreground md:text-5xl lg:text-6xl">
-              Terminal Management
-              <span className="block text-primary">Made Simple</span>
+              {UI_MESSAGES.LANDING.HERO_TITLE_1}
+              <span className="block text-primary">{UI_MESSAGES.LANDING.HERO_TITLE_2}</span>
             </h1>
             <p className="mb-8 text-lg text-muted-foreground md:text-xl">
-              Streamline your container yard operations with our comprehensive
-              TMS. Real-time tracking, efficient gate management, and complete
-              visibility across your entire supply chain.
+              {UI_MESSAGES.LANDING.HERO_DESC}
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Button size="lg" asChild className="gap-2">
                 <Link to="/operator/login">
-                  Terminal User Login
+                  {UI_MESSAGES.LANDING.TERMINAL_LOGIN}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
@@ -177,11 +161,10 @@ const LandingPage = () => {
         <div className="container">
           <div className="mx-auto mb-12 max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-bold text-foreground">
-              Select Your Portal
+              {UI_MESSAGES.LANDING.SELECT_PORTAL}
             </h2>
             <p className="text-lg text-muted-foreground">
-              Choose your user type to access the appropriate dashboard and
-              features
+              {UI_MESSAGES.LANDING.SELECT_PORTAL_DESC}
             </p>
           </div>
 
@@ -220,7 +203,7 @@ const LandingPage = () => {
                       className="w-full gap-2 group-hover:bg-primary"
                     >
                       <Link to={type.href}>
-                        Enter Portal
+                        {UI_MESSAGES.LANDING.ENTER_PORTAL}
                         <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                       </Link>
                     </Button>
@@ -237,52 +220,17 @@ const LandingPage = () => {
         <div className="container">
           <div className="mx-auto mb-12 max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-bold text-foreground">
-              Powerful Features
+              {UI_MESSAGES.LANDING.FEATURES_TITLE}
             </h2>
             <p className="text-lg text-muted-foreground">
-              Everything you need to manage your container yard efficiently
+              {UI_MESSAGES.LANDING.FEATURES_DESC}
             </p>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {[
-              {
-                title: "Real-time Tracking",
-                description:
-                  "Track containers, vehicles, and equipment in real-time across your yard",
-                icon: Container,
-              },
-              {
-                title: "Gate Management",
-                description:
-                  "Streamlined gate-in/gate-out processes with automated documentation",
-                icon: Truck,
-              },
-              {
-                title: "Yard Optimization",
-                description:
-                  "Smart yard planning and slot allocation for maximum efficiency",
-                icon: BarChart3,
-              },
-              {
-                title: "Billing & Invoicing",
-                description:
-                  "Automated billing based on activities with detailed invoicing",
-                icon: Building2,
-              },
-              {
-                title: "Equipments & Vehicles",
-                description: "Manage and Configure Equipments and Vehicles",
-                icon: Shield,
-              },
-              {
-                title: "Reports & Analytics",
-                description:
-                  "Detailed operational reports and business intelligence dashboards",
-                icon: BarChart3,
-              },
-            ].map((feature, index) => {
-              const Icon = feature.icon;
+            {UI_MESSAGES.LANDING.FEATURES_LIST.map((feature, index) => {
+              const icons = [Container, Truck, BarChart3, Building2, Shield, BarChart3];
+              const Icon = icons[index % icons.length];
               return (
                 <div
                   key={index}
@@ -315,7 +263,7 @@ const LandingPage = () => {
               <span className="font-semibold text-foreground">cTrack TMS</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              © 2026 cTrack Terminal Management System. All rights reserved.
+              {UI_MESSAGES.LANDING.FOOTER_COPYRIGHT}
             </p>
           </div>
         </div>

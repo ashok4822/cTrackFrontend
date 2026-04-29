@@ -35,6 +35,8 @@ import { useToast } from "@/hooks/useToast";
 import { useOverdueStatus } from "@/hooks/useOverdueStatus";
 import { OverdueBlocker } from "@/components/common/OverdueBlocker";
 import { Skeleton } from "@/components/ui/skeleton";
+import { UI_MESSAGES } from "@/constants/messages";
+
 
 export default function CustomerTransitTracking() {
   const { toast } = useToast();
@@ -52,8 +54,8 @@ export default function CustomerTransitTracking() {
       setRequests(data);
     } catch {
       toast({
-        title: "Error",
-        description: "Failed to fetch transit data.",
+        title: UI_MESSAGES.TITLES.ERROR,
+        description: UI_MESSAGES.TRANSIT.FETCH_FAILED,
         variant: "destructive",
       });
     } finally {
@@ -86,7 +88,7 @@ export default function CustomerTransitTracking() {
     );
   }
 
-  const relevantStatuses = ["ready-for-dispatch", "in-transit", "at-factory", "completed"];
+  const relevantStatuses = UI_MESSAGES.TRANSIT.RELEVANT_STATUSES;
 
   const filteredRequests = requests.filter((r) => {
     const isRelevant = relevantStatuses.includes(r.status);
@@ -104,40 +106,40 @@ export default function CustomerTransitTracking() {
   const columns: Column<ContainerRequest>[] = [
     {
       key: "containerNumber",
-      header: "Container No.",
+      header: UI_MESSAGES.TABLE.CONTAINER_NO,
       sortable: true,
       render: (item) => (
         <span className="font-mono font-medium text-foreground">
-          {item.containerNumber || "N/A"}
+          {item.containerNumber || UI_MESSAGES.COMMON.NA}
         </span>
       ),
     },
     {
       key: "type",
-      header: "Type",
+      header: UI_MESSAGES.TABLE.TYPE,
       render: (item) => <span className="capitalize">{item.type}</span>
     },
     {
       key: "status",
-      header: "Status",
+      header: UI_MESSAGES.TABLE.STATUS,
       sortable: true,
       render: (item) => <StatusBadge status={item.status} />,
     },
     {
       key: "checkpoints",
-      header: "Checkpoints",
+      header: UI_MESSAGES.TABLE.CHECKPOINTS,
       render: (item) => (
-        <span className="text-muted-foreground">{item.checkpoints?.length || 0} passed</span>
+        <span className="text-muted-foreground">{UI_MESSAGES.TABLE.PASSED_CHECKPOINTS(item.checkpoints?.length || 0)}</span>
       ),
     },
     {
       key: "preferredDate",
-      header: "Planned Date",
+      header: UI_MESSAGES.TABLE.PLANNED_DATE,
       render: (item) => new Date(item.preferredDate).toLocaleDateString(),
     },
     {
       key: "actions",
-      header: "Actions",
+      header: UI_MESSAGES.TABLE.ACTIONS,
       render: (item) => (
         <Button
           variant="ghost"
@@ -149,7 +151,7 @@ export default function CustomerTransitTracking() {
           className="gap-1"
         >
           <Eye className="h-4 w-4" />
-          Track
+          {UI_MESSAGES.TABLE.TRACK}
         </Button>
       ),
     },
@@ -158,45 +160,45 @@ export default function CustomerTransitTracking() {
   return (
     <DashboardLayout
       navItems={customerNavItems}
-      pageTitle="Transit Tracking"
+      pageTitle={UI_MESSAGES.TABLE.TRACK}
     >
       {/* KPI Cards */}
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KPICard
-          title="Total Shipments"
+          title={UI_MESSAGES.KPI.TOTAL_SHIPMENTS}
           value={requests.filter(r => relevantStatuses.includes(r.status)).length}
           icon={Container}
           variant="primary"
         />
         <KPICard
-          title="In Transit"
+          title={UI_MESSAGES.KPI.IN_TRANSIT}
           value={inTransitCount}
           icon={Truck}
           variant="warning"
         />
         <KPICard
-          title="Delivered"
+          title={UI_MESSAGES.KPI.DELIVERED}
           value={deliveredCount}
           icon={CheckCircle}
           variant="success"
         />
-        <KPICard title="Pending Dispatch" value={pendingCount} icon={Clock} />
+        <KPICard title={UI_MESSAGES.KPI.PENDING_DISPATCH} value={pendingCount} icon={Clock} />
       </div>
 
       {/* Container List */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Container Shipments</CardTitle>
+          <CardTitle>{UI_MESSAGES.TABLE.SHIPMENT_TRACKING}</CardTitle>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-48">
-              <SelectValue placeholder="Filter by status" />
+              <SelectValue placeholder={UI_MESSAGES.TABLE.FILTER_BY_STATUS} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="ready-for-dispatch">Ready for Dispatch</SelectItem>
-              <SelectItem value="in-transit">In Transit</SelectItem>
-              <SelectItem value="at-factory">At Factory</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
+              <SelectItem value="all">{UI_MESSAGES.TABLE.ALL_STATUSES}</SelectItem>
+               <SelectItem value="ready-for-dispatch">{UI_MESSAGES.KPI.PENDING_DISPATCH}</SelectItem>
+              <SelectItem value="in-transit">{UI_MESSAGES.KPI.IN_TRANSIT}</SelectItem>
+              <SelectItem value="at-factory">{UI_MESSAGES.TITLES.AT_FACTORY}</SelectItem>
+              <SelectItem value="completed">{UI_MESSAGES.KPI.COMPLETED}</SelectItem>
             </SelectContent>
           </Select>
         </CardHeader>
@@ -205,8 +207,8 @@ export default function CustomerTransitTracking() {
             data={filteredRequests}
             columns={columns}
             searchable
-            searchPlaceholder="Search containers..."
-            emptyMessage="No shipments found"
+            searchPlaceholder={UI_MESSAGES.TABLE.SEARCH_CONTAINERS}
+            emptyMessage={UI_MESSAGES.TABLE.NO_SHIPMENTS_FOUND}
             isLoading={loading}
           />
         </CardContent>
@@ -218,7 +220,7 @@ export default function CustomerTransitTracking() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Navigation className="h-5 w-5" />
-              Transit Checkpoints
+              {UI_MESSAGES.DIALOG.TRANSIT_DETAILS}
             </DialogTitle>
           </DialogHeader>
 
@@ -227,13 +229,13 @@ export default function CustomerTransitTracking() {
               {/* Container Info */}
               <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
                 <div>
-                  <p className="text-sm text-muted-foreground">Container</p>
+                  <p className="text-sm text-muted-foreground">{UI_MESSAGES.TABLE.CONTAINER}</p>
                   <p className="font-mono font-medium text-lg">
-                    {selectedRequest.containerNumber || "N/A"}
+                    {selectedRequest.containerNumber || UI_MESSAGES.COMMON.NA}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm text-muted-foreground">Status</p>
+                  <p className="text-sm text-muted-foreground">{UI_MESSAGES.TABLE.STATUS}</p>
                   <Badge
                     variant={
                       selectedRequest.status === "completed"
@@ -263,10 +265,10 @@ export default function CustomerTransitTracking() {
 
                   if (!hasCreationEvent) {
                     allEvents.push({
-                      status: "Request Created",
-                      location: "Customer Portal",
+                      status: UI_MESSAGES.TRANSIT.REQUEST_CREATED,
+                      location: UI_MESSAGES.TRANSIT.CUSTOMER_PORTAL,
                       timestamp: selectedRequest.createdAt || new Date().toISOString(),
-                      remarks: `Initial ${selectedRequest.type} request submitted`,
+                      remarks: UI_MESSAGES.TRANSIT.INITIAL_REQUEST_SUBMITTED(selectedRequest.type),
                     });
                   }
 
@@ -289,7 +291,7 @@ export default function CustomerTransitTracking() {
                               <div className="flex items-start justify-between mb-2">
                                 <div>
                                   <h4 className="font-semibold capitalize">
-                                    {(checkpoint.status || "Update").replace(/-/g, " ")}
+                                    {(checkpoint.status || UI_MESSAGES.TITLES.UPDATE).replace(/-/g, " ")}
                                   </h4>
                                   <div className="flex flex-col gap-1 mt-1">
                                     <p className="text-sm font-medium">

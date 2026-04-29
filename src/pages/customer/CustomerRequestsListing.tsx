@@ -36,6 +36,8 @@ import { useToast } from "@/hooks/useToast";
 import { useOverdueStatus } from "@/hooks/useOverdueStatus";
 import { OverdueBlocker } from "@/components/common/OverdueBlocker";
 import { Skeleton } from "@/components/ui/skeleton";
+import { UI_MESSAGES } from "@/constants/messages";
+
 
 interface Checkpoint {
   location: string;
@@ -90,8 +92,8 @@ export default function CustomerRequestsListing() {
       setRequests(formattedData);
     } catch {
       toast({
-        title: "Error",
-        description: "Failed to fetch container requests",
+        title: UI_MESSAGES.TITLES.ERROR,
+        description: UI_MESSAGES.CONTAINER.SUBMIT_FAILED,
         variant: "destructive",
       });
     } finally {
@@ -111,7 +113,7 @@ export default function CustomerRequestsListing() {
 
   if (checkingOverdue || (isLoading && requests.length === 0)) {
     return (
-      <DashboardLayout navItems={customerNavItems} pageTitle="Container Requests Listing">
+      <DashboardLayout navItems={customerNavItems} pageTitle={`${UI_MESSAGES.COMMON.MY_CONTAINER_REQUESTS} ${UI_MESSAGES.COMMON.LISTING}`}>
         <div className="space-y-4 p-6">
           <Skeleton className="h-10 w-full" />
           <Skeleton className="h-40 w-full" />
@@ -122,7 +124,7 @@ export default function CustomerRequestsListing() {
 
   if (hasOverdueBills) {
     return (
-      <DashboardLayout navItems={customerNavItems} pageTitle="Container Requests Listing">
+      <DashboardLayout navItems={customerNavItems} pageTitle={`${UI_MESSAGES.COMMON.MY_CONTAINER_REQUESTS} ${UI_MESSAGES.COMMON.LISTING}`}>
         <OverdueBlocker />
       </DashboardLayout>
     );
@@ -143,7 +145,7 @@ export default function CustomerRequestsListing() {
   const columns: Column<ContainerRequest>[] = [
     {
       key: "id",
-      header: "Request No.",
+      header: UI_MESSAGES.TABLE.REQUEST_NO,
       sortable: true,
       render: (item) => {
         const idString = item.id || "";
@@ -156,20 +158,20 @@ export default function CustomerRequestsListing() {
     },
     {
       key: "type",
-      header: "Type",
+      header: UI_MESSAGES.TABLE.TYPE,
       sortable: true,
       render: (item) => (
         <Badge
           variant={item.type === "stuffing" ? "default" : "secondary"}
           className="capitalize"
         >
-          {item.type}
+          {item.type === "stuffing" ? UI_MESSAGES.COMMON.STUFFING : UI_MESSAGES.COMMON.DESTUFFING}
         </Badge>
       ),
     },
     {
       key: "containerSpecs",
-      header: "Req. Container",
+      header: UI_MESSAGES.TABLE.REQ_CONTAINER,
       render: (item) =>
         item.containerSize && item.containerType ? (
           <span className="text-sm whitespace-nowrap">
@@ -177,12 +179,12 @@ export default function CustomerRequestsListing() {
             <span className="capitalize">{item.containerType}</span>
           </span>
         ) : (
-          <span className="text-muted-foreground text-sm">N/A</span>
+          <span className="text-muted-foreground text-sm">{UI_MESSAGES.COMMON.NA}</span>
         ),
     },
     {
       key: "cargoDescription",
-      header: "Cargo Description",
+      header: UI_MESSAGES.TABLE.CARGO_DESC,
       render: (item) => (
         <div className="max-w-[200px] truncate" title={item.cargoDescription}>
           {item.cargoDescription}
@@ -191,30 +193,30 @@ export default function CustomerRequestsListing() {
     },
     {
       key: "cargoWeight",
-      header: "Weight (kg)",
+      header: UI_MESSAGES.TABLE.WEIGHT_KG,
       sortable: true,
       render: (item) => (
         <span className="font-medium">
-          {item.cargoWeight != null ? item.cargoWeight.toLocaleString() : "N/A"}
+          {item.cargoWeight != null ? item.cargoWeight.toLocaleString() : UI_MESSAGES.COMMON.NA}
         </span>
       ),
     },
     {
       key: "isHazardous",
-      header: "Hazardous",
+      header: UI_MESSAGES.TABLE.HAZARDOUS,
       render: (item) =>
         item.isHazardous ? (
           <Badge variant="destructive" className="gap-1">
             <AlertTriangle className="h-3 w-3" />
-            Yes
+            {UI_MESSAGES.COMMON.YES}
           </Badge>
         ) : (
-          <span className="text-muted-foreground">No</span>
+          <span className="text-muted-foreground">{UI_MESSAGES.COMMON.NO}</span>
         ),
     },
     {
       key: "containerNumber",
-      header: "Allocated Container",
+      header: UI_MESSAGES.TABLE.ALLOCATED_CONTAINER,
       render: (item) =>
         item.containerNumber ? (
           <div className="flex items-center gap-2">
@@ -222,27 +224,27 @@ export default function CustomerRequestsListing() {
             <span className="font-mono text-sm">{item.containerNumber}</span>
           </div>
         ) : (
-          <span className="text-muted-foreground text-sm">Not allocated</span>
+          <span className="text-muted-foreground text-sm">{UI_MESSAGES.DESTUFFING.NOT_ALLOCATED}</span>
         ),
     },
     {
       key: "preferredDate",
-      header: "Preferred Date",
+      header: UI_MESSAGES.TABLE.PREFERRED_DATE,
       sortable: true,
       render: (item) =>
         item.preferredDate
           ? new Date(item.preferredDate).toLocaleDateString()
-          : "N/A",
+          : UI_MESSAGES.COMMON.NA,
     },
     {
       key: "status",
-      header: "Status",
+      header: UI_MESSAGES.TABLE.STATUS,
       sortable: true,
       render: (item) => <StatusBadge status={item.status} />,
     },
     {
       key: "actions",
-      header: "Actions",
+      header: UI_MESSAGES.TABLE.ACTIONS,
       render: (item) => (
         <div className="flex items-center gap-1">
           <Button
@@ -252,7 +254,7 @@ export default function CustomerRequestsListing() {
               e.stopPropagation();
               setSelectedRequest(item);
             }}
-            title="View Details"
+            title={UI_MESSAGES.TABLE.VIEW_DETAILS}
           >
             <Eye className="h-4 w-4" />
           </Button>
@@ -264,7 +266,7 @@ export default function CustomerRequestsListing() {
               setSelectedHistoryRequest(item);
               setShowHistoryDialog(true);
             }}
-            title="View History"
+            title={UI_MESSAGES.TABLE.VIEW_HISTORY}
           >
             <History className="h-4 w-4 text-blue-500" />
           </Button>
@@ -276,30 +278,30 @@ export default function CustomerRequestsListing() {
   return (
     <DashboardLayout
       navItems={customerNavItems}
-      pageTitle="Container Requests Listing"
+      pageTitle={`${UI_MESSAGES.COMMON.MY_CONTAINER_REQUESTS} ${UI_MESSAGES.COMMON.LISTING}`}
     >
       {/* KPI Cards */}
       <div className="mb-6 grid gap-4 sm:grid-cols-4">
         <KPICard
-          title="Total Requests"
+          title={UI_MESSAGES.KPI.TOTAL_REQUESTS}
           value={requests.length}
           icon={FileText}
           variant="primary"
         />
         <KPICard
-          title="Pending"
+          title={UI_MESSAGES.KPI.PENDING}
           value={pendingRequests}
           icon={Clock}
           variant="warning"
         />
         <KPICard
-          title="Approved"
+          title={UI_MESSAGES.KPI.APPROVED}
           value={approvedRequests}
           icon={CheckCircle}
           variant="success"
         />
         <KPICard
-          title="Rejected"
+          title={UI_MESSAGES.KPI.REJECTED}
           value={rejectedRequests}
           icon={AlertTriangle}
           variant="danger"
@@ -309,18 +311,18 @@ export default function CustomerRequestsListing() {
       {/* Requests Table */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <CardTitle>My Container Requests</CardTitle>
+          <CardTitle>{UI_MESSAGES.COMMON.MY_CONTAINER_REQUESTS}</CardTitle>
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">Filter status:</span>
+            <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">{UI_MESSAGES.TABLE.FILTER_BY_STATUS}:</span>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select status" />
+                <SelectValue placeholder={UI_MESSAGES.TABLE.FILTER_BY_STATUS} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Requests</SelectItem>
-                <SelectItem value="pending">Pending ({pendingRequests})</SelectItem>
-                <SelectItem value="approved">Approved ({approvedRequests})</SelectItem>
-                <SelectItem value="rejected">Rejected ({rejectedRequests})</SelectItem>
+                <SelectItem value="all">{UI_MESSAGES.TABLE.ALL_STATUSES}</SelectItem>
+                <SelectItem value="pending">{UI_MESSAGES.KPI.PENDING} ({pendingRequests})</SelectItem>
+                <SelectItem value="approved">{UI_MESSAGES.KPI.APPROVED} ({approvedRequests})</SelectItem>
+                <SelectItem value="rejected">{UI_MESSAGES.KPI.REJECTED} ({rejectedRequests})</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -330,12 +332,12 @@ export default function CustomerRequestsListing() {
             data={filteredRequests}
             columns={columns}
             searchable
-            searchPlaceholder="Search by cargo description..."
+            searchPlaceholder={UI_MESSAGES.TABLE.SEARCH_CARGO_DESC}
             onRowClick={setSelectedRequest}
             emptyMessage={
               statusFilter === "all"
-                ? "No requests found"
-                : `No ${statusFilter} requests found`
+                ? UI_MESSAGES.TABLE.NO_REQUESTS_FOUND
+                : UI_MESSAGES.COMMON.NO_REQUESTS_FOUND_FILTER(statusFilter)
             }
           />
         </CardContent>
@@ -347,24 +349,24 @@ export default function CustomerRequestsListing() {
         onOpenChange={() => setSelectedRequest(null)}
       >
         <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Request Details</DialogTitle>
+        <DialogHeader>
+            <DialogTitle>{UI_MESSAGES.DIALOG.REQUEST_DETAILS}</DialogTitle>
           </DialogHeader>
           {selectedRequest && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">Request ID</p>
+                  <p className="text-sm text-muted-foreground">{UI_MESSAGES.COMMON.REQUEST_ID}</p>
                   <p className="font-mono font-medium text-primary">
                     REQ-{(selectedRequest.id || "").slice(-6).toUpperCase()}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Status</p>
+                  <p className="text-sm text-muted-foreground">{UI_MESSAGES.TABLE.STATUS}</p>
                   <StatusBadge status={selectedRequest.status} />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Type</p>
+                  <p className="text-sm text-muted-foreground">{UI_MESSAGES.TABLE.TYPE}</p>
                   <Badge
                     variant={
                       selectedRequest.type === "stuffing"
@@ -373,49 +375,49 @@ export default function CustomerRequestsListing() {
                     }
                     className="capitalize"
                   >
-                    {selectedRequest.type}
+                    {selectedRequest.type === "stuffing" ? UI_MESSAGES.COMMON.STUFFING : UI_MESSAGES.COMMON.DESTUFFING}
                   </Badge>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">
-                    Preferred Date
+                    {UI_MESSAGES.TABLE.PREFERRED_DATE}
                   </p>
                   <p className="font-medium">
                     {selectedRequest.preferredDate
                       ? new Date(
                         selectedRequest.preferredDate,
                       ).toLocaleDateString()
-                      : "N/A"}
+                      : UI_MESSAGES.COMMON.NA}
                   </p>
                 </div>
               </div>
 
               <div className="border-t pt-4">
-                <h4 className="font-semibold mb-3">Cargo Details</h4>
+                <h4 className="font-semibold mb-3">{UI_MESSAGES.COMMON.CARGO_DETAILS}</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-2">
-                    <p className="text-sm text-muted-foreground">Description</p>
+                    <p className="text-sm text-muted-foreground">{UI_MESSAGES.COMMON.DESCRIPTION}</p>
                     <p className="font-medium">
                       {selectedRequest.cargoDescription}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Weight</p>
+                    <p className="text-sm text-muted-foreground">{UI_MESSAGES.COMMON.WEIGHT}</p>
                     <p className="font-medium">
                       {selectedRequest.cargoWeight != null
-                        ? `${selectedRequest.cargoWeight.toLocaleString()} kg`
-                        : "N/A"}
+                        ? `${selectedRequest.cargoWeight.toLocaleString()} ${UI_MESSAGES.COMMON.KG}`
+                        : UI_MESSAGES.COMMON.NA}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Hazardous</p>
+                    <p className="text-sm text-muted-foreground">{UI_MESSAGES.TABLE.HAZARDOUS}</p>
                     {selectedRequest.isHazardous ? (
                       <Badge variant="destructive" className="gap-1">
                         <AlertTriangle className="h-3 w-3" />
-                        Yes - {selectedRequest.hazardClass}
+                        {UI_MESSAGES.COMMON.YES} - {selectedRequest.hazardClass}
                       </Badge>
                     ) : (
-                      <p className="font-medium">No</p>
+                      <p className="font-medium">{UI_MESSAGES.COMMON.NO}</p>
                     )}
                   </div>
                 </div>
@@ -423,7 +425,7 @@ export default function CustomerRequestsListing() {
 
               {selectedRequest.containerNumber && (
                 <div className="border-t pt-4">
-                  <h4 className="font-semibold mb-3">Container Allocation</h4>
+                  <h4 className="font-semibold mb-3">{UI_MESSAGES.CONTAINER.CONTAINER_ALLOCATION}</h4>
                   <div className="flex items-center gap-3 p-3 bg-success/10 rounded-lg">
                     <Container className="h-5 w-5 text-success" />
                     <div>
@@ -440,17 +442,17 @@ export default function CustomerRequestsListing() {
               )}
 
               <div className="border-t pt-4">
-                <p className="text-sm text-muted-foreground">Requested On</p>
+                <p className="text-sm text-muted-foreground">{UI_MESSAGES.COMMON.REQUESTED_ON}</p>
                 <p className="font-medium">
                   {selectedRequest.createdAt
                     ? new Date(selectedRequest.createdAt).toLocaleString()
-                    : "N/A"}
+                    : UI_MESSAGES.COMMON.NA}
                 </p>
               </div>
 
               {selectedRequest.remarks && (
                 <div>
-                  <p className="text-sm text-muted-foreground">Remarks</p>
+                  <p className="text-sm text-muted-foreground">{UI_MESSAGES.COMMON.REMARKS}</p>
                   <p className="font-medium">{selectedRequest.remarks}</p>
                 </div>
               )}
@@ -464,7 +466,7 @@ export default function CustomerRequestsListing() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Navigation className="h-5 w-5" />
-              Request History Timeline
+              {UI_MESSAGES.DIALOG.REQUEST_HISTORY}
             </DialogTitle>
           </DialogHeader>
 
@@ -473,13 +475,13 @@ export default function CustomerRequestsListing() {
               {/* Request Info Summary */}
               <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
                 <div>
-                  <p className="text-sm text-muted-foreground">Request ID</p>
+                  <p className="text-sm text-muted-foreground">{UI_MESSAGES.COMMON.REQUEST_ID}</p>
                   <p className="font-mono font-medium text-lg text-primary">
                     REQ-{(selectedHistoryRequest.id || "").slice(-6).toUpperCase()}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm text-muted-foreground">Current Status</p>
+                  <p className="text-sm text-muted-foreground">{UI_MESSAGES.COMMON.CURRENT_STATUS}</p>
                   <StatusBadge status={selectedHistoryRequest.status} />
                 </div>
               </div>
@@ -502,10 +504,10 @@ export default function CustomerRequestsListing() {
 
                   if (!hasCreationEvent) {
                     allEvents.push({
-                      status: "Request Created",
-                      location: "Customer Portal",
+                      status: UI_MESSAGES.AUDIT.ACTIONS.REQUEST_CREATED,
+                      location: UI_MESSAGES.AUTH.CUSTOMER_PORTAL,
                       timestamp: selectedHistoryRequest.createdAt || new Date().toISOString(),
-                      remarks: `Initial ${selectedHistoryRequest.type} request submitted`,
+                      remarks: UI_MESSAGES.TRANSIT.INITIAL_REQUEST_SUBMITTED(selectedHistoryRequest.type),
                     });
                   }
 
@@ -528,7 +530,7 @@ export default function CustomerRequestsListing() {
                               <div className="flex items-start justify-between mb-2">
                                 <div>
                                   <h4 className="font-semibold capitalize">
-                                    {(checkpoint.status || "Update").replace(/-/g, " ")}
+                                    {(checkpoint.status || UI_MESSAGES.COMMON.UPDATE).replace(/-/g, " ")}
                                   </h4>
                                   <div className="flex flex-col gap-1 mt-1">
                                     <p className="text-sm font-medium">

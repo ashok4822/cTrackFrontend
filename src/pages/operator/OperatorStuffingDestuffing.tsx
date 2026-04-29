@@ -30,6 +30,7 @@ import { equipmentService } from "@/services/equipmentService";
 import type { ContainerRequest, Equipment } from "@/types";
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/useToast";
+import { UI_MESSAGES } from "@/constants/messages";
 import { Truck } from "lucide-react";
 
 export default function OperatorStuffingDestuffing() {
@@ -70,8 +71,8 @@ export default function OperatorStuffingDestuffing() {
     } catch (error) {
       console.error("fetchData Error:", error);
       toast({
-        title: "Error",
-        description: "Failed to fetch necessary data.",
+        title: UI_MESSAGES.TITLES.ERROR,
+        description: UI_MESSAGES.CONTAINER.FETCH_FAILED,
         variant: "destructive",
       });
     } finally {
@@ -97,8 +98,8 @@ export default function OperatorStuffingDestuffing() {
   const handleDispatch = async () => {
     if (!selectedRequest || !dispatchForm.equipmentId) {
       toast({
-        title: "Missing Information",
-        description: "Please select equipment.",
+        title: UI_MESSAGES.PDA.MISSING_INFO,
+        description: UI_MESSAGES.DESTUFFING.SELECT_EQUIPMENT,
         variant: "destructive",
       });
       return;
@@ -111,8 +112,8 @@ export default function OperatorStuffingDestuffing() {
       });
 
       toast({
-        title: "Operation Dispatched",
-        description: `Container ${selectedRequest.containerNumber || selectedRequest.id} is now ready for dispatch.`,
+        title: UI_MESSAGES.DESTUFFING.DISPATCH_SUCCESS,
+        description: UI_MESSAGES.DESTUFFING.DISPATCH_SUCCESS_DESC(selectedRequest.containerNumber || selectedRequest.id),
       });
 
       setDispatchDialogOpen(false);
@@ -121,8 +122,8 @@ export default function OperatorStuffingDestuffing() {
       fetchData(); // Refresh data
     } catch {
       toast({
-        title: "Error",
-        description: "Failed to update operation status.",
+        title: UI_MESSAGES.TITLES.ERROR,
+        description: UI_MESSAGES.DESTUFFING.UPDATE_STATUS_FAILED,
         variant: "destructive",
       });
     }
@@ -134,14 +135,14 @@ export default function OperatorStuffingDestuffing() {
         status: "completed",
       });
       toast({
-        title: "Operation Completed",
-        description: `Request ${containerNumber || id} has been marked as completed.`,
+        title: UI_MESSAGES.TRANSIT.OPERATION_COMPLETED,
+        description: UI_MESSAGES.TRANSIT.OPERATION_COMPLETED_DESC(containerNumber || id),
       });
       fetchData();
     } catch {
       toast({
-        title: "Error",
-        description: "Failed to complete operation.",
+        title: UI_MESSAGES.TITLES.ERROR,
+        description: UI_MESSAGES.TRANSIT.COMPLETE_OPERATION_FAILED,
         variant: "destructive",
       });
     }
@@ -156,16 +157,16 @@ export default function OperatorStuffingDestuffing() {
   const columns: Column<ContainerRequest>[] = [
     {
       key: "containerNumber",
-      header: "Container No.",
+      header: UI_MESSAGES.TABLE.CONTAINER_NO,
       sortable: true,
       render: (item) =>
         item.containerNumber || (
-          <span className="text-muted-foreground italic">New Request</span>
+          <span className="text-muted-foreground italic">{UI_MESSAGES.TABLE.NEW_REQUEST_ITALIC}</span>
         ),
     },
     {
       key: "type",
-      header: "Type",
+      header: UI_MESSAGES.TABLE.TYPE,
       render: (item) => (
         <div className="flex items-center gap-2">
           {item.type === "stuffing" ? (
@@ -179,7 +180,7 @@ export default function OperatorStuffingDestuffing() {
     },
     {
       key: "status",
-      header: "Status",
+      header: UI_MESSAGES.TABLE.STATUS,
       render: (item) => {
         // Map backend "approved" to frontend "pending" for the operator's view
         const displayStatus =
@@ -189,7 +190,7 @@ export default function OperatorStuffingDestuffing() {
     },
     {
       key: "preferredDate",
-      header: "Preferred Date",
+      header: UI_MESSAGES.TABLE.PREFERRED_DATE,
       render: (item) =>
         item.preferredDate
           ? new Date(item.preferredDate).toLocaleDateString()
@@ -197,12 +198,12 @@ export default function OperatorStuffingDestuffing() {
     },
     {
       key: "actions",
-      header: "Actions",
+      header: UI_MESSAGES.TABLE.ACTIONS,
       render: (item) => (
         <div className="flex gap-2">
           {item.status === "approved" && (
             <Button size="sm" onClick={() => openDispatchDialog(item)}>
-              Dispatch
+              {UI_MESSAGES.TABLE.DISPATCH}
             </Button>
           )}
           {item.status === "at-factory" && (
@@ -212,7 +213,7 @@ export default function OperatorStuffingDestuffing() {
               className="bg-success hover:bg-success/90"
               onClick={() => handleComplete(item.id, item.containerNumber)}
             >
-              Complete
+              {UI_MESSAGES.TABLE.COMPLETE}
             </Button>
           )}
           <Dialog>
@@ -222,47 +223,46 @@ export default function OperatorStuffingDestuffing() {
                 variant="outline"
                 onClick={() => setSelectedRequest(item)}
               >
-                View
+                {UI_MESSAGES.TABLE.VIEW}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>
-                  {item.type === "stuffing" ? "Stuffing" : "Destuffing"}{" "}
-                  Operation
+                  {item.type === "stuffing" ? UI_MESSAGES.DESTUFFING.STUFFING_OPERATION : UI_MESSAGES.DESTUFFING.DESTUFFING_OPERATION}
                 </DialogTitle>
                 <DialogDescription>
-                  {item.containerNumber || "New Container"} -{" "}
-                  {item.status === "approved" ? "Pending" : item.status}
+                  {item.containerNumber || UI_MESSAGES.DESTUFFING.NEW_CONTAINER} -{" "}
+                  {item.status === "approved" ? UI_MESSAGES.KPI.PENDING : item.status}
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-muted-foreground">Container</Label>
+                    <Label className="text-muted-foreground">{UI_MESSAGES.TABLE.CONTAINER}</Label>
                     <p className="font-medium">{item.containerNumber}</p>
                   </div>
                   <div>
-                    <Label className="text-muted-foreground">Type</Label>
+                    <Label className="text-muted-foreground">{UI_MESSAGES.TABLE.TYPE}</Label>
                     <p className="font-medium capitalize">{item.type}</p>
                   </div>
                   <div>
-                    <Label className="text-muted-foreground">Cargo</Label>
+                    <Label className="text-muted-foreground">{UI_MESSAGES.TABLE.CARGO_DESC}</Label>
                     <p className="font-medium text-sm">
-                      {item.cargoDescription || "N/A"}
+                      {item.cargoDescription || UI_MESSAGES.COMMON.NO_DATA}
                     </p>
                   </div>
                 </div>
                 {item.remarks && (
                   <div>
-                    <Label className="text-muted-foreground">Remarks</Label>
+                    <Label className="text-muted-foreground">{UI_MESSAGES.STUFFING.NOTES}</Label>
                     <p className="text-sm">{item.remarks}</p>
                   </div>
                 )}
               </div>
               <DialogFooter>
                 <DialogClose asChild>
-                  <Button variant="outline">Close</Button>
+                  <Button variant="outline">{UI_MESSAGES.COMMON.CANCEL}</Button>
                 </DialogClose>
               </DialogFooter>
             </DialogContent>
@@ -293,25 +293,25 @@ export default function OperatorStuffingDestuffing() {
       {/* KPI Cards */}
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KPICard
-          title="Pending"
+          title={UI_MESSAGES.KPI.PENDING}
           value={counts.pending}
           icon={Clock}
           variant="warning"
         />
         <KPICard
-          title="Ready for Dispatch"
+          title={UI_MESSAGES.KPI.PENDING_DISPATCH}
           value={counts.ready}
           icon={Package}
           variant="primary"
         />
         <KPICard
-          title="In Transit"
+          title={UI_MESSAGES.KPI.IN_TRANSIT}
           value={counts.transit}
           icon={PackagePlus}
           variant="success"
         />
         <KPICard
-          title="Completed"
+          title={UI_MESSAGES.KPI.DELIVERED}
           value={counts.completed}
           icon={PackageMinus}
         />
@@ -320,14 +320,14 @@ export default function OperatorStuffingDestuffing() {
       {/* Operations Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Operations</CardTitle>
+          <CardTitle>{UI_MESSAGES.TABLE.OPERATIONS}</CardTitle>
         </CardHeader>
         <CardContent>
           <DataTable
             data={requests}
             columns={columns}
             searchable
-            searchPlaceholder="Search operations..."
+            searchPlaceholder={UI_MESSAGES.TABLE.SEARCH_OPERATIONS}
           />
         </CardContent>
       </Card>
@@ -336,15 +336,14 @@ export default function OperatorStuffingDestuffing() {
       <Dialog open={dispatchDialogOpen} onOpenChange={setDispatchDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Dispatch Container</DialogTitle>
+            <DialogTitle>{UI_MESSAGES.DESTUFFING.DISPATCH_CONTAINER}</DialogTitle>
             <DialogDescription>
-              Select equipment to load container{" "}
-              {selectedRequest?.containerNumber || "New Request"} for dispatch.
+              {UI_MESSAGES.DESTUFFING.DISPATCH_CONTAINER_DESC(selectedRequest?.containerNumber || UI_MESSAGES.DESTUFFING.NEW_CONTAINER)}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>Select Equipment</Label>
+              <Label>{UI_MESSAGES.DESTUFFING.SELECT_EQUIPMENT}</Label>
               <Select
                 value={dispatchForm.equipmentId}
                 onValueChange={(v) =>
@@ -352,7 +351,7 @@ export default function OperatorStuffingDestuffing() {
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Choose equipment" />
+                  <SelectValue placeholder={UI_MESSAGES.DESTUFFING.CHOOSE_EQUIPMENT} />
                 </SelectTrigger>
                 <SelectContent>
                   {equipment.length > 0 ? (
@@ -363,7 +362,7 @@ export default function OperatorStuffingDestuffing() {
                     ))
                   ) : (
                     <div className="p-2 text-sm text-muted-foreground italic">
-                      No operational equipment available
+                      {UI_MESSAGES.DESTUFFING.NO_EQUIPMENT_AVAILABLE}
                     </div>
                   )}
                 </SelectContent>
@@ -375,11 +374,11 @@ export default function OperatorStuffingDestuffing() {
               variant="outline"
               onClick={() => setDispatchDialogOpen(false)}
             >
-              Cancel
+              {UI_MESSAGES.COMMON.CANCEL}
             </Button>
             <Button onClick={handleDispatch}>
               <Truck className="h-4 w-4 mr-2" />
-              Confirm Dispatch
+              {UI_MESSAGES.DESTUFFING.CONFIRM_DISPATCH}
             </Button>
           </DialogFooter>
         </DialogContent>

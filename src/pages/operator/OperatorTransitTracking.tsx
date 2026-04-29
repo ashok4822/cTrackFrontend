@@ -27,6 +27,7 @@ import { useToast } from "@/hooks/useToast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DialogFooter } from "@/components/ui/dialog";
+import { UI_MESSAGES } from "@/constants/messages";
 
 export default function OperatorTransitTracking() {
   const { toast } = useToast();
@@ -50,8 +51,8 @@ export default function OperatorTransitTracking() {
       setRequests(data);
     } catch {
       toast({
-        title: "Error",
-        description: "Failed to fetch transit data.",
+        title: UI_MESSAGES.TITLES.ERROR,
+        description: UI_MESSAGES.TRANSIT.FETCH_FAILED,
         variant: "destructive",
       });
     } finally {
@@ -112,8 +113,8 @@ export default function OperatorTransitTracking() {
       });
 
       toast({
-        title: "Checkpoint Added",
-        description: `Status updated for ${currentRequest?.containerNumber || selectedRequestId}`,
+        title: UI_MESSAGES.TRANSIT.CHECKPOINT_ADDED,
+        description: UI_MESSAGES.TRANSIT.CHECKPOINT_UPDATED_DESC(currentRequest?.containerNumber || selectedRequestId),
       });
 
       setShowAddCheckpointDialog(false);
@@ -121,8 +122,8 @@ export default function OperatorTransitTracking() {
       fetchData();
     } catch {
       toast({
-        title: "Error",
-        description: "Failed to add checkpoint.",
+        title: UI_MESSAGES.TITLES.ERROR,
+        description: UI_MESSAGES.TRANSIT.ADD_CHECKPOINT_FAILED,
         variant: "destructive",
       });
     }
@@ -138,22 +139,22 @@ export default function OperatorTransitTracking() {
         checkpoints: [
           ...existingCheckpoints,
           {
-            location: "At Factory",
+            location: UI_MESSAGES.TITLES.AT_FACTORY,
             timestamp: new Date().toISOString(),
             status: "reached",
-            remarks: "Shipment reached factory destination.",
+            remarks: UI_MESSAGES.TRANSIT.MARK_AT_FACTORY_SUCCESS,
           },
         ],
       });
       toast({
-        title: "Success",
-        description: "Container marked as Arrived at Factory.",
+        title: UI_MESSAGES.TITLES.SUCCESS,
+        description: UI_MESSAGES.TRANSIT.MARK_AT_FACTORY_SUCCESS,
       });
       fetchData();
     } catch {
       toast({
-        title: "Error",
-        description: "Failed to update status.",
+        title: UI_MESSAGES.TITLES.ERROR,
+        description: UI_MESSAGES.DESTUFFING.UPDATE_STATUS_FAILED,
         variant: "destructive",
       });
     }
@@ -169,22 +170,22 @@ export default function OperatorTransitTracking() {
         checkpoints: [
           ...existingCheckpoints,
           {
-            location: "Operation Finalized",
+            location: UI_MESSAGES.TRANSIT.OPERATION_FINALIZED,
             timestamp: new Date().toISOString(),
             status: "completed",
-            remarks: "Stuffing/Destuffing operation finalized.",
+            remarks: UI_MESSAGES.TRANSIT.STUFFING_FINALIZED,
           },
         ],
       });
       toast({
-        title: "Operation Completed",
-        description: `Request ${containerNumber || id} has been marked as completed.`,
+        title: UI_MESSAGES.TRANSIT.OPERATION_COMPLETED,
+        description: UI_MESSAGES.TRANSIT.OPERATION_COMPLETED_DESC(containerNumber || id),
       });
       fetchData();
     } catch {
       toast({
-        title: "Error",
-        description: "Failed to complete operation.",
+        title: UI_MESSAGES.TITLES.ERROR,
+        description: UI_MESSAGES.TRANSIT.COMPLETE_OPERATION_FAILED,
         variant: "destructive",
       });
     }
@@ -193,22 +194,22 @@ export default function OperatorTransitTracking() {
   const columns: Column<ContainerRequest>[] = [
     {
       key: "containerNumber",
-      header: "Container No.",
+      header: UI_MESSAGES.TABLE.CONTAINER_NO,
       sortable: true,
       render: (item) => (
         <span className="font-mono font-medium text-foreground">
-          {item.containerNumber || "NEW"}
+          {item.containerNumber || UI_MESSAGES.TABLE.NEW_REQUEST_UPPER}
         </span>
       ),
     },
     {
       key: "type",
-      header: "Operation",
+      header: UI_MESSAGES.TABLE.OPERATION,
       render: (item) => <span className="capitalize">{item.type}</span>,
     },
     {
       key: "status",
-      header: "Status",
+      header: UI_MESSAGES.TABLE.STATUS,
       sortable: true,
       render: (item) => {
         return (
@@ -222,16 +223,16 @@ export default function OperatorTransitTracking() {
     },
     {
       key: "checkpoints",
-      header: "Checkpoints",
+      header: UI_MESSAGES.TABLE.CHECKPOINTS,
       render: (item) => (
         <span className="text-muted-foreground">
-          {item.checkpoints?.length || 0} passed
+          {UI_MESSAGES.TABLE.PASSED_CHECKPOINTS(item.checkpoints?.length || 0)}
         </span>
       ),
     },
     {
       key: "actions",
-      header: "Actions",
+      header: UI_MESSAGES.TABLE.ACTIONS,
       render: (item) => (
         <div className="flex gap-2">
           <Button
@@ -244,7 +245,7 @@ export default function OperatorTransitTracking() {
             className="gap-1"
           >
             <Eye className="h-4 w-4" />
-            Track
+            {UI_MESSAGES.TABLE.TRACK}
           </Button>
           {item.status === "in-transit" && (
             <Button
@@ -255,12 +256,12 @@ export default function OperatorTransitTracking() {
                 setShowAddCheckpointDialog(true);
               }}
             >
-              Add Checkpoint
+              {UI_MESSAGES.TRANSIT.ADD_NEW_CHECKPOINT}
             </Button>
           )}
           {item.status === "in-transit" && (
             <Button size="sm" onClick={() => handleMarkAtFactory(item.id)}>
-              At Factory
+              {UI_MESSAGES.TITLES.AT_FACTORY}
             </Button>
           )}
           {item.status === "at-factory" && (
@@ -269,7 +270,7 @@ export default function OperatorTransitTracking() {
               className="bg-success hover:bg-success/90"
               onClick={() => handleComplete(item.id, item.containerNumber)}
             >
-              Complete
+              {UI_MESSAGES.TABLE.COMPLETE}
             </Button>
           )}
         </div>
@@ -278,46 +279,46 @@ export default function OperatorTransitTracking() {
   ];
 
   return (
-    <DashboardLayout navItems={operatorNavItems} pageTitle="Transit Tracking">
+    <DashboardLayout navItems={operatorNavItems} pageTitle={UI_MESSAGES.TITLES.TRANSIT_TRACKING}>
       {/* KPI Cards */}
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KPICard
-          title="In Transit"
+          title={UI_MESSAGES.KPI.IN_TRANSIT}
           value={inTransitCount}
           icon={Truck}
           variant="warning"
         />
         <KPICard
-          title="Ready for Dispatch"
+          title={UI_MESSAGES.KPI.PENDING_DISPATCH}
           value={readyCount}
           icon={Clock}
           variant="primary"
         />
         <KPICard
-          title="At Factory"
+          title={UI_MESSAGES.TITLES.AT_FACTORY}
           value={atFactoryCount}
           icon={CheckCircle}
           variant="success"
         />
-        <KPICard title="Completed" value={completedCount} icon={CheckCircle} />
+        <KPICard title={UI_MESSAGES.KPI.DELIVERED} value={completedCount} icon={CheckCircle} />
       </div>
 
       {/* Container List */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Shipment Tracking</CardTitle>
+          <CardTitle>{UI_MESSAGES.TABLE.SHIPMENT_TRACKING}</CardTitle>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-48">
-              <SelectValue placeholder="Filter by status" />
+              <SelectValue placeholder={UI_MESSAGES.TABLE.FILTER_BY_STATUS} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Tracking</SelectItem>
-              <SelectItem value="in-transit">In Transit</SelectItem>
+              <SelectItem value="all">{UI_MESSAGES.TABLE.ALL_TRACKING}</SelectItem>
+              <SelectItem value="in-transit">{UI_MESSAGES.KPI.IN_TRANSIT}</SelectItem>
               <SelectItem value="ready-for-dispatch">
-                Ready for Dispatch
+                {UI_MESSAGES.KPI.PENDING_DISPATCH}
               </SelectItem>
-              <SelectItem value="at-factory">At Factory</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
+              <SelectItem value="at-factory">{UI_MESSAGES.TITLES.AT_FACTORY}</SelectItem>
+              <SelectItem value="completed">{UI_MESSAGES.KPI.DELIVERED}</SelectItem>
             </SelectContent>
           </Select>
         </CardHeader>
@@ -326,8 +327,8 @@ export default function OperatorTransitTracking() {
             data={filteredRequests}
             columns={columns}
             searchable
-            searchPlaceholder="Search containers..."
-            emptyMessage="No shipments found with selected status"
+            searchPlaceholder={UI_MESSAGES.TABLE.SEARCH_CONTAINERS}
+            emptyMessage={UI_MESSAGES.TABLE.NO_SHIPMENTS_FILTERED}
             isLoading={loading}
           />
         </CardContent>
@@ -339,7 +340,7 @@ export default function OperatorTransitTracking() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Navigation className="h-5 w-5" />
-              Transit Checkpoints
+              {UI_MESSAGES.DIALOG.TRANSIT_DETAILS}
             </DialogTitle>
           </DialogHeader>
 
@@ -348,13 +349,13 @@ export default function OperatorTransitTracking() {
               {/* Container Info */}
               <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
                 <div>
-                  <p className="text-sm text-muted-foreground">Container</p>
+                  <p className="text-sm text-muted-foreground">{UI_MESSAGES.TABLE.CONTAINER}</p>
                   <p className="font-mono font-medium text-lg">
                     {selectedRequest.containerNumber || "NEW REQUEST"}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm text-muted-foreground">Status</p>
+                  <p className="text-sm text-muted-foreground">{UI_MESSAGES.TABLE.STATUS}</p>
                   <Badge
                     variant={
                       selectedRequest.status === "at-factory"
@@ -376,17 +377,16 @@ export default function OperatorTransitTracking() {
 
                   // Always ensure there's a "Request Created" event at the start
                   const hasCreationEvent = allEvents.some(cp =>
-                    cp.status === "pending" ||
-                    cp.status === "Request Created" ||
+                    cp.status === UI_MESSAGES.TRANSIT.REQUEST_CREATED ||
                     cp.remarks?.toLowerCase().includes("submitted")
                   );
 
                   if (!hasCreationEvent) {
                     allEvents.push({
-                      status: "Request Created",
-                      location: "Customer Portal",
+                      status: UI_MESSAGES.TRANSIT.REQUEST_CREATED,
+                      location: UI_MESSAGES.TRANSIT.CUSTOMER_PORTAL,
                       timestamp: selectedRequest.createdAt || new Date().toISOString(),
-                      remarks: `Initial ${selectedRequest.type} request submitted`,
+                      remarks: UI_MESSAGES.TRANSIT.INITIAL_REQUEST_SUBMITTED(selectedRequest.type),
                     });
                   }
 
@@ -409,7 +409,7 @@ export default function OperatorTransitTracking() {
                               <div className="flex items-start justify-between mb-2">
                                 <div>
                                   <h4 className="font-semibold capitalize">
-                                    {(checkpoint.status || "Update").replace(/-/g, " ")}
+                                    {(checkpoint.status || UI_MESSAGES.TITLES.UPDATE).replace(/-/g, " ")}
                                   </h4>
                                   <div className="flex flex-col gap-1 mt-1">
                                     <p className="text-sm font-medium">
@@ -448,14 +448,14 @@ export default function OperatorTransitTracking() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add New Checkpoint</DialogTitle>
+            <DialogTitle>{UI_MESSAGES.TRANSIT.ADD_NEW_CHECKPOINT}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="location">Location Name</Label>
+              <Label htmlFor="location">{UI_MESSAGES.TRANSIT.LOCATION_NAME}</Label>
               <Input
                 id="location"
-                placeholder="e.g. Highway Toll Plaza"
+                placeholder={UI_MESSAGES.TRANSIT.LOCATION_PLACEHOLDER}
                 value={newCheckpoint.location}
                 onChange={(e) =>
                   setNewCheckpoint((prev) => ({
@@ -466,10 +466,10 @@ export default function OperatorTransitTracking() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="remarks">Remarks (Optional)</Label>
+              <Label htmlFor="remarks">{UI_MESSAGES.TRANSIT.OBSERVATIONS_PLACEHOLDER}</Label>
               <Input
                 id="remarks"
-                placeholder="Any observations..."
+                placeholder={UI_MESSAGES.TRANSIT.OBSERVATIONS_PLACEHOLDER}
                 value={newCheckpoint.remarks}
                 onChange={(e) =>
                   setNewCheckpoint((prev) => ({
@@ -485,13 +485,13 @@ export default function OperatorTransitTracking() {
               variant="outline"
               onClick={() => setShowAddCheckpointDialog(false)}
             >
-              Cancel
+              {UI_MESSAGES.COMMON.CANCEL}
             </Button>
             <Button
               onClick={handleAddCheckpoint}
               disabled={!newCheckpoint.location}
             >
-              Add Checkpoint
+              {UI_MESSAGES.TRANSIT.ADD_NEW_CHECKPOINT}
             </Button>
           </DialogFooter>
         </DialogContent>

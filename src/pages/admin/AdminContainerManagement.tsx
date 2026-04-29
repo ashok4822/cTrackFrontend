@@ -25,8 +25,10 @@ import {
     createContainer,
     blacklistContainer,
     unblacklistContainer,
+    clearContainerError,
 } from "@/store/slices/containerSlice";
 import { fetchShippingLines } from "@/store/slices/shippingLineSlice";
+import { UI_MESSAGES } from "@/constants/messages";
 
 export default function AdminContainerManagement() {
     const navigate = useNavigate();
@@ -46,17 +48,18 @@ export default function AdminContainerManagement() {
     useEffect(() => {
         if (error) {
             toast.error(error);
+            dispatch(clearContainerError());
         }
-    }, [error]);
+    }, [error, dispatch]);
 
     const handleAddContainer = async (data: Partial<Container>) => {
         try {
             await dispatch(createContainer(data)).unwrap();
             setAddDialogOpen(false);
-            toast.success("Container created successfully");
+            toast.success(UI_MESSAGES.CONTAINER.ADD_SUCCESS);
         } catch (err: unknown) {
             const errorMessage =
-                typeof err === "string" ? err : "Failed to create container";
+                typeof err === "string" ? err : UI_MESSAGES.CONTAINER.ADD_FAILED;
             toast.error(errorMessage);
         }
     };
@@ -71,16 +74,16 @@ export default function AdminContainerManagement() {
         try {
             if (containerToToggle.blacklisted) {
                 await dispatch(unblacklistContainer(containerToToggle.id)).unwrap();
-                toast.success(`Container ${containerToToggle.containerNumber} has been unblacklisted`);
+                toast.success(UI_MESSAGES.CONTAINER.BLACKLIST_TOGGLE_SUCCESS(containerToToggle.containerNumber, false));
             } else {
                 await dispatch(blacklistContainer(containerToToggle.id)).unwrap();
-                toast.success(`Container ${containerToToggle.containerNumber} has been blacklisted`);
+                toast.success(UI_MESSAGES.CONTAINER.BLACKLIST_TOGGLE_SUCCESS(containerToToggle.containerNumber, true));
             }
             setConfirmBlacklistOpen(false);
             setContainerToToggle(null);
         } catch (err: unknown) {
             const errorMessage =
-                typeof err === "string" ? err : "Failed to update blacklist status";
+                typeof err === "string" ? err : UI_MESSAGES.CONTAINER.BLACKLIST_TOGGLE_FAILED;
             toast.error(errorMessage);
         }
     };
@@ -88,7 +91,7 @@ export default function AdminContainerManagement() {
     const columns: Column<Container>[] = [
         {
             key: "containerNumber",
-            header: "Container No.",
+            header: UI_MESSAGES.TABLE.CONTAINER_NO,
             sortable: true,
             render: (item) => (
                 <span className="font-medium text-foreground">
@@ -98,50 +101,50 @@ export default function AdminContainerManagement() {
         },
         {
             key: "size",
-            header: "Size",
+            header: UI_MESSAGES.TABLE.SIZE,
             sortable: true,
         },
         {
             key: "type",
-            header: "Type",
+            header: UI_MESSAGES.TABLE.TYPE,
             sortable: true,
             render: (item) => <span className="capitalize">{item.type}</span>,
         },
         {
             key: "empty",
-            header: "Load",
+            header: UI_MESSAGES.TABLE.LOAD,
             sortable: true,
             render: (item) => (
                 <Badge variant="secondary">
-                    {item.empty ? "Empty" : "Loaded"}
+                    {item.empty ? UI_MESSAGES.TABLE.EMPTY : UI_MESSAGES.TABLE.LOADED}
                 </Badge>
             ),
         },
         {
             key: "status",
-            header: "Status",
+            header: UI_MESSAGES.TABLE.STATUS,
             sortable: true,
             render: (item) => <StatusBadge status={item.status} />,
         },
         {
             key: "shippingLine",
-            header: "Shipping Line",
+            header: UI_MESSAGES.TABLE.SHIPPING_LINE,
             sortable: true,
         },
         {
             key: "yardLocation",
-            header: "Location",
-            render: (item) => (item.yardLocation ? item.yardLocation.block : "-"),
+            header: UI_MESSAGES.TABLE.LOCATION,
+            render: (item) => (item.yardLocation ? item.yardLocation.block : UI_MESSAGES.COMMON.NA),
         },
         {
             key: "dwellTime",
-            header: "Dwell (days)",
+            header: UI_MESSAGES.TABLE.DWELL_DAYS,
             sortable: true,
-            render: (item) => item.dwellTime ?? "-",
+            render: (item) => item.dwellTime ?? UI_MESSAGES.COMMON.NA,
         },
         {
             key: "actions",
-            header: "Actions",
+            header: UI_MESSAGES.TABLE.ACTIONS,
             render: (item) => (
                 <div
                     className="flex items-center gap-2"
@@ -155,7 +158,7 @@ export default function AdminContainerManagement() {
                         }
                     >
                         <Eye className="h-4 w-4 mr-1" />
-                        View
+                        {UI_MESSAGES.TABLE.VIEW}
                     </Button>
                     <Button
                         variant="ghost"
@@ -167,7 +170,7 @@ export default function AdminContainerManagement() {
                         }}
                     >
                         <Ban className="h-4 w-4 mr-1" />
-                        {item.blacklisted ? "Unblacklist" : "Blacklist"}
+                        {item.blacklisted ? UI_MESSAGES.TABLE.UNBLACKLIST : UI_MESSAGES.TABLE.BLACKLIST}
                     </Button>
                 </div>
             ),
@@ -177,11 +180,11 @@ export default function AdminContainerManagement() {
     return (
         <DashboardLayout
             navItems={adminNavItems}
-            pageTitle="Container Management"
+            pageTitle={UI_MESSAGES.TITLES.CONTAINER_MANAGEMENT}
             pageActions={
                 <Button className="gap-2" onClick={() => setAddDialogOpen(true)}>
                     <Plus className="h-4 w-4" />
-                    Add Container
+                    {UI_MESSAGES.TITLES.ADD_CONTAINER}
                 </Button>
             }
         >
@@ -189,7 +192,7 @@ export default function AdminContainerManagement() {
                 data={containers}
                 isLoading={isLoading}
                 columns={columns}
-                searchPlaceholder="Search containers..."
+                searchPlaceholder={UI_MESSAGES.TABLE.SEARCH_CONTAINERS}
                 onRowClick={(item) => navigate(`/admin/containers/${item.id}`)}
             />
 
@@ -203,25 +206,22 @@ export default function AdminContainerManagement() {
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle>
-                            {containerToToggle?.blacklisted ? "Unblacklist Container" : "Blacklist Container"}
+                            {containerToToggle?.blacklisted ? UI_MESSAGES.TABLE.UNBLACKLIST : UI_MESSAGES.TABLE.BLACKLIST}
                         </DialogTitle>
                         <DialogDescription>
-                            Are you sure you want to {containerToToggle?.blacklisted ? "unblacklist" : "blacklist"}{" "}
-                            <span className="font-semibold text-foreground">{containerToToggle?.containerNumber}</span>?{" "}
-                            {containerToToggle?.blacklisted
-                                ? "This will allow the container to be used in operations again."
-                                : "This will restrict the container from certain operations."}
+                            {UI_MESSAGES.CONTAINER.BLACKLIST_CONFIRM(containerToToggle?.containerNumber || "", !containerToToggle?.blacklisted)}{" "}
+                            {UI_MESSAGES.CONTAINER.BLACKLIST_DESC(!!containerToToggle?.blacklisted)}
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter className="gap-2 sm:gap-0">
                         <Button variant="outline" onClick={() => setConfirmBlacklistOpen(false)}>
-                            Cancel
+                            {UI_MESSAGES.COMMON.CANCEL}
                         </Button>
                         <Button
                             variant={containerToToggle?.blacklisted ? "default" : "destructive"}
                             onClick={confirmBlacklistToggle}
                         >
-                            {containerToToggle?.blacklisted ? "Confirm Unblacklist" : "Confirm Blacklist"}
+                            {containerToToggle?.blacklisted ? UI_MESSAGES.TABLE.CONFIRM_UNBLACKLIST : UI_MESSAGES.TABLE.CONFIRM_BLACKLIST}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

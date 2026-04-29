@@ -3,6 +3,7 @@ import { gateOperationService } from "@/services/gateOperationService";
 import type { GateOperationFilters, CreateGateOperationData } from "@/services/gateOperationService";
 import type { GateOperation } from "@/types";
 import { AxiosError } from "axios";
+import { UI_MESSAGES } from "@/constants/messages";
 
 interface GateOperationState {
     operations: GateOperation[];
@@ -23,7 +24,7 @@ export const fetchGateOperations = createAsyncThunk(
             return await gateOperationService.getGateOperations(filters);
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
-            return rejectWithValue(axiosError.response?.data?.message || "Failed to fetch gate operations");
+            return rejectWithValue(axiosError.response?.data?.message || UI_MESSAGES.GATE.FETCH_FAILED);
         }
     }
 );
@@ -37,7 +38,7 @@ export const createGateOperation = createAsyncThunk(
             return result;
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
-            return rejectWithValue(axiosError.response?.data?.message || "Failed to record gate operation");
+            return rejectWithValue(axiosError.response?.data?.message || UI_MESSAGES.GATE.CREATE_FAILED);
         }
     }
 );
