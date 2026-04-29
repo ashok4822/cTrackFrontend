@@ -90,16 +90,6 @@ const AdminActivitiesCharges = () => {
     description: "",
     chargePerTon: 0,
   });
-  const [isAddRateOpen, setIsAddRateOpen] = useState(false);
-  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(
-    null,
-  );
-  const [newCharge, setNewCharge] = useState<Partial<Charge>>({
-    containerSize: "20ft",
-    containerType: "all",
-    rate: 0,
-    currency: "INR",
-  });
   const [isActiveCharge, setIsActiveCharge] = useState(true);
 
   useEffect(() => {
@@ -201,34 +191,7 @@ const AdminActivitiesCharges = () => {
     }
   };
 
-  const handleAddRate = async () => {
-    if (!selectedActivity?.id || !newCharge.rate) {
-      toast.error(UI_MESSAGES.PDA.INVALID_AMOUNT);
-      return;
-    }
 
-    try {
-      setIsCreating(true);
-      await billingService.addCharge({
-        ...newCharge,
-        activityId: selectedActivity.id,
-      });
-      toast.success(UI_MESSAGES.CHARGE.ADD_SUCCESS);
-      setIsAddRateOpen(false);
-      setNewCharge({
-        containerSize: "20ft",
-        containerType: "all",
-        rate: 0,
-        currency: "INR",
-      });
-      fetchData();
-    } catch (error: unknown) {
-      const message = getErrorMessage(error, UI_MESSAGES.CHARGE.ADD_FAILED);
-      toast.error(message);
-    } finally {
-      setIsCreating(false);
-    }
-  };
 
   const handleCreateCategory = async () => {
     if (!newCategory.name) {
@@ -1234,103 +1197,7 @@ const AdminActivitiesCharges = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Add Rate Dialog */}
-        <Dialog open={isAddRateOpen} onOpenChange={setIsAddRateOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{UI_MESSAGES.TITLES.ADD_CHARGE_RATE}</DialogTitle>
-              <DialogDescription>
-                Add a new rate for the selected activity based on container size
-                and type.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div>
-                <Label className="text-muted-foreground">
-                  {UI_MESSAGES.TABLE.ACTIVITY}
-                </Label>
-                <p className="font-medium">
-                  {selectedActivity?.name} ({selectedActivity?.code})
-                </p>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="size">{UI_MESSAGES.TABLE.SIZE}</Label>
-                  <Select
-                    value={newCharge.containerSize}
-                    onValueChange={(value) =>
-                      setNewCharge({ ...newCharge, containerSize: value })
-                    }
-                  >
-                    <SelectTrigger id="size">
-                      <SelectValue
-                        placeholder={UI_MESSAGES.STUFFING.SIZE_PLACEHOLDER}
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="20ft">20ft</SelectItem>
-                      <SelectItem value="40ft">40ft</SelectItem>
-                      <SelectItem value="all">
-                        {UI_MESSAGES.TABLE.ALL_SIZES}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="type">{UI_MESSAGES.TABLE.TYPE}</Label>
-                  <Select
-                    value={newCharge.containerType}
-                    onValueChange={(value) =>
-                      setNewCharge({ ...newCharge, containerType: value })
-                    }
-                  >
-                    <SelectTrigger id="type">
-                      <SelectValue
-                        placeholder={UI_MESSAGES.STUFFING.TYPE_PLACEHOLDER}
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="standard">Standard</SelectItem>
-                      <SelectItem value="reefer">Reefer</SelectItem>
-                      <SelectItem value="tank">Tank</SelectItem>
-                      <SelectItem value="all">
-                        {UI_MESSAGES.TABLE.ALL_TYPES}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="rate">Rate (INR)</Label>
-                <Input
-                  id="rate"
-                  type="number"
-                  value={newCharge.rate}
-                  onChange={(e) =>
-                    setNewCharge({
-                      ...newCharge,
-                      rate: parseFloat(e.target.value),
-                    })
-                  }
-                  placeholder={UI_MESSAGES.COMMON.PLACEHOLDERS.RATE}
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsAddRateOpen(false)}>
-                {UI_MESSAGES.COMMON.CANCEL}
-              </Button>
-              <Button onClick={handleAddRate} disabled={isCreating}>
-                {isCreating && (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                )}
-                {UI_MESSAGES.TABLE.ADD_RATE}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
 
         {/* Edit Activity Dialog */}
         <Dialog open={isEditActivityOpen} onOpenChange={setIsEditActivityOpen}>
