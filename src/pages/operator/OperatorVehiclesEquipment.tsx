@@ -37,6 +37,7 @@ import { toast } from "sonner";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchVehicles } from "@/store/slices/vehicleSlice";
 import { fetchEquipment, updateEquipment } from "@/store/slices/equipmentSlice";
+import { UI_MESSAGES } from "@/constants/messages";
 
 export default function OperatorEquipmentVehicles() {
   const dispatch = useAppDispatch();
@@ -93,14 +94,14 @@ export default function OperatorEquipmentVehicles() {
 
   const handleAssignTask = () => {
     if (!selectedEquipment || !taskForm.taskType || !taskForm.containerId) {
-      toast.error("Missing Information", {
-        description: "Please fill in all required fields.",
+      toast.error(UI_MESSAGES.PDA.MISSING_INFO, {
+        description: UI_MESSAGES.PDA.FILL_REQUIRED_FIELDS,
       });
       return;
     }
 
-    toast.success("Task Assigned", {
-      description: `Task assigned to ${selectedEquipment.name} for container ${taskForm.containerId}.`,
+    toast.success(UI_MESSAGES.PDA.TASK_ASSIGNED, {
+      description: UI_MESSAGES.PDA.TASK_ASSIGNED_DESC(selectedEquipment.name, taskForm.containerId),
     });
     setAssignTaskOpen(false);
     setSelectedEquipment(null);
@@ -116,8 +117,8 @@ export default function OperatorEquipmentVehicles() {
 
   const handleUpdateStatus = async () => {
     if (!selectedItemForStatus || !statusForm.status) {
-      toast.error("Missing Information", {
-        description: "Please select a status.",
+      toast.error(UI_MESSAGES.PDA.MISSING_INFO, {
+        description: UI_MESSAGES.PDA.SELECT_STATUS,
       });
       return;
     }
@@ -130,8 +131,8 @@ export default function OperatorEquipmentVehicles() {
         }),
       ).unwrap();
 
-      toast.success("Status Updated", {
-        description: `Status updated successfully to ${statusForm.status}.`,
+      toast.success(UI_MESSAGES.PDA.STATUS_UPDATED, {
+        description: UI_MESSAGES.PDA.STATUS_UPDATED_DESC(statusForm.status),
       });
       setUpdateStatusOpen(false);
       setSelectedItemForStatus(null);
@@ -145,8 +146,8 @@ export default function OperatorEquipmentVehicles() {
           ? err
           : err instanceof Error
             ? err.message
-            : "Failed to update status";
-      toast.error("Update Failed", {
+            : UI_MESSAGES.EQUIPMENT.UPDATE_STATUS_FAILED;
+      toast.error(UI_MESSAGES.TITLES.ERROR, {
         description: message,
       });
     }
@@ -169,8 +170,8 @@ export default function OperatorEquipmentVehicles() {
       !newVehicleForm.driverName ||
       !newVehicleForm.driverPhone
     ) {
-      toast.error("Missing Information", {
-        description: "Please fill in all required fields.",
+      toast.error(UI_MESSAGES.PDA.MISSING_INFO, {
+        description: UI_MESSAGES.PDA.FILL_REQUIRED_FIELDS,
       });
       return;
     }
@@ -185,14 +186,14 @@ export default function OperatorEquipmentVehicles() {
           driverPhone: newVehicleForm.driverPhone,
           vehicleType: newVehicleForm.type,
           purpose: "port",
-          remarks: "Vehicle entry",
+          remarks: UI_MESSAGES.DIALOG.VEHICLE_GATE_IN,
         }),
       ).unwrap();
 
       await dispatch(fetchVehicles()).unwrap();
 
-      toast.success("Vehicle Gate-In Successful", {
-        description: `${newVehicleForm.vehicleNumber} has entered the terminal.`,
+      toast.success(UI_MESSAGES.PDA.GATE_IN_SUCCESS, {
+        description: UI_MESSAGES.PDA.GATE_IN_SUCCESS_DESC(newVehicleForm.vehicleNumber),
       });
       setNewVehicleGateInOpen(false);
       setNewVehicleForm({
@@ -208,8 +209,8 @@ export default function OperatorEquipmentVehicles() {
           ? err
           : err instanceof Error
             ? err.message
-            : "Failed to record vehicle gate-in";
-      toast.error("Gate-In Failed", {
+            : UI_MESSAGES.GATE.RECORD_GATE_IN_FAILED;
+      toast.error(UI_MESSAGES.GATE.GATE_IN_FAILED, {
         description: message,
       });
     } finally {
@@ -222,8 +223,8 @@ export default function OperatorEquipmentVehicles() {
       setIsProcessing(true);
       await dispatch(createGateOperation(data)).unwrap();
       await dispatch(fetchVehicles()).unwrap(); // Refresh vehicle list to show "out-of-yard"
-      toast.success("Vehicle Gated Out", {
-        description: `${data.vehicleNumber} has left the terminal.`,
+      toast.success(UI_MESSAGES.PDA.GATE_OUT_SUCCESS, {
+        description: UI_MESSAGES.PDA.GATE_OUT_SUCCESS_DESC(data.vehicleNumber),
       });
       setGateOutOpen(false);
     } catch (err: unknown) {
@@ -232,8 +233,8 @@ export default function OperatorEquipmentVehicles() {
           ? err
           : err instanceof Error
             ? err.message
-            : "Failed to record vehicle gate-out";
-      toast.error("Gate-Out Failed", {
+            : UI_MESSAGES.GATE.RECORD_GATE_OUT_FAILED;
+      toast.error(UI_MESSAGES.GATE.GATE_OUT_FAILED, {
         description: message,
       });
     } finally {
@@ -242,17 +243,17 @@ export default function OperatorEquipmentVehicles() {
   };
 
   const vehicleColumns: Column<Vehicle>[] = [
-    { key: "vehicleNumber", header: "Vehicle No.", sortable: true },
+    { key: "vehicleNumber", header: UI_MESSAGES.TABLE.VEHICLE_NO, sortable: true },
     {
       key: "type",
-      header: "Type",
+      header: UI_MESSAGES.TABLE.TYPE,
       render: (item) => <span className="capitalize">{item.type}</span>,
     },
-    { key: "driverName", header: "Driver" },
-    { key: "driverPhone", header: "Phone" },
+    { key: "driverName", header: UI_MESSAGES.TABLE.DRIVER },
+    { key: "driverPhone", header: UI_MESSAGES.TABLE.PHONE },
     {
       key: "status",
-      header: "Status",
+      header: UI_MESSAGES.TABLE.STATUS,
       render: (item) => (
         <StatusBadge
           status={item.status === "in-yard" ? "gate-in" : "gate-out"}
@@ -261,12 +262,12 @@ export default function OperatorEquipmentVehicles() {
     },
     {
       key: "gpsDeviceId",
-      header: "GPS Device",
-      render: (item) => item.gpsDeviceId || "-",
+      header: UI_MESSAGES.TABLE.GPS_DEVICE,
+      render: (item) => item.gpsDeviceId || UI_MESSAGES.COMMON.NA,
     },
     {
       key: "actions",
-      header: "Actions",
+      header: UI_MESSAGES.TABLE.ACTIONS,
       render: (item) => (
         <div className="flex gap-2">
           {item.status === "in-yard" && (
@@ -276,7 +277,7 @@ export default function OperatorEquipmentVehicles() {
               onClick={() => openGateOut(item)}
             >
               <LogOut className="h-3 w-3 mr-1" />
-              Gate Out
+              {UI_MESSAGES.TABLE.GATE_OUT}
             </Button>
           )}
           <VehicleDetailsDialog vehicle={item} />
@@ -286,31 +287,31 @@ export default function OperatorEquipmentVehicles() {
   ];
 
   const equipmentColumns: Column<Equipment>[] = [
-    { key: "name", header: "Equipment", sortable: true },
+    { key: "name", header: UI_MESSAGES.TABLE.EQUIPMENT, sortable: true },
     {
       key: "type",
-      header: "Type",
+      header: UI_MESSAGES.TABLE.TYPE,
       render: (item) => (
         <span className="capitalize">{item.type.replace("-", " ")}</span>
       ),
     },
-    { key: "operator", header: "Operator" },
+    { key: "operator", header: UI_MESSAGES.TABLE.OPERATOR },
     {
       key: "status",
-      header: "Status",
+      header: UI_MESSAGES.TABLE.STATUS,
       render: (item) => <StatusBadge status={item.status} />,
     },
     {
       key: "lastMaintenance",
-      header: "Last Maintenance",
+      header: UI_MESSAGES.TABLE.LAST_MAINTENANCE,
       render: (item) =>
         item.lastMaintenance
           ? new Date(item.lastMaintenance).toLocaleDateString()
-          : "N/A",
+          : UI_MESSAGES.COMMON.NA,
     },
     {
       key: "actions",
-      header: "Actions",
+      header: UI_MESSAGES.TABLE.ACTIONS,
       render: (item) => (
         <div className="flex gap-2">
           <Button
@@ -319,7 +320,7 @@ export default function OperatorEquipmentVehicles() {
             onClick={() => openUpdateStatus(item)}
           >
             <RefreshCw className="h-3 w-3 mr-1" />
-            Update Status
+            {UI_MESSAGES.TABLE.UPDATE_STATUS}
           </Button>
           <EquipmentDetailsDialog equipment={item} />
         </div>
@@ -330,24 +331,24 @@ export default function OperatorEquipmentVehicles() {
   return (
     <DashboardLayout
       navItems={operatorNavItems}
-      pageTitle="Equipment & Vehicles"
+      pageTitle={UI_MESSAGES.TITLES.VEHICLES_EQUIPMENT}
     >
       {/* KPI Cards */}
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <KPICard
-          title="Vehicles in Yard"
+          title={UI_MESSAGES.KPI.VEHICLES_IN_YARD}
           value={vehiclesInTerminal.length}
           icon={Truck}
           variant="success"
         />
         <KPICard
-          title="Total Equipment"
+          title={UI_MESSAGES.KPI.TOTAL_EQUIPMENT}
           value={equipment.length}
           icon={Forklift}
           variant="primary"
         />
         <KPICard
-          title="Operational Equipment"
+          title={UI_MESSAGES.KPI.OPERATIONAL_EQUIPMENT}
           value={activeEquipment.length}
           icon={Forklift}
           variant="default"
@@ -360,10 +361,10 @@ export default function OperatorEquipmentVehicles() {
           <Tabs defaultValue="vehicles">
             <TabsList className="mb-4">
               <TabsTrigger value="vehicles">
-                Vehicles ({vehicles.length})
+                {UI_MESSAGES.TABLE.VEHICLES(vehicles.length)}
               </TabsTrigger>
               <TabsTrigger value="equipment">
-                Equipment ({equipment.length})
+                {UI_MESSAGES.TABLE.EQUIPMENT_TAB(equipment.length)}
               </TabsTrigger>
             </TabsList>
 
@@ -371,14 +372,14 @@ export default function OperatorEquipmentVehicles() {
               <div className="flex justify-end mb-4">
                 <Button onClick={() => setNewVehicleGateInOpen(true)}>
                   <LogIn className="h-4 w-4 mr-2" />
-                  Vehicle Gate-In
+                  {UI_MESSAGES.DIALOG.VEHICLE_GATE_IN}
                 </Button>
               </div>
               <DataTable
                 data={vehicles}
                 columns={vehicleColumns}
                 isLoading={isVehiclesLoading}
-                searchPlaceholder="Search vehicles..."
+                searchPlaceholder={UI_MESSAGES.TABLE.SEARCH_VEHICLES}
               />
             </TabsContent>
             <TabsContent value="equipment">
@@ -386,7 +387,7 @@ export default function OperatorEquipmentVehicles() {
                 data={equipment}
                 columns={equipmentColumns}
                 isLoading={isEquipmentLoading}
-                searchPlaceholder="Search equipment..."
+                searchPlaceholder={UI_MESSAGES.TABLE.SEARCH_EQUIPMENT}
               />
             </TabsContent>
           </Tabs>
@@ -397,7 +398,7 @@ export default function OperatorEquipmentVehicles() {
       <Dialog open={assignTaskOpen} onOpenChange={setAssignTaskOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Assign Task to Equipment</DialogTitle>
+            <DialogTitle>{UI_MESSAGES.DIALOG.ASSIGN_TASK}</DialogTitle>
             <DialogDescription>
               {selectedEquipment?.name} -{" "}
               {selectedEquipment?.type.replace("-", " ")}
@@ -405,7 +406,7 @@ export default function OperatorEquipmentVehicles() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Task Type *</Label>
+              <Label>{UI_MESSAGES.STUFFING.TASK_TYPE}</Label>
               <Select
                 value={taskForm.taskType}
                 onValueChange={(v) =>
@@ -413,21 +414,21 @@ export default function OperatorEquipmentVehicles() {
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select task type" />
+                  <SelectValue placeholder={UI_MESSAGES.STUFFING.SELECT_TASK_TYPE} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="move">Shift Container</SelectItem>
-                  <SelectItem value="stack">Stack Container</SelectItem>
-                  <SelectItem value="load">Load to Truck</SelectItem>
-                  <SelectItem value="unload">Unload from Truck</SelectItem>
+                  <SelectItem value="move">{UI_MESSAGES.STUFFING.SHIFT_CONTAINER}</SelectItem>
+                  <SelectItem value="stack">{UI_MESSAGES.STUFFING.STACK_CONTAINER}</SelectItem>
+                  <SelectItem value="load">{UI_MESSAGES.STUFFING.LOAD_TO_TRUCK}</SelectItem>
+                  <SelectItem value="unload">{UI_MESSAGES.STUFFING.UNLOAD_FROM_TRUCK}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label>Container ID *</Label>
+              <Label>{UI_MESSAGES.STUFFING.CONTAINER_ID_REQ}</Label>
               <Input
-                placeholder="e.g., MSKU1234567"
+                placeholder={UI_MESSAGES.COMMON.PLACEHOLDERS.CONTAINER_NO_EG}
                 value={taskForm.containerId}
                 onChange={(e) =>
                   setTaskForm((prev) => ({
@@ -440,9 +441,9 @@ export default function OperatorEquipmentVehicles() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>From Location</Label>
+                <Label>{UI_MESSAGES.STUFFING.FROM_LOCATION}</Label>
                 <Input
-                  placeholder="e.g., A"
+                  placeholder={UI_MESSAGES.TABLE.EG_A}
                   value={taskForm.fromLocation}
                   onChange={(e) =>
                     setTaskForm((prev) => ({
@@ -453,9 +454,9 @@ export default function OperatorEquipmentVehicles() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>To Location</Label>
+                <Label>{UI_MESSAGES.STUFFING.TO_LOCATION}</Label>
                 <Input
-                  placeholder="e.g., B"
+                  placeholder={UI_MESSAGES.TABLE.EG_B}
                   value={taskForm.toLocation}
                   onChange={(e) =>
                     setTaskForm((prev) => ({
@@ -468,7 +469,7 @@ export default function OperatorEquipmentVehicles() {
             </div>
 
             <div className="space-y-2">
-              <Label>Priority</Label>
+              <Label>{UI_MESSAGES.STUFFING.PRIORITY}</Label>
               <Select
                 value={taskForm.priority}
                 onValueChange={(v) =>
@@ -479,18 +480,18 @@ export default function OperatorEquipmentVehicles() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="normal">Normal</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                  <SelectItem value="urgent">Urgent</SelectItem>
+                  <SelectItem value="low">{UI_MESSAGES.STUFFING.LOW}</SelectItem>
+                  <SelectItem value="normal">{UI_MESSAGES.STUFFING.NORMAL}</SelectItem>
+                  <SelectItem value="high">{UI_MESSAGES.STUFFING.HIGH}</SelectItem>
+                  <SelectItem value="urgent">{UI_MESSAGES.STUFFING.URGENT}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label>Notes</Label>
+              <Label>{UI_MESSAGES.STUFFING.NOTES}</Label>
               <Textarea
-                placeholder="Additional instructions..."
+                placeholder={UI_MESSAGES.STUFFING.NOTES_PLACEHOLDER}
                 value={taskForm.notes}
                 onChange={(e) =>
                   setTaskForm((prev) => ({ ...prev, notes: e.target.value }))
@@ -500,9 +501,9 @@ export default function OperatorEquipmentVehicles() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setAssignTaskOpen(false)}>
-              Cancel
+              {UI_MESSAGES.COMMON.CANCEL}
             </Button>
-            <Button onClick={handleAssignTask}>Assign Task</Button>
+            <Button onClick={handleAssignTask}>{UI_MESSAGES.DIALOG.ASSIGN_TASK}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -511,9 +512,9 @@ export default function OperatorEquipmentVehicles() {
       <Dialog open={updateStatusOpen} onOpenChange={setUpdateStatusOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Update Equipment Status</DialogTitle>
+            <DialogTitle>{UI_MESSAGES.DIALOG.UPDATE_EQUIPMENT_STATUS}</DialogTitle>
             <DialogDescription>
-              {selectedItemForStatus?.name} - Current:{" "}
+              {selectedItemForStatus?.name} - {UI_MESSAGES.TABLE.STATUS}:{" "}
               <span className="capitalize">
                 {selectedItemForStatus?.status}
               </span>
@@ -521,7 +522,7 @@ export default function OperatorEquipmentVehicles() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>New Status *</Label>
+              <Label>{UI_MESSAGES.TABLE.NEW_STATUS}</Label>
               <Select
                 value={statusForm.status}
                 onValueChange={(v) =>
@@ -529,21 +530,21 @@ export default function OperatorEquipmentVehicles() {
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
+                  <SelectValue placeholder={UI_MESSAGES.TABLE.ALL_STATUSES} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="operational">Operational</SelectItem>
-                  <SelectItem value="maintenance">Under Maintenance</SelectItem>
-                  <SelectItem value="idle">Idle</SelectItem>
-                  <SelectItem value="breakdown">Breakdown</SelectItem>
+                  <SelectItem value="operational">{UI_MESSAGES.TABLE.OPERATIONAL}</SelectItem>
+                  <SelectItem value="maintenance">{UI_MESSAGES.TABLE.MAINTENANCE}</SelectItem>
+                  <SelectItem value="idle">{UI_MESSAGES.TABLE.IDLE}</SelectItem>
+                  <SelectItem value="breakdown">{UI_MESSAGES.TABLE.BREAKDOWN}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label>Notes</Label>
+              <Label>{UI_MESSAGES.STUFFING.NOTES}</Label>
               <Textarea
-                placeholder="Reason for status change..."
+                placeholder={UI_MESSAGES.DIALOG.REASON_STATUS_CHANGE}
                 value={statusForm.notes}
                 onChange={(e) =>
                   setStatusForm((prev) => ({ ...prev, notes: e.target.value }))
@@ -556,9 +557,9 @@ export default function OperatorEquipmentVehicles() {
               variant="outline"
               onClick={() => setUpdateStatusOpen(false)}
             >
-              Cancel
+              {UI_MESSAGES.COMMON.CANCEL}
             </Button>
-            <Button onClick={handleUpdateStatus}>Update Status</Button>
+            <Button onClick={handleUpdateStatus}>{UI_MESSAGES.TABLE.UPDATE_STATUS}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -572,18 +573,18 @@ export default function OperatorEquipmentVehicles() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <LogIn className="h-5 w-5 text-success" />
-              Vehicle Gate-In
+              {UI_MESSAGES.DIALOG.VEHICLE_GATE_IN}
             </DialogTitle>
             <DialogDescription>
-              Enter vehicle and driver details to process gate-in.
+              {UI_MESSAGES.DIALOG.VEHICLE_GATE_IN_DESC}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="new-vehicle-number">Vehicle Number *</Label>
+              <Label htmlFor="new-vehicle-number">{UI_MESSAGES.TABLE.VEHICLE_NUMBER_REQ}</Label>
               <Input
                 id="new-vehicle-number"
-                placeholder="e.g., TN-01-AB-1234"
+                placeholder={UI_MESSAGES.COMMON.PLACEHOLDERS.VEHICLE_NO_EG}
                 value={newVehicleForm.vehicleNumber}
                 onChange={(e) =>
                   setNewVehicleForm((prev) => ({
@@ -594,10 +595,10 @@ export default function OperatorEquipmentVehicles() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="new-driver-name">Driver Name *</Label>
+              <Label htmlFor="new-driver-name">{UI_MESSAGES.TABLE.DRIVER_NAME_REQ}</Label>
               <Input
                 id="new-driver-name"
-                placeholder="Enter driver name"
+                placeholder={UI_MESSAGES.COMMON.PLACEHOLDERS.DRIVER_NAME}
                 value={newVehicleForm.driverName}
                 onChange={(e) =>
                   setNewVehicleForm((prev) => ({
@@ -608,10 +609,10 @@ export default function OperatorEquipmentVehicles() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="new-driver-phone">Driver Mobile Number *</Label>
+              <Label htmlFor="new-driver-phone">{UI_MESSAGES.TABLE.DRIVER_PHONE_REQ}</Label>
               <Input
                 id="new-driver-phone"
-                placeholder="e.g., +91 98765 43210"
+                placeholder={UI_MESSAGES.COMMON.PLACEHOLDERS.PHONE_EG}
                 value={newVehicleForm.driverPhone}
                 onChange={(e) =>
                   setNewVehicleForm((prev) => ({
@@ -622,7 +623,7 @@ export default function OperatorEquipmentVehicles() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="new-vehicle-type">Vehicle Type *</Label>
+              <Label htmlFor="new-vehicle-type">{UI_MESSAGES.TABLE.VEHICLE_TYPE_REQ}</Label>
               <Select
                 value={newVehicleForm.type}
                 onValueChange={(v) =>
@@ -633,20 +634,20 @@ export default function OperatorEquipmentVehicles() {
                 }
               >
                 <SelectTrigger id="new-vehicle-type">
-                  <SelectValue placeholder="Select vehicle type" />
+                  <SelectValue placeholder={UI_MESSAGES.VEHICLE.SELECT_VEHICLE_TYPE} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="truck">Truck</SelectItem>
-                  <SelectItem value="trailer">Trailer</SelectItem>
-                  <SelectItem value="chassis">Chassis</SelectItem>
+                  <SelectItem value="truck">{UI_MESSAGES.TABLE.TRUCK}</SelectItem>
+                  <SelectItem value="trailer">{UI_MESSAGES.TABLE.TRAILER}</SelectItem>
+                  <SelectItem value="chassis">{UI_MESSAGES.TABLE.CHASSIS}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="gpsDeviceId">GPS Device ID (Optional)</Label>
+              <Label htmlFor="gpsDeviceId">{UI_MESSAGES.TABLE.GPS_DEVICE_ID_OPT}</Label>
               <Input
                 id="gpsDeviceId"
-                placeholder="Enter GPS device ID"
+                placeholder={UI_MESSAGES.COMMON.PLACEHOLDERS.GPS_DEVICE_ID}
                 value={newVehicleForm.gpsDeviceId}
                 onChange={(e) =>
                   setNewVehicleForm((prev) => ({
@@ -663,10 +664,10 @@ export default function OperatorEquipmentVehicles() {
               onClick={() => setNewVehicleGateInOpen(false)}
               disabled={isProcessing}
             >
-              Cancel
+              {UI_MESSAGES.COMMON.CANCEL}
             </Button>
             <Button onClick={handleNewVehicleGateIn} disabled={isProcessing}>
-              {isProcessing ? "Processing..." : "Confirm Gate-In"}
+              {isProcessing ? UI_MESSAGES.BILLING.PROCESSING : UI_MESSAGES.AUTH.VERIFY_CREATE}
             </Button>
           </DialogFooter>
         </DialogContent>

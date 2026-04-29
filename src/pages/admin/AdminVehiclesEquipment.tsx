@@ -69,6 +69,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { UI_MESSAGES } from "@/constants/messages";
 
 export default function VehiclesEquipment() {
   // const { toast } = useToast(); // Switching to sonner
@@ -130,7 +131,7 @@ export default function VehiclesEquipment() {
   const vehicleColumns: Column<Vehicle>[] = [
     {
       key: "vehicleNumber",
-      header: "Vehicle No.",
+      header: UI_MESSAGES.TABLE.VEHICLE_NO,
       sortable: true,
       render: (item) => (
         <span className="font-medium text-foreground">
@@ -140,21 +141,21 @@ export default function VehiclesEquipment() {
     },
     {
       key: "driverName",
-      header: "Driver",
+      header: UI_MESSAGES.TABLE.DRIVER,
       sortable: true,
     },
     {
       key: "driverPhone",
-      header: "Phone",
+      header: UI_MESSAGES.TABLE.PHONE,
     },
     {
       key: "type",
-      header: "Type",
+      header: UI_MESSAGES.TABLE.TYPE,
       render: (item) => <span className="capitalize">{item.type}</span>,
     },
     {
       key: "status",
-      header: "Status",
+      header: UI_MESSAGES.TABLE.STATUS,
       render: (item) => (
         <StatusBadge
           status={item.status === "in-yard" ? "gate-in" : "gate-out"}
@@ -163,12 +164,12 @@ export default function VehiclesEquipment() {
     },
     {
       key: "gpsDeviceId",
-      header: "GPS Device",
-      render: (item) => item.gpsDeviceId || "-",
+      header: UI_MESSAGES.TABLE.GPS_DEVICE,
+      render: (item) => item.gpsDeviceId || UI_MESSAGES.COMMON.NA,
     },
     {
       key: "actions",
-      header: "Actions",
+      header: UI_MESSAGES.TABLE.ACTIONS,
       render: (item) => (
         <div className="flex gap-2">
           {item.status === "in-yard" && (
@@ -179,7 +180,7 @@ export default function VehiclesEquipment() {
               onClick={() => handleOpenGateOut(item)}
             >
               <LogOut className="h-3 w-3 mr-1 text-blue-600" />
-              Gate Out
+              {UI_MESSAGES.TABLE.GATE_OUT}
             </Button>
           )}
           <DropdownMenu>
@@ -191,14 +192,14 @@ export default function VehiclesEquipment() {
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => handleOpenEditVehicle(item)}>
                 <Edit className="mr-2 h-4 w-4" />
-                Edit
+                {UI_MESSAGES.COMMON.EDIT}
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="text-destructive focus:text-destructive"
                 onClick={() => handleOpenDelete("vehicle", item.id)}
               >
                 <Trash2 className="mr-2 h-4 w-4" />
-                Delete
+                {UI_MESSAGES.COMMON.DELETE}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -211,7 +212,7 @@ export default function VehiclesEquipment() {
   const equipmentColumns: Column<Equipment>[] = [
     {
       key: "name",
-      header: "Equipment ID",
+      header: UI_MESSAGES.EQUIPMENT.EQUIPMENT_ID,
       sortable: true,
       render: (item) => (
         <span className="font-medium text-foreground">{item.name}</span>
@@ -219,24 +220,24 @@ export default function VehiclesEquipment() {
     },
     {
       key: "type",
-      header: "Type",
+      header: UI_MESSAGES.TABLE.TYPE,
       render: (item) => (
         <span className="capitalize">{item.type.replace("-", " ")}</span>
       ),
     },
     {
       key: "status",
-      header: "Status",
+      header: UI_MESSAGES.TABLE.STATUS,
       render: (item) => <StatusBadge status={item.status} />,
     },
     {
       key: "operator",
-      header: "Operator",
-      render: (item) => item.operator || "-",
+      header: UI_MESSAGES.TABLE.OPERATOR,
+      render: (item) => item.operator || UI_MESSAGES.COMMON.NA,
     },
     {
       key: "actions",
-      header: "Actions",
+      header: UI_MESSAGES.TABLE.ACTIONS,
       render: (item) => (
         <div className="flex gap-2">
           <DropdownMenu>
@@ -248,14 +249,14 @@ export default function VehiclesEquipment() {
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => handleOpenEditEquipment(item)}>
                 <Edit className="mr-2 h-4 w-4" />
-                Edit
+                {UI_MESSAGES.COMMON.EDIT}
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="text-destructive focus:text-destructive"
                 onClick={() => handleOpenDelete("equipment", item.id)}
               >
                 <Trash2 className="mr-2 h-4 w-4" />
-                Delete
+                {UI_MESSAGES.COMMON.DELETE}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -308,8 +309,8 @@ export default function VehiclesEquipment() {
       setIsProcessing(true);
       await dispatch(createGateOperation(data)).unwrap();
       await dispatch(fetchVehicles()).unwrap(); // Refresh vehicle list
-      toast.success("Vehicle Gated Out", {
-        description: `${data.vehicleNumber} has left the terminal.`,
+      toast.success(UI_MESSAGES.PDA.GATE_OUT_SUCCESS, {
+        description: UI_MESSAGES.PDA.GATE_OUT_SUCCESS_DESC(data.vehicleNumber),
       });
       setGateOutOpen(false);
     } catch (err) {
@@ -319,7 +320,7 @@ export default function VehiclesEquipment() {
           ? err.message
           : typeof err === "string"
             ? err
-            : "Failed to process gate-out";
+            : UI_MESSAGES.GATE.RECORD_GATE_OUT_FAILED;
       toast.error(message);
     } finally {
       setIsProcessing(false);
@@ -332,13 +333,13 @@ export default function VehiclesEquipment() {
     try {
       if (itemToDelete.type === "vehicle") {
         await dispatch(deleteVehicle(itemToDelete.id)).unwrap();
-        toast.success("Vehicle Deleted", {
-          description: "Vehicle removed successfully",
+        toast.success(UI_MESSAGES.VEHICLE.DELETE_SUCCESS, {
+          description: UI_MESSAGES.VEHICLE.DELETE_SUCCESS_DESC,
         });
       } else {
         await dispatch(deleteEquipment(itemToDelete.id)).unwrap();
-        toast.success("Equipment Deleted", {
-          description: "Equipment removed successfully",
+        toast.success(UI_MESSAGES.EQUIPMENT.DELETE_SUCCESS, {
+          description: UI_MESSAGES.EQUIPMENT.DELETE_SUCCESS_DESC,
         });
       }
       setDeleteDialogOpen(false);
@@ -349,7 +350,7 @@ export default function VehiclesEquipment() {
           ? error.message
           : typeof error === "string"
             ? error
-            : "Failed to delete item";
+            : UI_MESSAGES.VEHICLE.DELETE_FAILED;
       toast.error(message);
     }
   };
@@ -363,8 +364,8 @@ export default function VehiclesEquipment() {
             data: vehicleForm,
           }),
         ).unwrap();
-        toast.success("Vehicle Updated", {
-          description: `Vehicle ${vehicleForm.vehicleNumber} updated successfully.`,
+        toast.success(UI_MESSAGES.VEHICLE.UPDATE_SUCCESS, {
+          description: UI_MESSAGES.VEHICLE.UPDATE_SUCCESS_DESC(vehicleForm.vehicleNumber),
         });
       } else {
         await dispatch(
@@ -378,8 +379,8 @@ export default function VehiclesEquipment() {
           }),
         ).unwrap();
         await dispatch(fetchVehicles()).unwrap();
-        toast.success("Vehicle Gated In", {
-          description: `Vehicle ${vehicleForm.vehicleNumber} recorded in yard.`,
+        toast.success(UI_MESSAGES.PDA.GATE_IN_SUCCESS, {
+          description: UI_MESSAGES.VEHICLE.GATE_IN_SUCCESS_DESC(vehicleForm.vehicleNumber),
         });
       }
       setAddDialogOpen(false);
@@ -391,7 +392,7 @@ export default function VehiclesEquipment() {
           ? error.message
           : typeof error === "string"
             ? error
-            : "Failed to save vehicle";
+            : UI_MESSAGES.VEHICLE.ADD_FAILED;
       toast.error(message);
     }
   };
@@ -405,8 +406,8 @@ export default function VehiclesEquipment() {
             data: equipmentForm,
           }),
         ).unwrap();
-        toast.success("Equipment Updated", {
-          description: `Equipment ${equipmentForm.name} updated successfully.`,
+        toast.success(UI_MESSAGES.EQUIPMENT.UPDATE_SUCCESS, {
+          description: UI_MESSAGES.EQUIPMENT.UPDATE_SUCCESS_DESC(equipmentForm.name),
         });
       } else {
         await dispatch(
@@ -414,8 +415,8 @@ export default function VehiclesEquipment() {
             ...equipmentForm,
           }),
         ).unwrap();
-        toast.success("Equipment Added", {
-          description: `Equipment ${equipmentForm.name} added successfully.`,
+        toast.success(UI_MESSAGES.EQUIPMENT.ADD_SUCCESS, {
+          description: UI_MESSAGES.EQUIPMENT.ADD_SUCCESS_DESC(equipmentForm.name),
         });
       }
       setAddDialogOpen(false);
@@ -427,7 +428,7 @@ export default function VehiclesEquipment() {
           ? error.message
           : typeof error === "string"
             ? error
-            : "Failed to save equipment";
+            : UI_MESSAGES.EQUIPMENT.ADD_FAILED;
       toast.error(message);
     }
   };
@@ -454,7 +455,7 @@ export default function VehiclesEquipment() {
   return (
     <DashboardLayout
       navItems={adminNavItems}
-      pageTitle="Vehicles & Equipment"
+      pageTitle={UI_MESSAGES.TITLES.VEHICLES_EQUIPMENT}
       pageActions={
         <Button
           className="gap-2"
@@ -466,12 +467,12 @@ export default function VehiclesEquipment() {
           {activeTab === "vehicles" ? (
             <>
               <ArrowDownToLine className="h-4 w-4" />
-              Vehicle Gate-In
+              {UI_MESSAGES.TITLES.VEHICLE_GATE_IN}
             </>
           ) : (
             <>
               <Plus className="h-4 w-4" />
-              Add New
+              {UI_MESSAGES.TITLES.ADD_NEW}
             </>
           )}
         </Button>
@@ -490,7 +491,7 @@ export default function VehiclesEquipment() {
                   {vehiclesInYard}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Vehicles In Yard
+                  {UI_MESSAGES.KPI.VEHICLES_IN_YARD}
                 </p>
               </div>
             </div>
@@ -521,7 +522,7 @@ export default function VehiclesEquipment() {
                 <p className="text-2xl font-bold text-foreground">
                   {equipment.length}
                 </p>
-                <p className="text-sm text-muted-foreground">Total Equipment</p>
+                <p className="text-sm text-muted-foreground">{UI_MESSAGES.KPI.TOTAL_EQUIPMENT}</p>
               </div>
             </div>
           </CardContent>
@@ -536,7 +537,7 @@ export default function VehiclesEquipment() {
                 <p className="text-2xl font-bold text-foreground">
                   {operationalEquipment}
                 </p>
-                <p className="text-sm text-muted-foreground">Operational</p>
+                <p className="text-sm text-muted-foreground">{UI_MESSAGES.KPI.OPERATIONAL_EQUIPMENT}</p>
               </div>
             </div>
           </CardContent>
@@ -550,8 +551,8 @@ export default function VehiclesEquipment() {
         className="space-y-4"
       >
         <TabsList>
-          <TabsTrigger value="vehicles">Vehicles</TabsTrigger>
-          <TabsTrigger value="equipment">Equipment</TabsTrigger>
+          <TabsTrigger value="vehicles">{UI_MESSAGES.TABLE.VEHICLES(vehicles.length)}</TabsTrigger>
+          <TabsTrigger value="equipment">{UI_MESSAGES.TABLE.EQUIPMENT_TAB(equipment.length)}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="vehicles">
@@ -559,7 +560,7 @@ export default function VehiclesEquipment() {
             data={vehicles}
             columns={vehicleColumns}
             isLoading={vehiclesLoading}
-            searchPlaceholder="Search vehicles..."
+            searchPlaceholder={UI_MESSAGES.TABLE.SEARCH_VEHICLES}
           />
         </TabsContent>
 
@@ -568,7 +569,7 @@ export default function VehiclesEquipment() {
             data={equipment}
             columns={equipmentColumns}
             isLoading={equipmentLoading}
-            searchPlaceholder="Search equipment..."
+            searchPlaceholder={UI_MESSAGES.TABLE.SEARCH_EQUIPMENT}
           />
         </TabsContent>
       </Tabs>
@@ -592,10 +593,10 @@ export default function VehiclesEquipment() {
                 <Plus className="h-5 w-5" />
               )}
               {isEditMode
-                ? `Edit ${activeTab === "vehicles" ? "Vehicle" : "Equipment"}`
+                ? (activeTab === "vehicles" ? UI_MESSAGES.TITLES.EDIT_VEHICLE : UI_MESSAGES.TITLES.EDIT_EQUIPMENT)
                 : activeTab === "vehicles"
-                  ? "Vehicle Gate-In"
-                  : "Add New Equipment"}
+                  ? UI_MESSAGES.TITLES.VEHICLE_GATE_IN
+                  : UI_MESSAGES.TITLES.ADD_NEW_EQUIPMENT}
             </DialogTitle>
           </DialogHeader>
 
@@ -603,10 +604,10 @@ export default function VehiclesEquipment() {
             {activeTab === "vehicles" ? (
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
-                  <Label htmlFor="vehicleNumber">Vehicle Number *</Label>
+                  <Label htmlFor="vehicleNumber">{UI_MESSAGES.TABLE.VEHICLE_NUMBER_REQ}</Label>
                   <Input
                     id="vehicleNumber"
-                    placeholder="e.g., TRK-001"
+                    placeholder={UI_MESSAGES.COMMON.PLACEHOLDERS.VEHICLE_NO_EG}
                     value={vehicleForm.vehicleNumber}
                     onChange={(e) =>
                       setVehicleForm({
@@ -617,10 +618,10 @@ export default function VehiclesEquipment() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="driverName">Driver Name *</Label>
+                  <Label htmlFor="driverName">{UI_MESSAGES.TABLE.DRIVER_NAME_REQ}</Label>
                   <Input
                     id="driverName"
-                    placeholder="Enter driver name"
+                    placeholder={UI_MESSAGES.COMMON.PLACEHOLDERS.DRIVER_NAME}
                     value={vehicleForm.driverName}
                     onChange={(e) =>
                       setVehicleForm({
@@ -631,10 +632,10 @@ export default function VehiclesEquipment() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="driverPhone">Driver Phone *</Label>
+                  <Label htmlFor="driverPhone">{UI_MESSAGES.TABLE.DRIVER_PHONE_REQ}</Label>
                   <Input
                     id="driverPhone"
-                    placeholder="Enter phone number"
+                    placeholder={UI_MESSAGES.COMMON.PLACEHOLDERS.PHONE_EG}
                     value={vehicleForm.driverPhone}
                     onChange={(e) =>
                       setVehicleForm({
@@ -645,7 +646,7 @@ export default function VehiclesEquipment() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="vehicleType">Vehicle Type</Label>
+                  <Label htmlFor="vehicleType">{UI_MESSAGES.TABLE.VEHICLE_TYPE_REQ}</Label>
                   <Select
                     value={vehicleForm.type}
                     onValueChange={(value: "truck" | "trailer" | "chassis") =>
@@ -656,17 +657,17 @@ export default function VehiclesEquipment() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="truck">Truck</SelectItem>
-                      <SelectItem value="trailer">Trailer</SelectItem>
-                      <SelectItem value="chassis">Chassis</SelectItem>
+                      <SelectItem value="truck">{UI_MESSAGES.TABLE.TRUCK}</SelectItem>
+                      <SelectItem value="trailer">{UI_MESSAGES.TABLE.TRAILER}</SelectItem>
+                      <SelectItem value="chassis">{UI_MESSAGES.TABLE.CHASSIS}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="gpsDeviceId">GPS Device ID (Optional)</Label>
+                  <Label htmlFor="gpsDeviceId">{UI_MESSAGES.TABLE.GPS_DEVICE_ID_OPT}</Label>
                   <Input
                     id="gpsDeviceId"
-                    placeholder="Enter GPS device ID"
+                    placeholder={UI_MESSAGES.COMMON.PLACEHOLDERS.GPS_DEVICE_ID}
                     value={vehicleForm.gpsDeviceId}
                     onChange={(e) =>
                       setVehicleForm({
@@ -680,10 +681,10 @@ export default function VehiclesEquipment() {
             ) : (
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
-                  <Label htmlFor="equipmentName">Equipment ID/Name *</Label>
+                  <Label htmlFor="equipmentName">{UI_MESSAGES.EQUIPMENT.EQUIPMENT_ID} *</Label>
                   <Input
                     id="equipmentName"
-                    placeholder="e.g., RS-001"
+                    placeholder={UI_MESSAGES.COMMON.PLACEHOLDERS.EQUIPMENT_ID_EG}
                     value={equipmentForm.name}
                     onChange={(e) =>
                       setEquipmentForm({
@@ -694,7 +695,7 @@ export default function VehiclesEquipment() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="equipmentType">Equipment Type</Label>
+                  <Label htmlFor="equipmentType">{UI_MESSAGES.TABLE.TYPE}</Label>
                   <Select
                     value={equipmentForm.type}
                     onValueChange={(
@@ -706,18 +707,18 @@ export default function VehiclesEquipment() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="reach-stacker">
-                        Reach Stacker
+                        {UI_MESSAGES.EQUIPMENT.REACH_STACKER}
                       </SelectItem>
-                      <SelectItem value="forklift">Forklift</SelectItem>
-                      <SelectItem value="crane">Crane</SelectItem>
+                      <SelectItem value="forklift">{UI_MESSAGES.EQUIPMENT.FORKLIFT}</SelectItem>
+                      <SelectItem value="crane">{UI_MESSAGES.EQUIPMENT.CRANE}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="operator">Assigned Operator (Optional)</Label>
+                  <Label htmlFor="operator">{UI_MESSAGES.TABLE.OPERATOR} ({UI_MESSAGES.COMMON.INFO})</Label>
                   <Input
                     id="operator"
-                    placeholder="Enter operator name"
+                    placeholder={UI_MESSAGES.COMMON.PLACEHOLDERS.OPERATOR_NAME}
                     value={equipmentForm.operator}
                     onChange={(e) =>
                       setEquipmentForm({
@@ -728,7 +729,7 @@ export default function VehiclesEquipment() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="equipmentStatus">Status</Label>
+                  <Label htmlFor="equipmentStatus">{UI_MESSAGES.TABLE.STATUS}</Label>
                   <Select
                     value={equipmentForm.status}
                     onValueChange={(
@@ -739,10 +740,10 @@ export default function VehiclesEquipment() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="operational">Operational</SelectItem>
-                      <SelectItem value="maintenance">Maintenance</SelectItem>
-                      <SelectItem value="down">Down</SelectItem>
-                      <SelectItem value="idle">Idle</SelectItem>
+                      <SelectItem value="operational">{UI_MESSAGES.TABLE.OPERATIONAL}</SelectItem>
+                      <SelectItem value="maintenance">{UI_MESSAGES.TABLE.MAINTENANCE}</SelectItem>
+                      <SelectItem value="down">{UI_MESSAGES.EQUIPMENT.DOWN}</SelectItem>
+                      <SelectItem value="idle">{UI_MESSAGES.TABLE.IDLE}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -758,7 +759,7 @@ export default function VehiclesEquipment() {
                 resetForms();
               }}
             >
-              Cancel
+              {UI_MESSAGES.COMMON.CANCEL}
             </Button>
             <Button
               onClick={
@@ -779,14 +780,14 @@ export default function VehiclesEquipment() {
                   {vehiclesLoading && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
-                  {isEditMode ? "Update Vehicle" : "Add Vehicle"}
+                  {isEditMode ? UI_MESSAGES.TITLES.UPDATE_VEHICLE : UI_MESSAGES.TITLES.ADD_VEHICLE}
                 </>
               ) : (
                 <>
                   {equipmentLoading && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
-                  {isEditMode ? "Update Equipment" : "Add Equipment"}
+                  {isEditMode ? UI_MESSAGES.TITLES.UPDATE_EQUIPMENT : UI_MESSAGES.TITLES.ADD_EQUIPMENT}
                 </>
               )}
             </Button>

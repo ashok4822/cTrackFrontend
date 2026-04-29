@@ -3,6 +3,7 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 import { AxiosError } from "axios";
 import { profileService } from "@/services/profileService";
 import type { ProfileData, UpdateProfileRequest, UpdatePasswordRequest } from "@/services/profileService";
+import { UI_MESSAGES } from "@/constants/messages";
 
 interface ProfileState {
     profile: ProfileData | null;
@@ -26,7 +27,7 @@ export const getProfile = createAsyncThunk(
             const message =
                 axiosError.response?.data?.message ||
                 axiosError.message ||
-                "Failed to fetch profile";
+                UI_MESSAGES.PROFILE.FETCH_FAILED;
             return rejectWithValue(message);
         }
     }
@@ -37,13 +38,13 @@ export const updateProfile = createAsyncThunk(
     async (data: UpdateProfileRequest, { rejectWithValue }) => {
         try {
             const result = await profileService.updateProfile(data);
-            return result.user;
+            return result;
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
             const message =
                 axiosError.response?.data?.message ||
                 axiosError.message ||
-                "Failed to update profile";
+                UI_MESSAGES.PROFILE.UPDATE_FAILED;
             return rejectWithValue(message);
         }
     }
@@ -60,7 +61,7 @@ export const updatePassword = createAsyncThunk(
             const message =
                 axiosError.response?.data?.message ||
                 axiosError.message ||
-                "Failed to update password";
+                UI_MESSAGES.PROFILE.PASSWORD_UPDATE_FAILED;
             return rejectWithValue(message);
         }
     }
@@ -77,7 +78,7 @@ export const updateProfileImage = createAsyncThunk(
             const message =
                 axiosError.response?.data?.message ||
                 axiosError.message ||
-                "Failed to upload image";
+                UI_MESSAGES.PROFILE.IMAGE_UPLOAD_FAILED;
             return rejectWithValue(message);
         }
     }

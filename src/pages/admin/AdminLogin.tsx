@@ -13,6 +13,7 @@ import { ChevronLeft, Eye, EyeOff, Shield } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { login, clearError } from "@/store/slices/authSlice";
+import { UI_MESSAGES } from "@/constants/messages";
 
 const AdminLogin = () => {
   const navigate = useNavigate();
@@ -73,7 +74,7 @@ const AdminLogin = () => {
             className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
           >
             <ChevronLeft className="h-4 w-4" />
-            Back to Home
+            {UI_MESSAGES.AUTH.BACK_TO_HOME}
           </Link>
         </div>
       </header>
@@ -85,20 +86,20 @@ const AdminLogin = () => {
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
               <Shield className="h-8 w-8 text-primary" />
             </div>
-            <CardTitle className="text-2xl">Admin Login</CardTitle>
+            <CardTitle className="text-2xl">{UI_MESSAGES.TITLES.ADMIN_LOGIN}</CardTitle>
             <CardDescription>
-              Sign in to access the administrator dashboard
+              {UI_MESSAGES.AUTH.ADMIN_LOGIN_DESC}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-6">
               {/* Email */}
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{UI_MESSAGES.AUTH.WORK_EMAIL}</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="admin@ctrack.com"
+                  placeholder={UI_MESSAGES.COMMON.PLACEHOLDERS.EMAIL_EG}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
@@ -106,12 +107,12 @@ const AdminLogin = () => {
 
               {/* Password */}
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{UI_MESSAGES.AUTH.PASSWORD}</Label>
                 <div className="relative">
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
+                    placeholder={UI_MESSAGES.COMMON.PLACEHOLDERS.PASSWORD}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
@@ -139,7 +140,7 @@ const AdminLogin = () => {
                   className="h-auto p-0 text-sm text-muted-foreground hover:text-primary"
                   asChild
                 >
-                  <Link to="/forgot-password?role=admin">Forgot Password?</Link>
+                  <Link to="/forgot-password?role=admin">{UI_MESSAGES.AUTH.FORGOT_PASSWORD}</Link>
                 </Button>
               </div>
 
@@ -150,7 +151,7 @@ const AdminLogin = () => {
                 size="lg"
                 disabled={isLoading}
               >
-                {isLoading ? "Signing In..." : "Sign In as Administrator"}
+                {isLoading ? UI_MESSAGES.AUTH.SIGNING_IN : UI_MESSAGES.AUTH.SIGN_IN_ADMIN}
               </Button>
 
               {/* Error Message */}

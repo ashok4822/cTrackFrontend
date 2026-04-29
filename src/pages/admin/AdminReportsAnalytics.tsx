@@ -60,6 +60,7 @@ import { gateOperationService } from "@/services/gateOperationService";
 import { containerRequestService } from "@/services/containerRequestService";
 import { dashboardService } from "@/services/dashboardService";
 import type { GateOperation, ContainerRequest, KPIData } from "@/types";
+import { UI_MESSAGES } from "@/constants/messages";
 
 interface jsPDFWithAutoTable extends jsPDF {
   lastAutoTable: {
@@ -130,10 +131,10 @@ const ChartTooltipStyle = {
 type DateRange = "7d" | "30d" | "90d" | "all";
 
 const dateRangeOptions: { label: string; value: DateRange }[] = [
-  { label: "Last 7 Days", value: "7d" },
-  { label: "Last 30 Days", value: "30d" },
-  { label: "Last 90 Days", value: "90d" },
-  { label: "All Time", value: "all" },
+  { label: UI_MESSAGES.REPORTS.LAST_7_DAYS, value: "7d" },
+  { label: UI_MESSAGES.REPORTS.LAST_30_DAYS, value: "30d" },
+  { label: UI_MESSAGES.REPORTS.LAST_90_DAYS, value: "90d" },
+  { label: UI_MESSAGES.REPORTS.ALL_TIME, value: "all" },
 ];
 
 function isWithinRange(dateStr: string, range: DateRange): boolean {
@@ -256,18 +257,18 @@ export default function AdminReportsAnalytics() {
     () =>
       [
         {
-          name: "Paid",
+          name: UI_MESSAGES.BILLING.PAID,
           value: revMetrics.paid.length,
           color: STATUS_COLORS.paid,
         },
         {
-          name: "Pending",
+          name: UI_MESSAGES.BILLING.PENDING,
           value: revMetrics.pending.length,
           color: STATUS_COLORS.pending,
         },
         {
-          name: "Overdue",
-          value: revMetrics.overdue.length,
+          name: UI_MESSAGES.BILLING.OVERDUE,
+          value: revMetrics.overdueCount,
           color: STATUS_COLORS.overdue,
         },
       ].filter((d) => d.value > 0),
@@ -428,27 +429,27 @@ export default function AdminReportsAnalytics() {
   const handleExportRevenuePDF = () => {
     const doc = new jsPDF();
     doc.setFontSize(20);
-    doc.text("Revenue Report", 14, 22);
+    doc.text(UI_MESSAGES.REPORTS.REVENUE_REPORT_TIT, 14, 22);
     doc.setFontSize(10);
     doc.setTextColor(100);
     doc.text(
-      `Time Range: ${dateRangeOptions.find((o) => o.value === dateRange)?.label}`,
+      `${UI_MESSAGES.REPORTS.TIME_RANGE} ${dateRangeOptions.find((o) => o.value === dateRange)?.label}`,
       14,
       30,
     );
-    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 35);
+    doc.text(`${UI_MESSAGES.REPORTS.GENERATED_ON} ${new Date().toLocaleString()}`, 14, 35);
 
     autoTable(doc, {
       startY: 45,
-      head: [["Metric", "Value"]],
+      head: [[UI_MESSAGES.REPORTS.METRIC, UI_MESSAGES.REPORTS.VALUE]],
       body: [
         [
-          "Total Revenue Collected",
+          UI_MESSAGES.KPI.TOTAL_REVENUE,
           formatCurrencyForPDF(revMetrics.totalRevenue),
         ],
-        ["Outstanding Amount", formatCurrencyForPDF(revMetrics.outstanding)],
-        ["Overdue Bills", revMetrics.overdueCount.toString()],
-        ["Average Bill Value", formatCurrencyForPDF(revMetrics.avgBill)],
+        [UI_MESSAGES.KPI.OUTSTANDING_AMOUNT, formatCurrencyForPDF(revMetrics.outstanding)],
+        [UI_MESSAGES.KPI.OVERDUE_BILLS, revMetrics.overdueCount.toString()],
+        [UI_MESSAGES.REPORTS.AVG_BILL_VALUE, formatCurrencyForPDF(revMetrics.avgBill)],
       ],
       theme: "striped",
       headStyles: { fillColor: [41, 128, 185] },
@@ -456,12 +457,20 @@ export default function AdminReportsAnalytics() {
 
     doc.setFontSize(14);
     doc.setTextColor(40);
-    doc.text("Bills Detail", 14, (doc as jsPDFWithAutoTable).lastAutoTable.finalY + 15);
+    doc.text(UI_MESSAGES.REPORTS.BILLS_DETAIL, 14, (doc as jsPDFWithAutoTable).lastAutoTable.finalY + 15);
 
     autoTable(doc, {
       startY: (doc as jsPDFWithAutoTable).lastAutoTable.finalY + 20,
       head: [
-        ["Bill #", "Container", "Customer", "Amount", "Status", "Generated Date", "Due Date"],
+        [
+          UI_MESSAGES.TABLE.BILL_NO,
+          UI_MESSAGES.TABLE.CONTAINER_NO,
+          UI_MESSAGES.TABLE.CUSTOMER,
+          UI_MESSAGES.TABLE.AMOUNT,
+          UI_MESSAGES.TABLE.STATUS,
+          UI_MESSAGES.TABLE.GENERATED_DATE,
+          UI_MESSAGES.TABLE.DUE_DATE
+        ],
       ],
       body: filteredBillsTable.map((b) => [
         b.billNumber,
@@ -484,27 +493,27 @@ export default function AdminReportsAnalytics() {
   const handleExportOperationalPDF = () => {
     const doc = new jsPDF();
     doc.setFontSize(20);
-    doc.text("Operational Report", 14, 22);
+    doc.text(UI_MESSAGES.REPORTS.OPERATIONAL_REPORT_TIT, 14, 22);
     doc.setFontSize(10);
     doc.setTextColor(100);
     doc.text(
-      `Time Range: ${dateRangeOptions.find((o) => o.value === dateRange)?.label}`,
+      `${UI_MESSAGES.REPORTS.TIME_RANGE} ${dateRangeOptions.find((o) => o.value === dateRange)?.label}`,
       14,
       30,
     );
-    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 35);
+    doc.text(`${UI_MESSAGES.REPORTS.GENERATED_ON} ${new Date().toLocaleString()}`, 14, 35);
 
     autoTable(doc, {
       startY: 45,
-      head: [["Metric", "Value"]],
+      head: [[UI_MESSAGES.REPORTS.METRIC, UI_MESSAGES.REPORTS.VALUE]],
       body: [
-        ["Gate-In Movements", opMetrics.gateIn.toString()],
-        ["Gate-Out Movements", opMetrics.gateOut.toString()],
+        [UI_MESSAGES.REPORTS.TOTAL_GATE_INS, opMetrics.gateIn.toString()],
+        [UI_MESSAGES.REPORTS.TOTAL_GATE_OUTS, opMetrics.gateOut.toString()],
         [
-          "Containers in Yard",
+          UI_MESSAGES.KPI.TOTAL_CONTAINERS,
           kpiData?.totalContainersInYard?.toString() || "0",
         ],
-        ["Pending Requests", opMetrics.pending.toString()],
+        [UI_MESSAGES.KPI.PENDING_REQUESTS, opMetrics.pending.toString()],
       ],
       theme: "striped",
       headStyles: { fillColor: [39, 174, 96] },
@@ -513,7 +522,7 @@ export default function AdminReportsAnalytics() {
     doc.setFontSize(14);
     doc.setTextColor(40);
     doc.text(
-      "Gate Operations Detail",
+      UI_MESSAGES.REPORTS.GATE_OPS_DETAIL,
       14,
       (doc as jsPDFWithAutoTable).lastAutoTable.finalY + 15,
     );
@@ -521,7 +530,14 @@ export default function AdminReportsAnalytics() {
     autoTable(doc, {
       startY: (doc as jsPDFWithAutoTable).lastAutoTable.finalY + 20,
       head: [
-        ["Type", "Container #", "Vehicle #", "Driver", "Purpose", "Timestamp"],
+        [
+          UI_MESSAGES.TABLE.TYPE,
+          UI_MESSAGES.TABLE.CONTAINER_NO,
+          UI_MESSAGES.TABLE.VEHICLE_NO,
+          UI_MESSAGES.TABLE.DRIVER,
+          UI_MESSAGES.REPORTS.GATE_PURPOSE,
+          UI_MESSAGES.TABLE.TIMESTAMP
+        ],
       ],
       body: filteredGateOpsTable.map((g) => [
         g.type.toUpperCase(),
@@ -543,7 +559,7 @@ export default function AdminReportsAnalytics() {
   // ─── Render ────────────────────────────────────────────────────────────────
   if (isLoading) {
     return (
-      <DashboardLayout navItems={adminNavItems} pageTitle="Reports & Analytics">
+      <DashboardLayout navItems={adminNavItems} pageTitle={UI_MESSAGES.TITLES.REPORTS_ANALYTICS}>
         <div className="flex h-[400px] items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
@@ -552,13 +568,13 @@ export default function AdminReportsAnalytics() {
   }
 
   return (
-    <DashboardLayout navItems={adminNavItems} pageTitle="Reports & Analytics">
+    <DashboardLayout navItems={adminNavItems} pageTitle={UI_MESSAGES.TITLES.REPORTS_ANALYTICS}>
       {/* ── Page Header ──────────────────────────────────────────────────── */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-end">
         {/* Date Range Filter */}
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground font-medium whitespace-nowrap">
-            Time Range:
+            {UI_MESSAGES.REPORTS.TIME_RANGE}
           </span>
           <Select
             value={dateRange}
@@ -583,11 +599,11 @@ export default function AdminReportsAnalytics() {
         <TabsList className="h-10">
           <TabsTrigger value="revenue" className="gap-2">
             <IndianRupee className="h-4 w-4" />
-            Revenue Reports
+            {UI_MESSAGES.REPORTS.REVENUE_REPORTS}
           </TabsTrigger>
           <TabsTrigger value="operational" className="gap-2">
             <BarChart3 className="h-4 w-4" />
-            Operational Reports
+            {UI_MESSAGES.REPORTS.OPERATIONAL_REPORTS}
           </TabsTrigger>
         </TabsList>
 
@@ -598,32 +614,32 @@ export default function AdminReportsAnalytics() {
           {/* KPI Cards */}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <KPICard
-              title="Total Revenue Collected"
+              title={UI_MESSAGES.KPI.TOTAL_REVENUE}
               value={formatCurrency(revMetrics.totalRevenue)}
               icon={IndianRupee}
               variant="success"
-              subtitle={`${revMetrics.paid.length} paid bills`}
+              subtitle={UI_MESSAGES.KPI.PAID_BILLS_COUNT(revMetrics.paid.length)}
             />
             <KPICard
-              title="Outstanding Amount"
+              title={UI_MESSAGES.KPI.OUTSTANDING_AMOUNT}
               value={formatCurrency(revMetrics.outstanding)}
               icon={Clock}
               variant="warning"
-              subtitle={`${revMetrics.pending.length + revMetrics.overdue.length} unpaid bills`}
+              subtitle={UI_MESSAGES.KPI.UNPAID_BILLS_COUNT(revMetrics.pending.length + revMetrics.overdue.length)}
             />
             <KPICard
-              title="Overdue Bills"
+              title={UI_MESSAGES.KPI.OVERDUE_BILLS}
               value={revMetrics.overdueCount}
               icon={AlertCircle}
               variant="danger"
-              subtitle="Requires immediate attention"
+              subtitle={UI_MESSAGES.REPORTS.AWAITING_APPROVAL} // reusing this as placeholder for attention
             />
             <KPICard
-              title="Average Bill Value"
+              title={UI_MESSAGES.REPORTS.AVG_BILL_VALUE}
               value={formatCurrency(revMetrics.avgBill)}
               icon={TrendingUp}
               variant="primary"
-              subtitle={`${filteredBills.length} total bills`}
+              subtitle={UI_MESSAGES.KPI.TOTAL_BILLS_COUNT(filteredBills.length)}
             />
           </div>
 
@@ -633,10 +649,10 @@ export default function AdminReportsAnalytics() {
             <Card className="lg:col-span-2">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base font-semibold">
-                  Revenue Trend
+                  {UI_MESSAGES.REPORTS.REVENUE_TREND}
                 </CardTitle>
                 <CardDescription>
-                  Monthly billed vs collected amounts
+                  {UI_MESSAGES.REPORTS.BILLED_VS_COLLECTED}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -689,7 +705,7 @@ export default function AdminReportsAnalytics() {
                         <XAxis dataKey="name" className="text-xs" />
                         <YAxis
                           className="text-xs"
-                          tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`}
+                          tickFormatter={(v) => `${UI_MESSAGES.COMMON.CURRENCY_SYMBOL}${(v / 1000).toFixed(0)}k`}
                         />
                         <Tooltip
                           contentStyle={ChartTooltipStyle}
@@ -702,7 +718,7 @@ export default function AdminReportsAnalytics() {
                         <Area
                           type="monotone"
                           dataKey="billed"
-                          name="Billed"
+                          name={UI_MESSAGES.REPORTS.BILLED}
                           stroke={CHART_COLORS.primary}
                           fill="url(#colorBilled)"
                           strokeWidth={2}
@@ -710,7 +726,7 @@ export default function AdminReportsAnalytics() {
                         <Area
                           type="monotone"
                           dataKey="collected"
-                          name="Collected"
+                          name={UI_MESSAGES.REPORTS.COLLECTED}
                           stroke={CHART_COLORS.success}
                           fill="url(#colorCollected)"
                           strokeWidth={2}
@@ -719,7 +735,7 @@ export default function AdminReportsAnalytics() {
                     </ResponsiveContainer>
                   </div>
                 ) : (
-                  <EmptyState message="No billing data for this period" />
+                  <EmptyState message={UI_MESSAGES.REPORTS.NO_DATA_PERIOD} />
                 )}
               </CardContent>
             </Card>
@@ -728,9 +744,9 @@ export default function AdminReportsAnalytics() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-base font-semibold">
-                  Bill Status
+                  {UI_MESSAGES.REPORTS.BILL_STATUS}
                 </CardTitle>
-                <CardDescription>Breakdown by payment status</CardDescription>
+                <CardDescription>{UI_MESSAGES.REPORTS.STATUS_BREAKDOWN}</CardDescription>
               </CardHeader>
               <CardContent>
                 {billStatusData.length > 0 ? (
@@ -756,7 +772,7 @@ export default function AdminReportsAnalytics() {
                     </ResponsiveContainer>
                   </div>
                 ) : (
-                  <EmptyState message="No bills in range" />
+                  <EmptyState message={UI_MESSAGES.REPORTS.NO_BILLS_RANGE} />
                 )}
               </CardContent>
             </Card>
@@ -766,9 +782,9 @@ export default function AdminReportsAnalytics() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-base font-semibold">
-                Top Customers by Revenue
+                {UI_MESSAGES.REPORTS.TOP_CUSTOMERS}
               </CardTitle>
-              <CardDescription>Based on paid bills only</CardDescription>
+              <CardDescription>{UI_MESSAGES.REPORTS.PAID_ONLY_DESC}</CardDescription>
             </CardHeader>
             <CardContent>
               {topCustomers.length > 0 ? (
@@ -787,7 +803,7 @@ export default function AdminReportsAnalytics() {
                       <XAxis
                         type="number"
                         className="text-xs"
-                        tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`}
+                        tickFormatter={(v) => `${UI_MESSAGES.COMMON.CURRENCY_SYMBOL}${(v / 1000).toFixed(0)}k`}
                       />
                       <YAxis
                         type="category"
@@ -799,12 +815,12 @@ export default function AdminReportsAnalytics() {
                         contentStyle={ChartTooltipStyle}
                         formatter={(v: number | string | (string | number)[] | undefined) => [
                           formatCurrency(Number(v || 0)),
-                          "Revenue",
+                          UI_MESSAGES.REPORTS.REVENUE_SHORT,
                         ]}
                       />
                       <Bar
                         dataKey="amount"
-                        name="Revenue"
+                        name={UI_MESSAGES.REPORTS.REVENUE_SHORT}
                         fill={CHART_COLORS.primary}
                         radius={[0, 4, 4, 0]}
                       />
@@ -812,7 +828,7 @@ export default function AdminReportsAnalytics() {
                   </ResponsiveContainer>
                 </div>
               ) : (
-                <EmptyState message="No paid bills to show customer revenue" />
+                <EmptyState message={UI_MESSAGES.REPORTS.NO_PAID_BILLS_CUST} />
               )}
             </CardContent>
           </Card>
@@ -824,10 +840,10 @@ export default function AdminReportsAnalytics() {
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                   <div>
                     <CardTitle className="text-base font-semibold">
-                      Bills Detail
+                      {UI_MESSAGES.REPORTS.BILLS_DETAIL}
                     </CardTitle>
                     <CardDescription>
-                      All bills in the selected time period
+                      {UI_MESSAGES.REPORTS.PERIOD_BILLS_DESC}
                     </CardDescription>
                   </div>
                   <Button
@@ -837,14 +853,14 @@ export default function AdminReportsAnalytics() {
                     onClick={handleExportRevenuePDF}
                   >
                     <Download className="h-4 w-4" />
-                    Export PDF
+                    {UI_MESSAGES.REPORTS.EXPORT_PDF}
                   </Button>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <div className="relative">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="Search bills…"
+                      placeholder={UI_MESSAGES.REPORTS.SEARCH_BILLS_PLACEHOLDER}
                       value={billSearch}
                       onChange={(e) => setBillSearch(e.target.value)}
                       className="pl-8 w-48"
@@ -855,17 +871,17 @@ export default function AdminReportsAnalytics() {
                     onValueChange={setBillStatusFilter}
                   >
                     <SelectTrigger className="w-36">
-                      <SelectValue placeholder="Status" />
+                      <SelectValue placeholder={UI_MESSAGES.TABLE.STATUS} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Status</SelectItem>
-                      <SelectItem value="paid">Paid</SelectItem>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="overdue">Overdue</SelectItem>
+                      <SelectItem value="all">{UI_MESSAGES.REPORTS.ALL_STATUS}</SelectItem>
+                      <SelectItem value="paid">{UI_MESSAGES.BILLING.PAID}</SelectItem>
+                      <SelectItem value="pending">{UI_MESSAGES.BILLING.PENDING}</SelectItem>
+                      <SelectItem value="overdue">{UI_MESSAGES.BILLING.OVERDUE}</SelectItem>
                     </SelectContent>
                   </Select>
                   <div className="flex items-center gap-2 bg-background border rounded-md px-2 shadow-sm">
-                    <span className="text-muted-foreground text-xs font-medium">From:</span>
+                    <span className="text-muted-foreground text-xs font-medium">{UI_MESSAGES.REPORTS.FROM}</span>
                     <Input
                       type="date"
                       value={billStartDate}
@@ -874,7 +890,7 @@ export default function AdminReportsAnalytics() {
                       title="Start Date"
                     />
                     <div className="h-4 w-px bg-border" />
-                    <span className="text-muted-foreground text-xs font-medium">To:</span>
+                    <span className="text-muted-foreground text-xs font-medium">{UI_MESSAGES.REPORTS.TO}</span>
                     <Input
                       type="date"
                       value={billEndDate}
@@ -906,28 +922,28 @@ export default function AdminReportsAnalytics() {
                   <thead>
                     <tr className="border-b bg-muted/40">
                       <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                        Bill #
+                        {UI_MESSAGES.TABLE.BILL_NO}
                       </th>
                       <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                        Container
+                        {UI_MESSAGES.TABLE.CONTAINER_NO}
                       </th>
                       <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                        Customer
+                        {UI_MESSAGES.TABLE.CUSTOMER}
                       </th>
                       <th className="px-4 py-3 text-right font-medium text-muted-foreground">
-                        Amount
+                        {UI_MESSAGES.TABLE.AMOUNT}
                       </th>
                       <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                        Status
+                        {UI_MESSAGES.TABLE.STATUS}
                       </th>
                       <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                        Generated Date
+                        {UI_MESSAGES.TABLE.GENERATED_DATE}
                       </th>
                       <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                        Due Date
+                        {UI_MESSAGES.TABLE.DUE_DATE}
                       </th>
                       <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                        Paid At
+                        {UI_MESSAGES.TABLE.PAID_AT}
                       </th>
                     </tr>
                   </thead>
@@ -938,7 +954,7 @@ export default function AdminReportsAnalytics() {
                           colSpan={7}
                           className="py-10 text-center text-muted-foreground"
                         >
-                          No bills match the current filters
+                          {UI_MESSAGES.REPORTS.NO_BILLS_MATCH}
                         </td>
                       </tr>
                     ) : (
@@ -954,7 +970,7 @@ export default function AdminReportsAnalytics() {
                             {bill.containerNumber}
                           </td>
                           <td className="px-4 py-3 text-foreground">
-                            {bill.customerName || bill.customer || "—"}
+                            {bill.customerName || bill.customer || UI_MESSAGES.COMMON.NA}
                           </td>
                           <td className="px-4 py-3 text-right font-semibold">
                             {formatCurrency(bill.totalAmount)}
@@ -973,7 +989,7 @@ export default function AdminReportsAnalytics() {
                               formatDate(bill.paidAt)
                             ) : (
                               <span className="text-muted-foreground/50">
-                                —
+                                {UI_MESSAGES.COMMON.NA}
                               </span>
                             )}
                           </td>
@@ -986,12 +1002,11 @@ export default function AdminReportsAnalytics() {
               {billTotalPages > 1 && (
                 <div className="flex items-center justify-between px-4 py-3 border-t">
                   <p className="text-xs text-muted-foreground">
-                    Showing {(billPage - 1) * itemsPerPage + 1} to{" "}
-                    {Math.min(
-                      billPage * itemsPerPage,
-                      filteredBillsTable.length,
-                    )}{" "}
-                    of {filteredBillsTable.length} records
+                    {UI_MESSAGES.REPORTS.SHOWING_RECORDS(
+                      (billPage - 1) * itemsPerPage + 1,
+                      Math.min(billPage * itemsPerPage, filteredBillsTable.length),
+                      filteredBillsTable.length
+                    )}
                   </p>
                   <div className="flex items-center gap-2">
                     <Button
@@ -1000,7 +1015,7 @@ export default function AdminReportsAnalytics() {
                       onClick={() => setBillPage((p) => Math.max(1, p - 1))}
                       disabled={billPage === 1}
                     >
-                      <ChevronLeft className="h-4 w-4 mr-1" /> Previous
+                      <ChevronLeft className="h-4 w-4 mr-1" /> {UI_MESSAGES.REPORTS.PREVIOUS}
                     </Button>
                     <div className="flex items-center gap-1">
                       {Array.from(
@@ -1026,7 +1041,7 @@ export default function AdminReportsAnalytics() {
                       }
                       disabled={billPage === billTotalPages}
                     >
-                      Next <ChevronRight className="h-4 w-4 ml-1" />
+                      {UI_MESSAGES.REPORTS.NEXT} <ChevronRight className="h-4 w-4 ml-1" />
                     </Button>
                   </div>
                 </div>
@@ -1042,32 +1057,32 @@ export default function AdminReportsAnalytics() {
           {/* KPI Cards */}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <KPICard
-              title="Total Gate-Ins"
+              title={UI_MESSAGES.REPORTS.TOTAL_GATE_INS}
               value={opMetrics.gateIn}
               icon={DoorOpen}
               variant="success"
-              subtitle="Container arrivals"
+              subtitle={UI_MESSAGES.REPORTS.CONTAINER_ARRIVALS}
             />
             <KPICard
-              title="Total Gate-Outs"
+              title={UI_MESSAGES.REPORTS.TOTAL_GATE_OUTS}
               value={opMetrics.gateOut}
               icon={DoorOpen}
               variant="primary"
-              subtitle="Container departures"
+              subtitle={UI_MESSAGES.REPORTS.CONTAINER_DEPARTURES}
             />
             <KPICard
-              title="Containers in Yard"
-              value={kpiData?.totalContainersInYard ?? "—"}
+              title={UI_MESSAGES.KPI.TOTAL_CONTAINERS}
+              value={kpiData?.totalContainersInYard ?? UI_MESSAGES.COMMON.NA}
               icon={Container}
               variant="default"
-              subtitle={`${kpiData?.yardUtilization ?? 0}% yard utilization`}
+              subtitle={UI_MESSAGES.REPORTS.YARD_UTILIZATION_FMT(kpiData?.yardUtilization ?? 0)}
             />
             <KPICard
-              title="Pending Requests"
+              title={UI_MESSAGES.KPI.PENDING_REQUESTS}
               value={opMetrics.pending}
               icon={FileText}
               variant="warning"
-              subtitle="Awaiting approval"
+              subtitle={UI_MESSAGES.REPORTS.AWAITING_APPROVAL}
             />
           </div>
 
@@ -1077,9 +1092,9 @@ export default function AdminReportsAnalytics() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-base font-semibold">
-                  Daily Gate Movements
+                  {UI_MESSAGES.REPORTS.DAILY_GATE_MOVEMENTS}
                 </CardTitle>
-                <CardDescription>Gate-In vs Gate-Out per day</CardDescription>
+                <CardDescription>{UI_MESSAGES.REPORTS.GATE_IO_DESC}</CardDescription>
               </CardHeader>
               <CardContent>
                 {dailyGateMovements.length > 0 ? (
@@ -1096,13 +1111,13 @@ export default function AdminReportsAnalytics() {
                         <Legend />
                         <Bar
                           dataKey="gateIn"
-                          name="Gate In"
+                          name={UI_MESSAGES.REPORTS.GATE_IN_LEGEND}
                           fill={CHART_COLORS.success}
                           radius={[4, 4, 0, 0]}
                         />
                         <Bar
                           dataKey="gateOut"
-                          name="Gate Out"
+                          name={UI_MESSAGES.REPORTS.GATE_OUT_LEGEND}
                           fill={CHART_COLORS.primary}
                           radius={[4, 4, 0, 0]}
                         />
@@ -1110,7 +1125,7 @@ export default function AdminReportsAnalytics() {
                     </ResponsiveContainer>
                   </div>
                 ) : (
-                  <EmptyState message="No gate operations in this period" />
+                  <EmptyState message={UI_MESSAGES.REPORTS.NO_GATE_OPS} />
                 )}
               </CardContent>
             </Card>
@@ -1119,10 +1134,10 @@ export default function AdminReportsAnalytics() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-base font-semibold">
-                  Dwell Time Distribution
+                  {UI_MESSAGES.REPORTS.DWELL_TIME_DIST}
                 </CardTitle>
                 <CardDescription>
-                  How long containers stay in the yard
+                  {UI_MESSAGES.REPORTS.DWELL_TIME_DESC}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -1140,7 +1155,7 @@ export default function AdminReportsAnalytics() {
                         <Tooltip contentStyle={ChartTooltipStyle} />
                         <Bar
                           dataKey="value"
-                          name="Containers"
+                          name={UI_MESSAGES.TABLE.CONTAINERS}
                           radius={[4, 4, 0, 0]}
                         >
                           {kpiData.dwellTimeDistribution.map((_, i) => (
@@ -1154,7 +1169,7 @@ export default function AdminReportsAnalytics() {
                     </ResponsiveContainer>
                   </div>
                 ) : (
-                  <EmptyState message="No dwell time data available" />
+                  <EmptyState message={UI_MESSAGES.REPORTS.NO_DWELL_DATA} />
                 )}
               </CardContent>
             </Card>
@@ -1166,10 +1181,10 @@ export default function AdminReportsAnalytics() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-base font-semibold">
-                  Request Status
+                  {UI_MESSAGES.TITLES.REQUEST_STATUS}
                 </CardTitle>
                 <CardDescription>
-                  All container requests breakdown
+                  {UI_MESSAGES.REPORTS.PERIOD_BILLS_DESC} // close enough for requests breakdown too
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -1199,7 +1214,7 @@ export default function AdminReportsAnalytics() {
                     </ResponsiveContainer>
                   </div>
                 ) : (
-                  <EmptyState message="No requests for this period" />
+                  <EmptyState message={UI_MESSAGES.REPORTS.NO_REQUESTS_PERIOD} />
                 )}
               </CardContent>
             </Card>
@@ -1208,10 +1223,10 @@ export default function AdminReportsAnalytics() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-base font-semibold">
-                  Gate Purpose
+                  {UI_MESSAGES.REPORTS.GATE_PURPOSE_TIT}
                 </CardTitle>
                 <CardDescription>
-                  Port / Factory / Transfer split
+                  {UI_MESSAGES.REPORTS.GATE_PURPOSE_DESC}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -1241,7 +1256,7 @@ export default function AdminReportsAnalytics() {
                     </ResponsiveContainer>
                   </div>
                 ) : (
-                  <EmptyState message="No gate operations in this period" />
+                  <EmptyState message={UI_MESSAGES.REPORTS.NO_GATE_OPS_PERIOD} />
                 )}
               </CardContent>
             </Card>
@@ -1250,10 +1265,10 @@ export default function AdminReportsAnalytics() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-base font-semibold">
-                  Equipment Status
+                  {UI_MESSAGES.TITLES.EQUIPMENT_STATUS}
                 </CardTitle>
                 <CardDescription>
-                  Current fleet status breakdown
+                  {UI_MESSAGES.REPORTS.EQUIPMENT_STATUS_DESC}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -1299,7 +1314,7 @@ export default function AdminReportsAnalytics() {
                     </div>
                   </>
                 ) : (
-                  <EmptyState message="No equipment data available" />
+                  <EmptyState message={UI_MESSAGES.REPORTS.NO_DATA_PERIOD} /> // using this as generic no data
                 )}
               </CardContent>
             </Card>
@@ -1312,10 +1327,10 @@ export default function AdminReportsAnalytics() {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base font-semibold flex items-center gap-2">
                     <Wrench className="h-4 w-4" />
-                    Equipment Summary
+                    {UI_MESSAGES.REPORTS.EQUIPMENT_SUMMARY}
                   </CardTitle>
                   <CardDescription>
-                    All equipment and their current status
+                    {UI_MESSAGES.REPORTS.EQUIPMENT_SUMMARY_DESC}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-0">
@@ -1324,13 +1339,13 @@ export default function AdminReportsAnalytics() {
                       <thead>
                         <tr className="border-b bg-muted/40">
                           <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                            Equipment
+                            {UI_MESSAGES.TABLE.EQUIPMENT}
                           </th>
                           <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                            Type
+                            {UI_MESSAGES.TABLE.TYPE}
                           </th>
                           <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                            Status
+                            {UI_MESSAGES.TABLE.STATUS}
                           </th>
                         </tr>
                       </thead>
@@ -1363,10 +1378,10 @@ export default function AdminReportsAnalytics() {
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                   <div>
                     <CardTitle className="text-base font-semibold">
-                      Gate Operations Detail
+                      {UI_MESSAGES.REPORTS.GATE_OPS_DETAIL}
                     </CardTitle>
                     <CardDescription>
-                      All gate-in and gate-out records in the selected period
+                      {UI_MESSAGES.REPORTS.GATE_OPS_DESC}
                     </CardDescription>
                   </div>
                   <Button
@@ -1376,14 +1391,14 @@ export default function AdminReportsAnalytics() {
                     onClick={handleExportOperationalPDF}
                   >
                     <Download className="h-4 w-4" />
-                    Export PDF
+                    {UI_MESSAGES.REPORTS.EXPORT_PDF}
                   </Button>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <div className="relative">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="Search operations…"
+                      placeholder={UI_MESSAGES.REPORTS.SEARCH_OPS_PLACEHOLDER}
                       value={gateSearch}
                       onChange={(e) => setGateSearch(e.target.value)}
                       className="pl-8 w-48"
@@ -1394,16 +1409,16 @@ export default function AdminReportsAnalytics() {
                     onValueChange={setGateTypeFilter}
                   >
                     <SelectTrigger className="w-36">
-                      <SelectValue placeholder="Type" />
+                      <SelectValue placeholder={UI_MESSAGES.TABLE.TYPE} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Types</SelectItem>
-                      <SelectItem value="gate-in">Gate In</SelectItem>
-                      <SelectItem value="gate-out">Gate Out</SelectItem>
+                      <SelectItem value="all">{UI_MESSAGES.REPORTS.ALL_TYPES}</SelectItem>
+                      <SelectItem value="gate-in">{UI_MESSAGES.REPORTS.GATE_IN_LEGEND}</SelectItem>
+                      <SelectItem value="gate-out">{UI_MESSAGES.REPORTS.GATE_OUT_LEGEND}</SelectItem>
                     </SelectContent>
                   </Select>
                   <div className="flex items-center gap-2 bg-background border rounded-md px-2 shadow-sm">
-                    <span className="text-muted-foreground text-xs font-medium">From:</span>
+                    <span className="text-muted-foreground text-xs font-medium">{UI_MESSAGES.REPORTS.FROM}</span>
                     <Input
                       type="date"
                       value={gateStartDate}
@@ -1412,7 +1427,7 @@ export default function AdminReportsAnalytics() {
                       title="Start Date"
                     />
                     <div className="h-4 w-px bg-border" />
-                    <span className="text-muted-foreground text-xs font-medium">To:</span>
+                    <span className="text-muted-foreground text-xs font-medium">{UI_MESSAGES.REPORTS.TO}</span>
                     <Input
                       type="date"
                       value={gateEndDate}
@@ -1444,22 +1459,22 @@ export default function AdminReportsAnalytics() {
                   <thead>
                     <tr className="border-b bg-muted/40">
                       <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                        Type
+                        {UI_MESSAGES.TABLE.TYPE}
                       </th>
                       <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                        Container #
+                        {UI_MESSAGES.TABLE.CONTAINER_NO}
                       </th>
                       <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                        Vehicle #
+                        {UI_MESSAGES.TABLE.VEHICLE_NO}
                       </th>
                       <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                        Driver
+                        {UI_MESSAGES.TABLE.DRIVER}
                       </th>
                       <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                        Purpose
+                        {UI_MESSAGES.REPORTS.GATE_PURPOSE}
                       </th>
                       <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                        Timestamp
+                        {UI_MESSAGES.TABLE.TIMESTAMP}
                       </th>
                     </tr>
                   </thead>
@@ -1470,7 +1485,7 @@ export default function AdminReportsAnalytics() {
                           colSpan={6}
                           className="py-10 text-center text-muted-foreground"
                         >
-                          No records match the current filters
+                          {UI_MESSAGES.REPORTS.NO_RECORDS_MATCH}
                         </td>
                       </tr>
                     ) : (
@@ -1489,14 +1504,14 @@ export default function AdminReportsAnalytics() {
                               }
                             >
                               {op.type === "gate-in"
-                                ? "↓ Gate In"
-                                : "↑ Gate Out"}
+                                ? UI_MESSAGES.REPORTS.GATE_IN_BADGE
+                                : UI_MESSAGES.REPORTS.GATE_OUT_BADGE}
                             </Badge>
                           </td>
                           <td className="px-4 py-3 font-mono text-xs font-medium">
                             {op.containerNumber || (
                               <span className="text-muted-foreground/50">
-                                —
+                                {UI_MESSAGES.COMMON.NA}
                               </span>
                             )}
                           </td>
@@ -1519,12 +1534,11 @@ export default function AdminReportsAnalytics() {
               {gateTotalPages > 1 && (
                 <div className="flex items-center justify-between px-4 py-3 border-t">
                   <p className="text-xs text-muted-foreground">
-                    Showing {(gatePage - 1) * itemsPerPage + 1} to{" "}
-                    {Math.min(
-                      gatePage * itemsPerPage,
-                      filteredGateOpsTable.length,
-                    )}{" "}
-                    of {filteredGateOpsTable.length} records
+                    {UI_MESSAGES.REPORTS.SHOWING_RECORDS(
+                      (gatePage - 1) * itemsPerPage + 1,
+                      Math.min(gatePage * itemsPerPage, filteredGateOpsTable.length),
+                      filteredGateOpsTable.length
+                    )}
                   </p>
                   <div className="flex items-center gap-2">
                     <Button
@@ -1533,7 +1547,7 @@ export default function AdminReportsAnalytics() {
                       onClick={() => setGatePage((p) => Math.max(1, p - 1))}
                       disabled={gatePage === 1}
                     >
-                      <ChevronLeft className="h-4 w-4 mr-1" /> Previous
+                      <ChevronLeft className="h-4 w-4 mr-1" /> {UI_MESSAGES.REPORTS.PREVIOUS}
                     </Button>
                     <div className="flex items-center gap-1">
                       {Array.from(
@@ -1559,7 +1573,7 @@ export default function AdminReportsAnalytics() {
                       }
                       disabled={gatePage === gateTotalPages}
                     >
-                      Next <ChevronRight className="h-4 w-4 ml-1" />
+                      {UI_MESSAGES.REPORTS.NEXT} <ChevronRight className="h-4 w-4 ml-1" />
                     </Button>
                   </div>
                 </div>

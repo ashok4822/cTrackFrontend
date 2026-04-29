@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Factory, ChevronLeft } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { forgotPassword } from "@/store/slices/authSlice";
+import { UI_MESSAGES } from "@/constants/messages";
 
 const ForgotPassword = () => {
     const [email, setEmail] = useState("");
@@ -41,7 +42,7 @@ const ForgotPassword = () => {
                         className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
                     >
                         <ChevronLeft className="h-4 w-4" />
-                        Back to Home
+                        {UI_MESSAGES.AUTH.BACK_TO_HOME}
                     </Link>
                 </div>
             </header>
@@ -53,19 +54,19 @@ const ForgotPassword = () => {
                         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-success/10">
                             <Factory className="h-8 w-8 text-success" />
                         </div>
-                        <CardTitle className="text-2xl">Forgot Password</CardTitle>
+                        <CardTitle className="text-2xl">{UI_MESSAGES.AUTH.FORGOT_PASSWORD}</CardTitle>
                         <CardDescription>
-                            Enter your email to receive a password reset code
+                            {UI_MESSAGES.AUTH.ENTER_EMAIL_INSTRUCTIONS}
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="space-y-2">
-                                <Label htmlFor="email">Email</Label>
+                                <Label htmlFor="email">{UI_MESSAGES.AUTH.WORK_EMAIL}</Label>
                                 <Input
                                     id="email"
                                     type="email"
-                                    placeholder="Enter your email"
+                                    placeholder={UI_MESSAGES.AUTH.EMAIL_PLACEHOLDER}
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
@@ -84,7 +85,7 @@ const ForgotPassword = () => {
                                 size="lg"
                                 disabled={isLoading}
                             >
-                                {isLoading ? "Sending..." : "Send Reset Link"}
+                                {isLoading ? UI_MESSAGES.AUTH.SENDING : UI_MESSAGES.AUTH.RESET_PASSWORD}
                             </Button>
 
                             <div className="text-center text-sm">
@@ -92,7 +93,7 @@ const ForgotPassword = () => {
                                     to={`/${role}/login`}
                                     className="text-muted-foreground hover:text-foreground transition-colors"
                                 >
-                                    Back to Login
+                                    {UI_MESSAGES.AUTH.BACK_TO_LOGIN}
                                 </Link>
                             </div>
                         </form>

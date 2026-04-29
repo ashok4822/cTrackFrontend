@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Package, Clock, CheckCircle, Calendar } from "lucide-react";
 import type { ContainerRequest } from "@/types";
 import { adminNavItems } from "@/config/navigation";
+import { UI_MESSAGES } from "@/constants/messages";
 import { containerRequestService } from "@/services/containerRequestService";
 
 
@@ -52,36 +53,36 @@ const AdminStuffingDestuffing = () => {
   const columns: Column<ContainerRequest>[] = [
     {
       key: "containerNumber",
-      header: "Container",
+      header: UI_MESSAGES.TABLE.CONTAINER,
       sortable: true,
       render: (item) => (
         <span className="font-mono font-medium text-foreground">
-          {item.containerNumber || "N/A"}
+          {item.containerNumber || UI_MESSAGES.COMMON.NA}
         </span>
       ),
     },
     {
       key: "customerName",
-      header: "Customer",
+      header: UI_MESSAGES.TABLE.CUSTOMER,
       sortable: true,
     },
     {
       key: "type",
-      header: "Type",
+      header: UI_MESSAGES.TABLE.TYPE,
       sortable: true,
       render: (item) => (
         <Badge
           variant={item.type === "stuffing" ? "default" : "secondary"}
           className="capitalize"
         >
-          {item.type}
+          {(UI_MESSAGES.COMMON[item.type.toUpperCase() as keyof typeof UI_MESSAGES.COMMON] as string) || item.type}
         </Badge>
       ),
     },
 
     {
       key: "preferredDate",
-      header: "Preferred Date",
+      header: UI_MESSAGES.TABLE.PREFERRED_DATE,
       sortable: true,
       render: (item) => (
         <div className="flex items-center gap-1.5">
@@ -92,69 +93,69 @@ const AdminStuffingDestuffing = () => {
     },
     {
       key: "status",
-      header: "Status",
+      header: UI_MESSAGES.TABLE.STATUS,
       sortable: true,
       render: (item) => <StatusBadge status={item.status} />,
     },
     {
       key: "actions",
-      header: "Actions",
+      header: UI_MESSAGES.TABLE.ACTIONS,
       render: (item) => (
         <Dialog>
           <DialogTrigger asChild>
             <Button variant="ghost" size="sm">
-              View Details
+              {UI_MESSAGES.COMMON.VIEW_DETAILS}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-lg">
             <DialogHeader>
-              <DialogTitle>Operation Details</DialogTitle>
+              <DialogTitle>{UI_MESSAGES.DIALOG.OPERATION_DETAILS}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">Container</p>
+                  <p className="text-sm text-muted-foreground">{UI_MESSAGES.TABLE.CONTAINER}</p>
                   <p className="font-mono font-medium">
                     {item.containerNumber}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Type</p>
-                  <p className="capitalize font-medium">{item.type}</p>
+                  <p className="text-sm text-muted-foreground">{UI_MESSAGES.TABLE.TYPE}</p>
+                  <p className="capitalize font-medium">{(UI_MESSAGES.COMMON[item.type.toUpperCase() as keyof typeof UI_MESSAGES.COMMON] as string) || item.type}</p>
                 </div>
 
                 <div>
-                  <p className="text-sm text-muted-foreground">Customer</p>
+                  <p className="text-sm text-muted-foreground">{UI_MESSAGES.TABLE.CUSTOMER}</p>
                   <p className="font-medium">{item.customerName}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Status</p>
+                  <p className="text-sm text-muted-foreground">{UI_MESSAGES.TABLE.STATUS}</p>
                   <StatusBadge status={item.status} />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">
-                    Preferred Date
+                    {UI_MESSAGES.TABLE.PREFERRED_DATE}
                   </p>
                   <p>{new Date(item.preferredDate).toLocaleString()}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Cargo</p>
+                  <p className="text-sm text-muted-foreground">{UI_MESSAGES.TABLE.CARGO}</p>
                   <p>{item.cargoDescription}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Weight</p>
-                  <p>{item.cargoWeight} kg</p>
+                  <p className="text-sm text-muted-foreground">{UI_MESSAGES.TABLE.WEIGHT}</p>
+                  <p>{item.cargoWeight} {UI_MESSAGES.COMMON.KG}</p>
                 </div>
                 {item.containerSize && (
                   <div>
-                    <p className="text-sm text-muted-foreground">Size/Type</p>
+                    <p className="text-sm text-muted-foreground">{UI_MESSAGES.CONTAINER_DETAILS.SIZE_TYPE_LABEL}</p>
                     <p>{item.containerSize} / {item.containerType}</p>
                   </div>
                 )}
               </div>
               {item.remarks && (
                 <div>
-                  <p className="text-sm text-muted-foreground">Remarks</p>
+                  <p className="text-sm text-muted-foreground">{UI_MESSAGES.TABLE.REMARKS}</p>
                   <p className="text-sm">{item.remarks}</p>
                 </div>
               )}
@@ -171,10 +172,10 @@ const AdminStuffingDestuffing = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-foreground">
-              Stuffing / Destuffing
+              {UI_MESSAGES.TITLES.STUFFING_DESTUFFING}
             </h1>
             <p className="text-muted-foreground">
-              Container stuffing and destuffing operations
+              {UI_MESSAGES.TITLES.STUFFING_DESTUFFING_DESC}
             </p>
           </div>
         </div>
@@ -189,7 +190,7 @@ const AdminStuffingDestuffing = () => {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{pendingCount}</p>
-                  <p className="text-sm text-muted-foreground">Pending</p>
+                  <p className="text-sm text-muted-foreground">{UI_MESSAGES.KPI.PENDING}</p>
                 </div>
               </div>
             </CardContent>
@@ -202,7 +203,7 @@ const AdminStuffingDestuffing = () => {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{inProgressCount}</p>
-                  <p className="text-sm text-muted-foreground">In Progress</p>
+                  <p className="text-sm text-muted-foreground">{UI_MESSAGES.KPI.IN_PROGRESS}</p>
                 </div>
               </div>
             </CardContent>
@@ -215,7 +216,7 @@ const AdminStuffingDestuffing = () => {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{completedCount}</p>
-                  <p className="text-sm text-muted-foreground">Completed</p>
+                  <p className="text-sm text-muted-foreground">{UI_MESSAGES.KPI.COMPLETED}</p>
                 </div>
               </div>
             </CardContent>
@@ -225,14 +226,14 @@ const AdminStuffingDestuffing = () => {
         {/* Operations Table with Tabs */}
         <Card>
           <CardHeader>
-            <CardTitle>Operations</CardTitle>
+            <CardTitle>{UI_MESSAGES.TITLES.OPERATIONS}</CardTitle>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="all">
               <TabsList className="mb-4">
-                <TabsTrigger value="all">All Operations</TabsTrigger>
-                <TabsTrigger value="stuffing">Stuffing</TabsTrigger>
-                <TabsTrigger value="destuffing">Destuffing</TabsTrigger>
+                <TabsTrigger value="all">{UI_MESSAGES.COMMON.ALL_OPERATIONS}</TabsTrigger>
+                <TabsTrigger value="stuffing">{UI_MESSAGES.COMMON.STUFFING}</TabsTrigger>
+                <TabsTrigger value="destuffing">{UI_MESSAGES.COMMON.DESTUFFING}</TabsTrigger>
               </TabsList>
               <TabsContent value="all">
                 <DataTable
@@ -240,7 +241,7 @@ const AdminStuffingDestuffing = () => {
                   columns={columns}
                   searchable
                   isLoading={loading}
-                  searchPlaceholder="Search by container number..."
+                  searchPlaceholder={UI_MESSAGES.TABLE.SEARCH_CONTAINER_NO}
                 />
               </TabsContent>
               <TabsContent value="stuffing">
@@ -251,7 +252,7 @@ const AdminStuffingDestuffing = () => {
                   columns={columns}
                   searchable
                   isLoading={loading}
-                  searchPlaceholder="Search stuffing operations..."
+                  searchPlaceholder={`${UI_MESSAGES.COMMON.SEARCH} ${UI_MESSAGES.COMMON.STUFFING.toLowerCase()} ${UI_MESSAGES.TABLE.OPERATIONS.toLowerCase()}...`}
                 />
               </TabsContent>
               <TabsContent value="destuffing">
@@ -262,7 +263,7 @@ const AdminStuffingDestuffing = () => {
                   columns={columns}
                   searchable
                   isLoading={loading}
-                  searchPlaceholder="Search destuffing operations..."
+                  searchPlaceholder={`${UI_MESSAGES.COMMON.SEARCH} ${UI_MESSAGES.COMMON.DESTUFFING.toLowerCase()} ${UI_MESSAGES.TABLE.OPERATIONS.toLowerCase()}...`}
                 />
               </TabsContent>
             </Tabs>

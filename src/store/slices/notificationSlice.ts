@@ -3,6 +3,7 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 import type { Notification } from "@/types";
 import { notificationService } from "@/services/notificationService";
 import { AxiosError } from "axios";
+import { UI_MESSAGES } from "@/constants/messages";
 
 interface NotificationState {
     notifications: Notification[];
@@ -26,7 +27,7 @@ export const fetchNotifications = createAsyncThunk(
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
             return rejectWithValue(
-                axiosError.response?.data?.message || axiosError.message || "Failed to fetch notifications"
+                axiosError.response?.data?.message || axiosError.message || UI_MESSAGES.NOTIFICATION.FETCH_FAILED
             );
         }
     }
@@ -41,7 +42,7 @@ export const markAsRead = createAsyncThunk(
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
             return rejectWithValue(
-                axiosError.response?.data?.message || axiosError.message || "Failed to mark notification as read"
+                axiosError.response?.data?.message || axiosError.message || UI_MESSAGES.NOTIFICATION.MARK_READ_FAILED
             );
         }
     }
@@ -55,7 +56,7 @@ export const markAllAsRead = createAsyncThunk(
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
             return rejectWithValue(
-                axiosError.response?.data?.message || axiosError.message || "Failed to mark all as read"
+                axiosError.response?.data?.message || axiosError.message || UI_MESSAGES.NOTIFICATION.MARK_ALL_READ_FAILED
             );
         }
     }

@@ -3,6 +3,7 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 import { shippingLineService } from "@/services/shippingLineService";
 import type { ShippingLine } from "@/types";
 import { AxiosError } from "axios";
+import { UI_MESSAGES } from "@/constants/messages";
 
 interface ShippingLineState {
     lines: ShippingLine[];
@@ -26,7 +27,7 @@ export const fetchShippingLines = createAsyncThunk(
             const message =
                 axiosError.response?.data?.message ||
                 axiosError.message ||
-                "Failed to fetch shipping lines";
+                UI_MESSAGES.SHIPPING.FETCH_FAILED;
             return rejectWithValue(message);
         }
     }
@@ -44,7 +45,7 @@ export const createShippingLine = createAsyncThunk(
             const message =
                 axiosError.response?.data?.message ||
                 axiosError.message ||
-                "Failed to create shipping line";
+                UI_MESSAGES.SHIPPING.CREATE_FAILED;
             return rejectWithValue(message);
         }
     }
@@ -61,7 +62,7 @@ export const updateShippingLine = createAsyncThunk(
             const message =
                 axiosError.response?.data?.message ||
                 axiosError.message ||
-                "Failed to update shipping line";
+                UI_MESSAGES.SHIPPING.UPDATE_FAILED;
             return rejectWithValue(message);
         }
     }

@@ -29,6 +29,7 @@ import { pdaService } from "@/services/pdaService";
 import type { PreDepositAccount, PDATransaction } from "@/types";
 import type { RazorpayOptions, RazorpayResponse } from "@/types/razorpay";
 import axios from "axios";
+import { UI_MESSAGES } from "@/constants/messages";
 
 export default function CustomerPDA() {
   const [pda, setPDA] = useState<PreDepositAccount | null>(null);
@@ -51,7 +52,7 @@ export default function CustomerPDA() {
         setTransactions(data.transactions || []);
       }
     } catch (error) {
-      toast.error("Failed to fetch PDA data");
+      toast.error(UI_MESSAGES.PDA.FETCH_FAILED);
       console.error(error);
     } finally {
       setLoading(false);
@@ -61,7 +62,7 @@ export default function CustomerPDA() {
   const handleDeposit = async () => {
     const amount = parseFloat(depositAmount);
     if (isNaN(amount) || amount <= 0) {
-      toast.error("Please enter a valid amount");
+      toast.error(UI_MESSAGES.PDA.INVALID_AMOUNT);
       return;
     }
 
@@ -84,7 +85,7 @@ export default function CustomerPDA() {
       );
 
       if (!isScriptLoaded) {
-        toast.error("Razorpay SDK failed to load. Are you online?");
+        toast.error(UI_MESSAGES.PDA.SDK_LOAD_FAILED);
         setDepositing(false);
         return;
       }
@@ -112,13 +113,12 @@ export default function CustomerPDA() {
             });
 
             if (verifiedTx) {
-              toast.success(`Succesfully deposited ₹${amount.toLocaleString()}`);
+              toast.success(UI_MESSAGES.PDA.DEPOSIT_SUCCESS(amount));
               setDepositAmount("");
-              setIsDialogOpen(false);
               fetchPDA(); // Refresh data
             }
           } catch (error) {
-            let message = "Payment verification failed. Please contact support.";
+            let message = UI_MESSAGES.PDA.VERIFY_FAILED;
             if (axios.isAxiosError(error)) {
               message = error.response?.data?.message || message;
             }
@@ -137,10 +137,11 @@ export default function CustomerPDA() {
         },
       };
 
+      setIsDialogOpen(false);
       const rzp = new window.Razorpay(options);
       rzp.open();
     } catch (error) {
-      let message = "There was an error initiating payment";
+      let message = UI_MESSAGES.PDA.INIT_FAILED;
       if (axios.isAxiosError(error)) {
         message = error.response?.data?.message || message;
       }
@@ -151,7 +152,7 @@ export default function CustomerPDA() {
 
   if (loading) {
     return (
-      <DashboardLayout navItems={customerNavItems} pageTitle="PDA">
+      <DashboardLayout navItems={customerNavItems} pageTitle={UI_MESSAGES.COMMON.PDA_FULL}>
         <div className="flex h-96 items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
@@ -170,67 +171,67 @@ export default function CustomerPDA() {
   return (
     <DashboardLayout
       navItems={customerNavItems}
-      pageTitle="Pre-Deposit Account (PDA)"
+      pageTitle={UI_MESSAGES.COMMON.PDA_FULL}
     >
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KPICard
-          title="Current Balance"
-          value={`₹${pda.balance.toLocaleString()}`}
+          title={UI_MESSAGES.KPI.ACCOUNT_STATUS}
+          value={`${UI_MESSAGES.COMMON.CURRENCY_SYMBOL}${pda.balance.toLocaleString()}`}
           icon={Wallet}
           variant={pda.balance < (pda.lowBalanceThreshold || 0) ? "danger" : "success"}
           subtitle={
             pda.balance < (pda.lowBalanceThreshold || 0) ? (
-              <span className="text-destructive font-semibold">Low Balance Alert</span>
-            ) : "Available Funds"
+              <span className="text-destructive font-semibold">{UI_MESSAGES.PDA.LOW_BALANCE_ALERT}</span>
+            ) : UI_MESSAGES.PDA.AVAILABLE_FUNDS
           }
         />
         <KPICard
-          title="Monthly Spending"
-          value={`₹${monthlySpending.toLocaleString()}`}
+          title={UI_MESSAGES.KPI.SPENT_THIS_MONTH}
+          value={`${UI_MESSAGES.COMMON.CURRENCY_SYMBOL}${monthlySpending.toLocaleString()}`}
           icon={TrendingUp}
           variant="warning"
-          subtitle="Spent this month"
+          subtitle={UI_MESSAGES.KPI.SPENT_THIS_MONTH}
         />
         <KPICard
-          title="Last Activity"
-          value={lastActivity ? `${lastActivity.type === 'credit' ? '+' : '-'}₹${lastActivity.amount.toLocaleString()}` : "No Activity"}
+          title={UI_MESSAGES.PDA.LAST_UPDATE}
+          value={lastActivity ? `${lastActivity.type === 'credit' ? '+' : '-'}${UI_MESSAGES.COMMON.CURRENCY_SYMBOL}${lastActivity.amount.toLocaleString()}` : UI_MESSAGES.PDA.NO_ACTIVITY}
           icon={lastActivity?.type === 'credit' ? ArrowUpCircle : ArrowDownCircle}
           variant="primary"
-          subtitle={lastActivity ? lastActivity.description.replace(/\(.*\)/, '').trim() : "No transactions yet"}
+          subtitle={lastActivity ? lastActivity.description.replace(/\(.*\)/, '').trim() : UI_MESSAGES.PDA.NO_TRANSACTIONS_DESC}
         />
         <KPICard 
-          title="Account Status" 
-          value="Active" 
+          title={UI_MESSAGES.KPI.ACCOUNT_STATUS} 
+          value={UI_MESSAGES.KPI.ACTIVE} 
           icon={CheckCircle2} 
           variant="success" 
-          subtitle="PDA status"
+          subtitle={UI_MESSAGES.KPI.PDA_STATUS}
         />
       </div>
 
       <div className="grid gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Recent Transactions</CardTitle>
+            <CardTitle>{UI_MESSAGES.PDA.RECENT_TRANSACTIONS}</CardTitle>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button className="flex items-center gap-2">
-                  <Plus className="h-4 w-4" /> Deposit Funds
+                  <Plus className="h-4 w-4" /> {UI_MESSAGES.PDA.DEPOSIT_FUNDS}
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Deposit Funds</DialogTitle>
+                  <DialogTitle>{UI_MESSAGES.PDA.DEPOSIT_FUNDS}</DialogTitle>
                   <DialogDescription>
-                    Add funds to your Pre-Deposit Account.
+                    {UI_MESSAGES.PDA.ADD_FUNDS_DESC}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="py-4 space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="amount">Amount (₹)</Label>
+                    <Label htmlFor="amount">{UI_MESSAGES.BILLING.AMOUNT} (₹)</Label>
                     <Input
                       id="amount"
                       type="number"
-                      placeholder="Enter amount"
+                      placeholder={UI_MESSAGES.PDA.ENTER_AMOUNT}
                       value={depositAmount}
                       onChange={(e) => setDepositAmount(e.target.value)}
                     />
@@ -242,13 +243,13 @@ export default function CustomerPDA() {
                     onClick={() => setIsDialogOpen(false)}
                     disabled={depositing}
                   >
-                    Cancel
+                    {UI_MESSAGES.COMMON.CANCEL}
                   </Button>
                   <Button onClick={handleDeposit} disabled={depositing}>
                     {depositing ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : null}
-                    Confirm Deposit
+                    {UI_MESSAGES.PDA.CONFIRM_DEPOSIT}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -282,18 +283,18 @@ export default function CustomerPDA() {
                     <p
                       className={`text-lg font-bold ${tx.type === "credit" ? "text-success" : "text-destructive"}`}
                     >
-                      {tx.type === "credit" ? "+" : "-"}₹
+                      {tx.type === "credit" ? "+" : "-"}{UI_MESSAGES.COMMON.CURRENCY_SYMBOL}
                       {tx.amount.toLocaleString()}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Balance: ₹{tx.balanceAfter.toLocaleString()}
+                      {UI_MESSAGES.PDA.BALANCE_AFTER} {UI_MESSAGES.COMMON.CURRENCY_SYMBOL}{tx.balanceAfter.toLocaleString()}
                     </p>
                   </div>
                 </div>
               ))}
               {transactions.length === 0 && (
                 <div className="text-center py-8 text-muted-foreground">
-                  No transactions found for this account.
+                  {UI_MESSAGES.PDA.NO_TRANSACTIONS}
                 </div>
               )}
             </div>
@@ -303,19 +304,19 @@ export default function CustomerPDA() {
 
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle>Account Details</CardTitle>
+          <CardTitle>{UI_MESSAGES.PDA.ACCOUNT_DETAILS}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <p className="text-sm font-medium text-muted-foreground mb-1">
-                Account Holder
+                {UI_MESSAGES.PDA.ACCOUNT_HOLDER}
               </p>
               <p className="font-semibold text-lg">{pda.customer}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground mb-1">
-                Account ID
+                {UI_MESSAGES.PDA.ACCOUNT_ID}
               </p>
               <p className="font-semibold text-lg">
                 PDA-{pda.id.substring(pda.id.length - 4).toUpperCase()}
@@ -323,7 +324,7 @@ export default function CustomerPDA() {
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground mb-1">
-                Last Update
+                {UI_MESSAGES.PDA.LAST_UPDATE}
               </p>
               <p className="font-semibold">
                 {new Date(pda.lastUpdated).toLocaleString()}

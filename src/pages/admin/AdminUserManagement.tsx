@@ -27,6 +27,7 @@ import { Users, Plus, Shield, Pencil, Lock, Unlock } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchAllUsers, toggleUserBlock, adminCreateUser, adminUpdateUser } from "@/store/slices/adminSlice";
 import { toast } from "sonner";
+import { UI_MESSAGES } from "@/constants/messages";
 
 export default function AdminUserManagement() {
   const dispatch = useAppDispatch();
@@ -56,7 +57,7 @@ export default function AdminUserManagement() {
   useEffect(() => {
     dispatch(fetchAllUsers())
       .unwrap()
-      .catch((err) => toast.error(err || "Failed to load users"));
+      .catch((err) => toast.error(err || UI_MESSAGES.ADMIN_USER.LOAD_FAILED));
   }, [dispatch]);
 
   const terminalUsers = users.filter((u) => u.role === "operator");
@@ -72,9 +73,9 @@ export default function AdminUserManagement() {
         role: "operator",
         organization: "",
       });
-      toast.success("User added successfully");
+      toast.success(UI_MESSAGES.ADMIN_USER.ADD_SUCCESS);
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error || "Failed to add user");
+      const message = error instanceof Error ? error.message : String(error || UI_MESSAGES.ADMIN_USER.ADD_FAILED);
       toast.error(message);
     }
   };
@@ -97,9 +98,9 @@ export default function AdminUserManagement() {
         userData: editFormData
       })).unwrap();
       setEditUserOpen(false);
-      toast.success("User updated successfully");
+      toast.success(UI_MESSAGES.ADMIN_USER.UPDATE_SUCCESS);
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error || "Failed to update user");
+      const message = error instanceof Error ? error.message : String(error || UI_MESSAGES.ADMIN_USER.UPDATE_FAILED);
       toast.error(message);
     }
   };
@@ -113,11 +114,11 @@ export default function AdminUserManagement() {
     if (!userToToggle) return;
     try {
       await dispatch(toggleUserBlock(userToToggle.id)).unwrap();
-      toast.success(`User ${userToToggle.isBlocked ? "unblocked" : "blocked"} successfully`);
+      toast.success(UI_MESSAGES.ADMIN_USER.TOGGLE_SUCCESS(userToToggle.isBlocked));
       setConfirmDialogOpen(false);
       setUserToToggle(null);
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error || "Failed to update user status");
+      const message = error instanceof Error ? error.message : String(error || UI_MESSAGES.ADMIN_USER.STATUS_UPDATE_FAILED);
       toast.error(message);
     }
   };
@@ -125,7 +126,7 @@ export default function AdminUserManagement() {
   const columns: Column<User>[] = [
     {
       key: "name",
-      header: "Name",
+      header: UI_MESSAGES.TABLE.NAME,
       sortable: true,
       render: (item) => (
         <div className="flex items-center gap-3">
@@ -140,31 +141,31 @@ export default function AdminUserManagement() {
     },
     {
       key: "email",
-      header: "Email",
+      header: UI_MESSAGES.TABLE.EMAIL,
       sortable: true,
     },
     {
       key: "role",
-      header: "Role",
+      header: UI_MESSAGES.TABLE.ROLE,
       render: (item) => <span className="capitalize">{item.role || "-"}</span>,
     },
     {
       key: "organization",
-      header: "Organization",
+      header: UI_MESSAGES.TABLE.ORGANIZATION,
       render: (item) => item.companyName || item.organization || "-",
     },
     {
       key: "status",
-      header: "Status",
+      header: UI_MESSAGES.TABLE.STATUS,
       render: (item) => (
         <span className={`px-2 py-1 rounded-full text-xs font-medium ${item.isBlocked ? 'bg-destructive/10 text-destructive' : 'bg-success/10 text-success'}`}>
-          {item.isBlocked ? 'Blocked' : 'Active'}
+          {item.isBlocked ? UI_MESSAGES.COMMON.BLOCKED : UI_MESSAGES.KPI.ACTIVE}
         </span>
       ),
     },
     {
       key: "actions",
-      header: "Actions",
+      header: UI_MESSAGES.TABLE.ACTIONS,
       render: (item) => (
         <div className="flex items-center gap-2">
           <Button
@@ -173,7 +174,7 @@ export default function AdminUserManagement() {
             onClick={() => handleEditClick(item)}
           >
             <Pencil className="h-3 w-3 mr-1" />
-            Edit
+            {UI_MESSAGES.COMMON.EDIT}
           </Button>
           <Button
             variant="ghost"
@@ -184,12 +185,12 @@ export default function AdminUserManagement() {
             {item.isBlocked ? (
               <>
                 <Unlock className="h-3 w-3 mr-1" />
-                Unblock
+                {UI_MESSAGES.COMMON.UNBLOCK}
               </>
             ) : (
               <>
                 <Lock className="h-3 w-3 mr-1" />
-                Block
+                {UI_MESSAGES.COMMON.BLOCK}
               </>
             )}
           </Button>
@@ -201,12 +202,12 @@ export default function AdminUserManagement() {
   return (
     <DashboardLayout
       navItems={adminNavItems}
-      pageTitle="User & Role Management"
+      pageTitle={UI_MESSAGES.TITLES.USER_MANAGEMENT}
       pageActions={
         <div className="flex gap-2">
           <Button className="gap-2" onClick={() => setAddUserOpen(true)}>
             <Plus className="h-4 w-4" />
-            Add User
+            {UI_MESSAGES.TITLES.ADD_USER}
           </Button>
         </div>
       }
@@ -223,7 +224,7 @@ export default function AdminUserManagement() {
                 <p className="text-2xl font-bold text-foreground">
                   {users.length}
                 </p>
-                <p className="text-sm text-muted-foreground">Total Users</p>
+                <p className="text-sm text-muted-foreground">{UI_MESSAGES.ADMIN_USER.TOTAL_USERS}</p>
               </div>
             </div>
           </CardContent>
@@ -238,7 +239,7 @@ export default function AdminUserManagement() {
                 <p className="text-2xl font-bold text-foreground">
                   {terminalUsers.length}
                 </p>
-                <p className="text-sm text-muted-foreground">Terminal Users</p>
+                <p className="text-sm text-muted-foreground">{UI_MESSAGES.ADMIN_USER.TERMINAL_USERS}</p>
               </div>
             </div>
           </CardContent>
@@ -253,7 +254,7 @@ export default function AdminUserManagement() {
                 <p className="text-2xl font-bold text-foreground">
                   {externalUsers.length}
                 </p>
-                <p className="text-sm text-muted-foreground">External Users</p>
+                <p className="text-sm text-muted-foreground">{UI_MESSAGES.ADMIN_USER.EXTERNAL_USERS}</p>
               </div>
             </div>
           </CardContent>
@@ -266,7 +267,7 @@ export default function AdminUserManagement() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-foreground">3</p>
-                <p className="text-sm text-muted-foreground">Roles Defined</p>
+                <p className="text-sm text-muted-foreground">{UI_MESSAGES.ADMIN_USER.ROLES_DEFINED}</p>
               </div>
             </div>
           </CardContent>
@@ -278,32 +279,32 @@ export default function AdminUserManagement() {
         data={users}
         columns={columns}
         isLoading={isLoading}
-        searchPlaceholder="Search users..."
+        searchPlaceholder={UI_MESSAGES.ADMIN_USER.SEARCH_USERS}
       />
 
       {/* Add User Dialog */}
       <Dialog open={addUserOpen} onOpenChange={setAddUserOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Add New User</DialogTitle>
+            <DialogTitle>{UI_MESSAGES.TITLES.ADD_USER}</DialogTitle>
             <DialogDescription>
-              Create a new user account with role assignment.
+              {UI_MESSAGES.ADMIN_USER.CREATE_USER_DESC}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
+              <Label htmlFor="name">{UI_MESSAGES.TABLE.FULL_NAME}</Label>
               <Input
                 id="name"
                 value={newUser.name}
                 onChange={(e) =>
                   setNewUser({ ...newUser, name: e.target.value })
                 }
-                placeholder="Enter full name"
+                placeholder={UI_MESSAGES.COMMON.PLACEHOLDERS.DRIVER_NAME}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{UI_MESSAGES.TABLE.EMAIL}</Label>
               <Input
                 id="email"
                 type="email"
@@ -311,12 +312,12 @@ export default function AdminUserManagement() {
                 onChange={(e) =>
                   setNewUser({ ...newUser, email: e.target.value })
                 }
-                placeholder="Enter email address"
+                placeholder={UI_MESSAGES.AUTH.EMAIL_PLACEHOLDER}
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Role</Label>
+              <Label>{UI_MESSAGES.TABLE.ROLE}</Label>
               <Select
                 value={newUser.role}
                 onValueChange={(value: UserRole) =>
@@ -324,36 +325,36 @@ export default function AdminUserManagement() {
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select role" />
+                  <SelectValue placeholder={UI_MESSAGES.PDA.MISSING_INFO} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="operator">Operator</SelectItem>
-                  <SelectItem value="customer">Customer</SelectItem>
+                  <SelectItem value="admin">{UI_MESSAGES.ADMIN_USER.ROLES.ADMIN}</SelectItem>
+                  <SelectItem value="operator">{UI_MESSAGES.ADMIN_USER.ROLES.OPERATOR}</SelectItem>
+                  <SelectItem value="customer">{UI_MESSAGES.ADMIN_USER.ROLES.CUSTOMER}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="organization">Organization (Optional)</Label>
+              <Label htmlFor="organization">{UI_MESSAGES.TABLE.ORGANIZATION_OPT}</Label>
               <Input
                 id="organization"
                 value={newUser.organization}
                 onChange={(e) =>
                   setNewUser({ ...newUser, organization: e.target.value })
                 }
-                placeholder="Enter organization name"
+                placeholder={UI_MESSAGES.ADMIN_USER.ORG_PLACEHOLDER}
               />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setAddUserOpen(false)}>
-              Cancel
+              {UI_MESSAGES.COMMON.CANCEL}
             </Button>
             <Button
               onClick={handleAddUser}
               disabled={!newUser.name || !newUser.email}
             >
-              Add User
+              {UI_MESSAGES.TITLES.ADD_USER}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -363,15 +364,15 @@ export default function AdminUserManagement() {
       <Dialog open={editUserOpen} onOpenChange={setEditUserOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Edit User</DialogTitle>
+            <DialogTitle>{UI_MESSAGES.TITLES.EDIT_USER}</DialogTitle>
             <DialogDescription>
-              Update user details and access level.
+              {UI_MESSAGES.ADMIN_USER.EDIT_USER_DESC}
             </DialogDescription>
           </DialogHeader>
           {selectedUser && (
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="edit-name">Full Name</Label>
+                <Label htmlFor="edit-name">{UI_MESSAGES.TABLE.FULL_NAME}</Label>
                 <Input
                   id="edit-name"
                   value={editFormData.name}
@@ -381,7 +382,7 @@ export default function AdminUserManagement() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Role</Label>
+                <Label>{UI_MESSAGES.TABLE.ROLE}</Label>
                 <Select
                   value={editFormData.role}
                   onValueChange={(value: UserRole) =>
@@ -389,39 +390,39 @@ export default function AdminUserManagement() {
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select role" />
+                    <SelectValue placeholder={UI_MESSAGES.PDA.MISSING_INFO} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="admin">Admin</SelectItem>
-                    <SelectItem value="operator">Operator</SelectItem>
-                    <SelectItem value="customer">Customer</SelectItem>
+                    <SelectItem value="admin">{UI_MESSAGES.ADMIN_USER.ROLES.ADMIN}</SelectItem>
+                    <SelectItem value="operator">{UI_MESSAGES.ADMIN_USER.ROLES.OPERATOR}</SelectItem>
+                    <SelectItem value="customer">{UI_MESSAGES.ADMIN_USER.ROLES.CUSTOMER}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-org">Organization</Label>
+                <Label htmlFor="edit-org">{UI_MESSAGES.TABLE.ORGANIZATION}</Label>
                 <Input
                   id="edit-org"
                   value={editFormData.organization}
                   onChange={(e) =>
                     setEditFormData({ ...editFormData, organization: e.target.value })
                   }
-                  placeholder="Enter organization name"
+                  placeholder={UI_MESSAGES.ADMIN_USER.ORG_PLACEHOLDER}
                 />
               </div>
               <div className="space-y-2">
-                <Label>Email</Label>
+                <Label>{UI_MESSAGES.TABLE.EMAIL}</Label>
                 <Input value={selectedUser.email} disabled className="bg-muted" />
-                <p className="text-xs text-muted-foreground italic">Email cannot be changed.</p>
+                <p className="text-xs text-muted-foreground italic">{UI_MESSAGES.ADMIN_USER.EMAIL_IMMUTABLE}</p>
               </div>
             </div>
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditUserOpen(false)}>
-              Cancel
+              {UI_MESSAGES.COMMON.CANCEL}
             </Button>
             <Button onClick={handleUpdateUser} disabled={!editFormData.name}>
-              Save Changes
+              {UI_MESSAGES.COMMON.SAVE_CHANGES}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -432,25 +433,21 @@ export default function AdminUserManagement() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>
-              {userToToggle?.isBlocked ? "Unblock User" : "Block User"}
+              {userToToggle?.isBlocked ? UI_MESSAGES.COMMON.UNBLOCK : UI_MESSAGES.COMMON.BLOCK} {UI_MESSAGES.TABLE.USER}
             </DialogTitle>
             <DialogDescription>
-              Are you sure you want to {userToToggle?.isBlocked ? "unblock" : "block"}{" "}
-              <span className="font-semibold text-foreground">{userToToggle?.name}</span>?{" "}
-              {userToToggle?.isBlocked
-                ? "This will restore their access to the system."
-                : "This will immediately revoke their access to the system."}
+              {userToToggle?.isBlocked ? UI_MESSAGES.ADMIN_USER.UNBLOCK_CONFIRM(userToToggle?.name || "") : UI_MESSAGES.ADMIN_USER.BLOCK_CONFIRM(userToToggle?.name || "")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-0">
             <Button variant="outline" onClick={() => setConfirmDialogOpen(false)}>
-              Cancel
+              {UI_MESSAGES.COMMON.CANCEL}
             </Button>
             <Button
               variant={userToToggle?.isBlocked ? "default" : "destructive"}
               onClick={confirmToggleStatus}
             >
-              {userToToggle?.isBlocked ? "Confirm Unblock" : "Confirm Block"}
+              {userToToggle?.isBlocked ? UI_MESSAGES.COMMON.UNBLOCK : UI_MESSAGES.COMMON.BLOCK}
             </Button>
           </DialogFooter>
         </DialogContent>

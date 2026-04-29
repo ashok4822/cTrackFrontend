@@ -27,10 +27,11 @@ import {
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { fetchContainers, fetchContainerHistory } from "@/store/slices/containerSlice";
+import { fetchContainers, fetchContainerHistory, clearContainerError } from "@/store/slices/containerSlice";
 import type { Container as ContainerType, ContainerStatus, ContainerSize, ContainerType as ContainerTypeEnum } from "@/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { UI_MESSAGES } from "@/constants/messages";
 
 type LoadFilter = "all" | "empty" | "loaded";
 type HazardousFilter = "all" | "yes" | "no";
@@ -94,8 +95,9 @@ export default function OperatorContainerLookup() {
   useEffect(() => {
     if (error) {
       toast.error(error);
+      dispatch(clearContainerError());
     }
-  }, [error]);
+  }, [error, dispatch]);
 
   const handleBack = () => {
     setSelectedContainer(null);
@@ -104,7 +106,7 @@ export default function OperatorContainerLookup() {
   const columns: Column<ContainerType>[] = [
     {
       key: "containerNumber",
-      header: "Container No.",
+      header: UI_MESSAGES.TABLE.CONTAINER_NO,
       sortable: true,
       render: (item) => (
         <span className="font-medium text-foreground">
@@ -114,60 +116,60 @@ export default function OperatorContainerLookup() {
     },
     {
       key: "size",
-      header: "Size",
+      header: UI_MESSAGES.COMMON.SIZE,
       sortable: true,
     },
     {
       key: "type",
-      header: "Type",
+      header: UI_MESSAGES.TABLE.TYPE,
       sortable: true,
       render: (item) => <span className="capitalize">{item.type}</span>,
     },
     {
       key: "empty",
-      header: "Load",
+      header: UI_MESSAGES.CONTAINER_DETAILS.LOAD,
       sortable: true,
       render: (item) => (
         <Badge variant="secondary">
-          {item.empty ? "Empty" : "Loaded"}
+          {item.empty ? UI_MESSAGES.CONTAINER_DETAILS.EMPTY : UI_MESSAGES.CONTAINER_DETAILS.LOADED}
         </Badge>
       ),
     },
     {
       key: "hazardousClassification",
-      header: "Hazardous",
+      header: UI_MESSAGES.TABLE.HAZARDOUS,
       sortable: true,
       render: (item) => (
         <Badge variant={item.hazardousClassification ? "destructive" : "secondary"}>
-          {item.hazardousClassification ? "Yes" : "No"}
+          {item.hazardousClassification ? UI_MESSAGES.COMMON.YES : UI_MESSAGES.COMMON.NO}
         </Badge>
       ),
     },
     {
       key: "status",
-      header: "Status",
+      header: UI_MESSAGES.TABLE.STATUS,
       sortable: true,
       render: (item) => <StatusBadge status={item.status} />,
     },
     {
       key: "shippingLine",
-      header: "Shipping Line",
+      header: UI_MESSAGES.TITLES.SHIPPING_LINE,
       sortable: true,
     },
     {
       key: "yardLocation",
-      header: "Location",
-      render: (item) => (item.yardLocation ? item.yardLocation.block : "-"),
+      header: UI_MESSAGES.TABLE.LOCATION,
+      render: (item) => (item.yardLocation ? item.yardLocation.block : UI_MESSAGES.COMMON.NA),
     },
     {
       key: "dwellTime",
-      header: "Dwell (days)",
+      header: `${UI_MESSAGES.CONTAINER_DETAILS.DWELL_TIME} (${UI_MESSAGES.COMMON.DAYS})`,
       sortable: true,
-      render: (item) => item.dwellTime ?? "-",
+      render: (item) => item.dwellTime ?? UI_MESSAGES.COMMON.NA,
     },
     {
       key: "actions",
-      header: "Actions",
+      header: UI_MESSAGES.TABLE.ACTIONS,
       render: (item) => (
         <div
           className="flex items-center gap-2"
@@ -179,7 +181,7 @@ export default function OperatorContainerLookup() {
             onClick={() => setSelectedContainer(item)}
           >
             <Eye className="h-4 w-4 mr-1" />
-            View
+            {UI_MESSAGES.TABLE.VIEW}
           </Button>
         </div>
       ),
@@ -187,7 +189,7 @@ export default function OperatorContainerLookup() {
   ];
 
   return (
-    <DashboardLayout navItems={operatorNavItems} pageTitle="Container Lookup">
+    <DashboardLayout navItems={operatorNavItems} pageTitle={UI_MESSAGES.TITLES.CONTAINER_LOOKUP}>
       {/* Container Details */}
       {selectedContainer ? (
         <div className="space-y-6">
@@ -197,13 +199,13 @@ export default function OperatorContainerLookup() {
             className="flex items-center gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to List
+            {UI_MESSAGES.CONTAINER_DETAILS.BACK_TO_LIST}
           </Button>
 
           <Tabs defaultValue="details" className="space-y-4">
             <TabsList>
-              <TabsTrigger value="details">Details</TabsTrigger>
-              <TabsTrigger value="history">History</TabsTrigger>
+              <TabsTrigger value="details">{UI_MESSAGES.TABLE.DETAILS}</TabsTrigger>
+              <TabsTrigger value="history">{UI_MESSAGES.TABLE.VIEW_HISTORY}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="details">
@@ -213,7 +215,7 @@ export default function OperatorContainerLookup() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Container className="h-5 w-5" />
-                      Container Information
+                      {UI_MESSAGES.CONTAINER_DETAILS.TITLE}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -226,57 +228,57 @@ export default function OperatorContainerLookup() {
                     <Separator />
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label className="text-muted-foreground">Size</Label>
+                        <Label className="text-muted-foreground">{UI_MESSAGES.COMMON.SIZE}</Label>
                         <p className="font-medium">{selectedContainer.size}</p>
                       </div>
                       <div>
-                        <Label className="text-muted-foreground">Type</Label>
+                        <Label className="text-muted-foreground">{UI_MESSAGES.TABLE.TYPE}</Label>
                         <p className="font-medium capitalize">
                           {selectedContainer.type}
                         </p>
                       </div>
                       <div>
-                        <Label className="text-muted-foreground">Movement Type</Label>
+                        <Label className="text-muted-foreground">{UI_MESSAGES.CONTAINER_DETAILS.MOVEMENT_TYPE}</Label>
                         <p className="font-medium capitalize">
                           {selectedContainer.movementType}
                         </p>
                       </div>
                       <div>
-                        <Label className="text-muted-foreground">Weight</Label>
+                        <Label className="text-muted-foreground">{UI_MESSAGES.COMMON.WEIGHT}</Label>
                         <p className="font-medium">
                           {selectedContainer.weight
-                            ? `${selectedContainer.weight} kg`
-                            : "N/A"}
+                            ? `${selectedContainer.weight} ${UI_MESSAGES.COMMON.KG}`
+                            : UI_MESSAGES.COMMON.NA}
                         </p>
                       </div>
                       <div>
-                        <Label className="text-muted-foreground">Shipping Line</Label>
+                        <Label className="text-muted-foreground">{UI_MESSAGES.TITLES.SHIPPING_LINE}</Label>
                         <p className="font-medium">
                           {selectedContainer.shippingLine}
                         </p>
                       </div>
                       <div>
-                        <Label className="text-muted-foreground">Customer</Label>
+                        <Label className="text-muted-foreground">{UI_MESSAGES.CONTAINER_DETAILS.CUSTOMER}</Label>
                         <p className="font-medium">
-                          {selectedContainer.customerName || selectedContainer.customer || "N/A"}
+                          {selectedContainer.customerName || selectedContainer.customer || UI_MESSAGES.COMMON.NA}
                         </p>
                       </div>
                       <div>
-                        <Label className="text-muted-foreground">Seal Number</Label>
+                        <Label className="text-muted-foreground">{UI_MESSAGES.CONTAINER_DETAILS.SEAL_NUMBER}</Label>
                         <p className="font-medium">
-                          {selectedContainer.sealNumber || "N/A"}
+                          {selectedContainer.sealNumber || UI_MESSAGES.COMMON.NA}
                         </p>
                       </div>
                       <div>
-                        <Label className="text-muted-foreground">Damaged</Label>
+                        <Label className="text-muted-foreground">{UI_MESSAGES.CONTAINER_DETAILS.DAMAGED}</Label>
                         <p className="font-medium">
-                          {selectedContainer.damaged ? "Yes" : "No"}
+                          {selectedContainer.damaged ? UI_MESSAGES.COMMON.YES : UI_MESSAGES.COMMON.NO}
                         </p>
                       </div>
                       <div>
-                        <Label className="text-muted-foreground">Hazardous</Label>
+                        <Label className="text-muted-foreground">{UI_MESSAGES.TABLE.HAZARDOUS}</Label>
                         <p className="font-medium">
-                          {selectedContainer.hazardousClassification ? "Yes" : "No"}
+                          {selectedContainer.hazardousClassification ? UI_MESSAGES.COMMON.YES : UI_MESSAGES.COMMON.NO}
                         </p>
                       </div>
                     </div>
@@ -288,13 +290,13 @@ export default function OperatorContainerLookup() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <MapPin className="h-5 w-5" />
-                      Location & Timing
+                      {UI_MESSAGES.CONTAINER_DETAILS.LOCATION_TIMING}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="rounded-lg bg-muted/50 p-4">
                       <Label className="text-muted-foreground">
-                        Current Yard Location
+                        {UI_MESSAGES.CONTAINER_DETAILS.LOCATION}
                       </Label>
                       {selectedContainer.yardLocation ? (
                         <p className="text-xl font-bold mt-1">
@@ -302,7 +304,7 @@ export default function OperatorContainerLookup() {
                         </p>
                       ) : (
                         <p className="text-xl font-bold mt-1 text-muted-foreground">
-                          Not in Yard
+                          {UI_MESSAGES.CONTAINER_DETAILS.NOT_IN_YARD}
                         </p>
                       )}
                     </div>
@@ -312,14 +314,12 @@ export default function OperatorContainerLookup() {
                         <Calendar className="h-4 w-4 mt-1 text-muted-foreground" />
                         <div>
                           <Label className="text-muted-foreground">
-                            Gate-In Time
+                            {UI_MESSAGES.GATE.GATE_IN_TIME}
                           </Label>
                           <p className="font-medium">
                             {selectedContainer.gateInTime
-                              ? new Date(
-                                selectedContainer.gateInTime,
-                              ).toLocaleString()
-                              : "N/A"}
+                              ? new Date(selectedContainer.gateInTime).toLocaleString()
+                              : UI_MESSAGES.COMMON.NA}
                           </p>
                         </div>
                       </div>
@@ -327,25 +327,23 @@ export default function OperatorContainerLookup() {
                         <Calendar className="h-4 w-4 mt-1 text-muted-foreground" />
                         <div>
                           <Label className="text-muted-foreground">
-                            Gate-Out Time
+                            {UI_MESSAGES.GATE.GATE_OUT_TIME}
                           </Label>
                           <p className="font-medium">
                             {selectedContainer.gateOutTime
-                              ? new Date(
-                                selectedContainer.gateOutTime,
-                              ).toLocaleString()
-                              : "N/A"}
+                              ? new Date(selectedContainer.gateOutTime).toLocaleString()
+                              : UI_MESSAGES.COMMON.NA}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-start gap-2 col-span-2">
                         <Clock className="h-4 w-4 mt-1 text-muted-foreground" />
                         <div>
-                          <Label className="text-muted-foreground">Dwell Time</Label>
+                          <Label className="text-muted-foreground">{UI_MESSAGES.CONTAINER_DETAILS.DWELL_TIME}</Label>
                           <p className="font-medium">
                             {selectedContainer.dwellTime
-                              ? `${selectedContainer.dwellTime} days`
-                              : "N/A"}
+                              ? `${selectedContainer.dwellTime} ${UI_MESSAGES.COMMON.DAYS}`
+                              : UI_MESSAGES.COMMON.NA}
                           </p>
                         </div>
                       </div>
@@ -360,7 +358,7 @@ export default function OperatorContainerLookup() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <HistoryIcon className="h-5 w-5" />
-                    Container History
+                    {UI_MESSAGES.CONTAINER_DETAILS.HISTORY}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -390,7 +388,7 @@ export default function OperatorContainerLookup() {
                     ) : (
                       <div className="text-center py-12 text-muted-foreground">
                         <HistoryIcon className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                        <p>No activity history recorded for this container.</p>
+                        <p>{UI_MESSAGES.CONTAINER_DETAILS.NO_HISTORY}</p>
                       </div>
                     )}
                   </div>
@@ -405,51 +403,51 @@ export default function OperatorContainerLookup() {
           <div className="flex flex-wrap items-end gap-3 rounded-lg border bg-card p-4">
             {/* Status */}
             <div className="flex flex-col gap-1">
-              <Label className="text-xs text-muted-foreground">Status</Label>
+              <Label className="text-xs text-muted-foreground">{UI_MESSAGES.TABLE.STATUS}</Label>
               <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as ContainerStatus | "all")}>
                 <SelectTrigger className="h-8 w-[140px]">
-                  <SelectValue placeholder="All Statuses" />
+                  <SelectValue placeholder={UI_MESSAGES.TABLE.ALL_STATUSES} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="in-yard">In Yard</SelectItem>
-                  <SelectItem value="in-transit">In Transit</SelectItem>
+                  <SelectItem value="all">{UI_MESSAGES.TABLE.ALL_STATUSES}</SelectItem>
+                  <SelectItem value="in-yard">{UI_MESSAGES.TABLE.CONTAINERS_IN_YARD}</SelectItem>
+                  <SelectItem value="in-transit">{UI_MESSAGES.KPI.IN_TRANSIT}</SelectItem>
                   <SelectItem value="at-port">At Port</SelectItem>
-                  <SelectItem value="at-factory">At Factory</SelectItem>
-                  <SelectItem value="gate-in">Gate In</SelectItem>
-                  <SelectItem value="gate-out">Gate Out</SelectItem>
-                  <SelectItem value="damaged">Damaged</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="at-factory">{UI_MESSAGES.TITLES.AT_FACTORY}</SelectItem>
+                  <SelectItem value="gate-in">{UI_MESSAGES.GATE.NEW_GATE_IN || "Gate In"}</SelectItem>
+                  <SelectItem value="gate-out">{UI_MESSAGES.GATE.NEW_GATE_OUT || "Gate Out"}</SelectItem>
+                  <SelectItem value="damaged">{UI_MESSAGES.CONTAINER_DETAILS.DAMAGED}</SelectItem>
+                  <SelectItem value="pending">{UI_MESSAGES.KPI.PENDING}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {/* Type */}
             <div className="flex flex-col gap-1">
-              <Label className="text-xs text-muted-foreground">Type</Label>
+              <Label className="text-xs text-muted-foreground">{UI_MESSAGES.TABLE.TYPE}</Label>
               <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as ContainerTypeEnum | "all")}>
                 <SelectTrigger className="h-8 w-[130px]">
-                  <SelectValue placeholder="All Types" />
+                  <SelectValue placeholder={UI_MESSAGES.TABLE.ALL_TYPES} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="standard">Standard</SelectItem>
-                  <SelectItem value="reefer">Reefer</SelectItem>
-                  <SelectItem value="tank">Tank</SelectItem>
-                  <SelectItem value="open-top">Open Top</SelectItem>
+                  <SelectItem value="all">{UI_MESSAGES.TABLE.ALL_TYPES}</SelectItem>
+                  <SelectItem value="standard">{UI_MESSAGES.CONTAINER.STANDARD}</SelectItem>
+                  <SelectItem value="reefer">{UI_MESSAGES.CONTAINER.REEFER}</SelectItem>
+                  <SelectItem value="tank">{UI_MESSAGES.CONTAINER.TANK}</SelectItem>
+                  <SelectItem value="open-top">{UI_MESSAGES.CONTAINER.OPEN_TOP}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {/* Size */}
             <div className="flex flex-col gap-1">
-              <Label className="text-xs text-muted-foreground">Size</Label>
+              <Label className="text-xs text-muted-foreground">{UI_MESSAGES.COMMON.SIZE}</Label>
               <Select value={sizeFilter} onValueChange={(v) => setSizeFilter(v as ContainerSize | "all")}>
                 <SelectTrigger className="h-8 w-[110px]">
-                  <SelectValue placeholder="All Sizes" />
+                  <SelectValue placeholder={UI_MESSAGES.COMMON.ALL_SIZES} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Sizes</SelectItem>
+                  <SelectItem value="all">{UI_MESSAGES.COMMON.ALL_SIZES}</SelectItem>
                   <SelectItem value="20ft">20ft</SelectItem>
                   <SelectItem value="40ft">40ft</SelectItem>
                 </SelectContent>
@@ -458,30 +456,30 @@ export default function OperatorContainerLookup() {
 
             {/* Load */}
             <div className="flex flex-col gap-1">
-              <Label className="text-xs text-muted-foreground">Load</Label>
+              <Label className="text-xs text-muted-foreground">{UI_MESSAGES.CONTAINER_DETAILS.LOAD}</Label>
               <Select value={loadFilter} onValueChange={(v) => setLoadFilter(v as LoadFilter)}>
                 <SelectTrigger className="h-8 w-[120px]">
-                  <SelectValue placeholder="All" />
+                  <SelectValue placeholder={UI_MESSAGES.COMMON.ALL} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="empty">Empty</SelectItem>
-                  <SelectItem value="loaded">Loaded</SelectItem>
+                  <SelectItem value="all">{UI_MESSAGES.COMMON.ALL}</SelectItem>
+                  <SelectItem value="empty">{UI_MESSAGES.CONTAINER_DETAILS.EMPTY}</SelectItem>
+                  <SelectItem value="loaded">{UI_MESSAGES.CONTAINER_DETAILS.LOADED}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {/* Hazardous */}
             <div className="flex flex-col gap-1">
-              <Label className="text-xs text-muted-foreground">Hazardous</Label>
+              <Label className="text-xs text-muted-foreground">{UI_MESSAGES.TABLE.HAZARDOUS}</Label>
               <Select value={hazardousFilter} onValueChange={(v) => setHazardousFilter(v as HazardousFilter)}>
                 <SelectTrigger className="h-8 w-[120px]">
-                  <SelectValue placeholder="All" />
+                  <SelectValue placeholder={UI_MESSAGES.COMMON.ALL} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="yes">Yes</SelectItem>
-                  <SelectItem value="no">No</SelectItem>
+                  <SelectItem value="all">{UI_MESSAGES.COMMON.ALL}</SelectItem>
+                  <SelectItem value="yes">{UI_MESSAGES.COMMON.YES}</SelectItem>
+                  <SelectItem value="no">{UI_MESSAGES.COMMON.NO}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -490,13 +488,13 @@ export default function OperatorContainerLookup() {
             {hasActiveFilters && (
               <Button variant="ghost" size="sm" onClick={resetFilters} className="h-8 gap-1 text-muted-foreground hover:text-foreground">
                 <RotateCcw className="h-3.5 w-3.5" />
-                Reset
+                {UI_MESSAGES.COMMON.RESET}
               </Button>
             )}
 
             {hasActiveFilters && (
               <span className="ml-auto text-sm text-muted-foreground self-end pb-1">
-                {filteredContainers.length} of {containers.length} containers
+                {filteredContainers.length} {UI_MESSAGES.REPORTS.TO_LABEL} {containers.length} {UI_MESSAGES.TABLE.CONTAINERS.toLowerCase()}
               </span>
             )}
           </div>
@@ -505,7 +503,7 @@ export default function OperatorContainerLookup() {
             data={filteredContainers}
             isLoading={isLoading}
             columns={columns}
-            searchPlaceholder="Search containers..."
+            searchPlaceholder={UI_MESSAGES.TABLE.SEARCH_CONTAINERS}
             onRowClick={(item) => setSelectedContainer(item)}
           />
         </div>

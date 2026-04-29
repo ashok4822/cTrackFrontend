@@ -48,11 +48,13 @@ interface ApiError {
   message?: string;
 }
 
+import { UI_MESSAGES } from "@/constants/messages";
+import { toast } from "sonner";
+
 const getErrorMessage = (error: unknown, fallback: string): string => {
   const e = error as ApiError;
   return e?.response?.data?.message ?? e?.message ?? fallback;
 };
-import { toast } from "sonner";
 
 const AdminActivitiesCharges = () => {
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -88,16 +90,7 @@ const AdminActivitiesCharges = () => {
     description: "",
     chargePerTon: 0,
   });
-  const [isAddRateOpen, setIsAddRateOpen] = useState(false);
-  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(
-    null,
-  );
-  const [newCharge, setNewCharge] = useState<Partial<Charge>>({
-    containerSize: "20ft",
-    containerType: "all",
-    rate: 0,
-    currency: "INR",
-  });
+  const [isActiveCharge, setIsActiveCharge] = useState(true);
 
   useEffect(() => {
     fetchData();
@@ -118,10 +111,12 @@ const AdminActivitiesCharges = () => {
       setHistory(historyData);
       setCargoCategories(categoriesData);
     } catch (error: unknown) {
-      console.error("Failed to fetch billing data:", error);
+      console.error(UI_MESSAGES.ACTIVITY.FETCH_FAILED, error);
       const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
-      toast.error(`Failed to load activities and charges: ${errorMessage}`);
+        error instanceof Error
+          ? error.message
+          : UI_MESSAGES.COMMON.UNKNOWN_ERROR;
+      toast.error(`${UI_MESSAGES.ACTIVITY.FETCH_FAILED}: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -136,13 +131,14 @@ const AdminActivitiesCharges = () => {
         editingCharge.id,
         parseFloat(newRate),
         effectiveDate,
+        isActiveCharge,
       );
-      toast.success("Charge rate updated successfully");
+      toast.success(UI_MESSAGES.CHARGE.UPDATE_SUCCESS);
       setEditingCharge(null);
       setIsUpdateRateOpen(false);
       fetchData();
     } catch {
-      toast.error("Failed to update charge rate");
+      toast.error(UI_MESSAGES.CHARGE.UPDATE_FAILED);
     } finally {
       setIsUpdating(false);
     }
@@ -153,12 +149,10 @@ const AdminActivitiesCharges = () => {
       await billingService.updateActivity(activity.id!, {
         active: !activity.active,
       });
-      toast.success(
-        `Activity ${!activity.active ? "activated" : "deactivated"} successfully`,
-      );
+      toast.success(UI_MESSAGES.ACTIVITY.TOGGLE_SUCCESS(!activity.active));
       fetchData();
     } catch {
-      toast.error("Failed to update activity status");
+      toast.error(UI_MESSAGES.ACTIVITY.UPDATE_FAILED);
     }
   };
 
@@ -169,14 +163,14 @@ const AdminActivitiesCharges = () => {
       !newActivity.category ||
       !newActivity.unitType
     ) {
-      toast.error("Please fill in all required fields");
+      toast.error(UI_MESSAGES.PDA.FILL_REQUIRED_FIELDS);
       return;
     }
 
     try {
       setIsCreating(true);
       await billingService.addActivity(newActivity);
-      toast.success("New activity created successfully");
+      toast.success(UI_MESSAGES.ACTIVITY.CREATE_SUCCESS);
       setIsNewActivityOpen(false);
       setNewActivity({
         code: "",
@@ -187,45 +181,21 @@ const AdminActivitiesCharges = () => {
       });
       fetchData();
     } catch (error: unknown) {
-      const message = getErrorMessage(error, "Failed to create activity");
+      const message = getErrorMessage(
+        error,
+        UI_MESSAGES.ACTIVITY.CREATE_FAILED,
+      );
       toast.error(message);
     } finally {
       setIsCreating(false);
     }
   };
 
-  const handleAddRate = async () => {
-    if (!selectedActivity?.id || !newCharge.rate) {
-      toast.error("Please enter a valid rate");
-      return;
-    }
 
-    try {
-      setIsCreating(true);
-      await billingService.addCharge({
-        ...newCharge,
-        activityId: selectedActivity.id,
-      });
-      toast.success("New charge rate added successfully");
-      setIsAddRateOpen(false);
-      setNewCharge({
-        containerSize: "20ft",
-        containerType: "all",
-        rate: 0,
-        currency: "INR",
-      });
-      fetchData();
-    } catch (error: unknown) {
-      const message = getErrorMessage(error, "Failed to add charge rate");
-      toast.error(message);
-    } finally {
-      setIsCreating(false);
-    }
-  };
 
   const handleCreateCategory = async () => {
     if (!newCategory.name) {
-      toast.error("Please enter a category name");
+      toast.error(UI_MESSAGES.PDA.FILL_REQUIRED_FIELDS);
       return;
     }
 
@@ -236,12 +206,15 @@ const AdminActivitiesCharges = () => {
         description: newCategory.description,
         chargePerTon: Number(newCategory.chargePerTon) || 0,
       });
-      toast.success("New cargo category created successfully");
+      toast.success(UI_MESSAGES.CATEGORY.CREATE_SUCCESS);
       setIsNewCategoryOpen(false);
       setNewCategory({ name: "", description: "", chargePerTon: 0 });
       fetchData();
     } catch (error: unknown) {
-      const message = getErrorMessage(error, "Failed to create category");
+      const message = getErrorMessage(
+        error,
+        UI_MESSAGES.CATEGORY.CREATE_FAILED,
+      );
       toast.error(message);
     } finally {
       setIsCreating(false);
@@ -250,7 +223,7 @@ const AdminActivitiesCharges = () => {
 
   const handleEditCategory = async () => {
     if (!editingCategory?.id || !editingCategory.name) {
-      toast.error("Please enter a category name");
+      toast.error(UI_MESSAGES.PDA.FILL_REQUIRED_FIELDS);
       return;
     }
 
@@ -262,12 +235,15 @@ const AdminActivitiesCharges = () => {
         active: editingCategory.active,
         chargePerTon: Number(editingCategory.chargePerTon) || 0,
       });
-      toast.success("Cargo category updated successfully");
+      toast.success(UI_MESSAGES.CATEGORY.UPDATE_SUCCESS);
       setIsEditCategoryOpen(false);
       setEditingCategory(null);
       fetchData();
     } catch (error: unknown) {
-      const message = getErrorMessage(error, "Failed to update category");
+      const message = getErrorMessage(
+        error,
+        UI_MESSAGES.CATEGORY.UPDATE_FAILED,
+      );
       toast.error(message);
     } finally {
       setIsCreating(false);
@@ -281,7 +257,7 @@ const AdminActivitiesCharges = () => {
       !editingActivity.category ||
       !editingActivity.unitType
     ) {
-      toast.error("Please fill in all required fields");
+      toast.error(UI_MESSAGES.PDA.FILL_REQUIRED_FIELDS);
       return;
     }
 
@@ -293,12 +269,15 @@ const AdminActivitiesCharges = () => {
         category: editingActivity.category,
         unitType: editingActivity.unitType,
       });
-      toast.success("Activity updated successfully");
+      toast.success(UI_MESSAGES.ACTIVITY.UPDATE_SUCCESS);
       setIsEditActivityOpen(false);
       setEditingActivity(null);
       fetchData();
     } catch (error: unknown) {
-      const message = getErrorMessage(error, "Failed to update activity");
+      const message = getErrorMessage(
+        error,
+        UI_MESSAGES.ACTIVITY.UPDATE_FAILED,
+      );
       toast.error(message);
     } finally {
       setIsCreating(false);
@@ -327,7 +306,7 @@ const AdminActivitiesCharges = () => {
   const activityColumns: Column<Activity>[] = [
     {
       key: "code",
-      header: "Code",
+      header: UI_MESSAGES.TABLE.ACTIVITY_CODE,
       sortable: true,
       render: (item) => (
         <span className="font-mono font-medium text-foreground">
@@ -337,12 +316,12 @@ const AdminActivitiesCharges = () => {
     },
     {
       key: "name",
-      header: "Activity Name",
+      header: UI_MESSAGES.TABLE.ACTIVITY_NAME,
       sortable: true,
     },
     {
       key: "description",
-      header: "Description",
+      header: UI_MESSAGES.TABLE.DESCRIPTION,
       render: (item) => (
         <span className="text-sm text-muted-foreground">
           {item.description}
@@ -351,13 +330,13 @@ const AdminActivitiesCharges = () => {
     },
     {
       key: "chargeRates",
-      header: "Charge Rates",
+      header: UI_MESSAGES.TABLE.CHARGE_RATES,
       render: (item) => {
         const activityCharges = charges.filter((c) => c.activityId === item.id);
         if (activityCharges.length === 0)
           return (
             <span className="text-sm text-muted-foreground italic">
-              No rates set
+              {UI_MESSAGES.COMMON.NO_DATA}
             </span>
           );
 
@@ -381,55 +360,52 @@ const AdminActivitiesCharges = () => {
     },
     {
       key: "category",
-      header: "Category",
+      header: UI_MESSAGES.TABLE.CATEGORY,
       sortable: true,
       render: (item) => (
         <Badge
           variant="outline"
           className={`capitalize ${getCategoryColor(item.category)}`}
         >
-          {item.category}
+          {UI_MESSAGES.ACTIVITY.CATEGORIES[
+            item.category.toUpperCase() as keyof typeof UI_MESSAGES.ACTIVITY.CATEGORIES
+          ] || item.category}
         </Badge>
       ),
     },
     {
       key: "unitType",
-      header: "Unit Type",
+      header: UI_MESSAGES.TABLE.UNIT_TYPE,
       render: (item) => (
         <span className="text-sm capitalize">
-          {item.unitType.replace("-", " ")}
+          {UI_MESSAGES.ACTIVITY.UNIT_TYPES[
+            item.unitType
+              .replace(/-/g, "_")
+              .toUpperCase() as keyof typeof UI_MESSAGES.ACTIVITY.UNIT_TYPES
+          ] || item.unitType.replace("-", " ")}
         </span>
       ),
     },
     {
       key: "active",
-      header: "Status",
+      header: UI_MESSAGES.TABLE.STATUS,
       render: (item) => (
         <div className="flex items-center gap-2">
           <Switch
             checked={item.active}
             onCheckedChange={() => handleToggleActivity(item)}
           />
-          <span className="text-sm">{item.active ? "Active" : "Inactive"}</span>
+          <span className="text-sm">
+            {item.active ? UI_MESSAGES.KPI.ACTIVE : UI_MESSAGES.COMMON.INACTIVE}
+          </span>
         </div>
       ),
     },
     {
       key: "actions",
-      header: "Actions",
+      header: UI_MESSAGES.TABLE.ACTIONS,
       render: (item) => (
         <div className="flex gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setSelectedActivity(item);
-              setIsAddRateOpen(true);
-            }}
-          >
-            <Plus className="h-4 w-4 mr-1" />
-            Add Rate
-          </Button>
           <Button
             variant="ghost"
             size="sm"
@@ -439,7 +415,7 @@ const AdminActivitiesCharges = () => {
             }}
           >
             <Edit className="h-4 w-4 mr-1" />
-            Edit
+            {UI_MESSAGES.COMMON.EDIT}
           </Button>
         </div>
       ),
@@ -449,32 +425,36 @@ const AdminActivitiesCharges = () => {
   const chargeColumns: Column<Charge>[] = [
     {
       key: "activityName",
-      header: "Activity",
+      header: UI_MESSAGES.TABLE.ACTIVITY,
       sortable: true,
     },
     {
       key: "containerSize",
-      header: "Size",
+      header: UI_MESSAGES.COMMON.SIZE,
       sortable: true,
       render: (item) => (
         <Badge variant="outline" className="capitalize">
-          {item.containerSize === "all" ? "All Sizes" : item.containerSize}
+          {item.containerSize === "all"
+            ? UI_MESSAGES.TABLE.ALL_SIZES
+            : item.containerSize}
         </Badge>
       ),
     },
     {
       key: "containerType",
-      header: "Type",
+      header: UI_MESSAGES.TABLE.TYPE,
       sortable: true,
       render: (item) => (
         <span className="capitalize">
-          {item.containerType === "all" ? "All Types" : item.containerType}
+          {item.containerType === "all"
+            ? UI_MESSAGES.TABLE.ALL_TYPES
+            : item.containerType}
         </span>
       ),
     },
     {
       key: "rate",
-      header: "Rate",
+      header: UI_MESSAGES.TABLE.AMOUNT,
       sortable: true,
       render: (item) => (
         <span className="font-mono font-medium text-foreground">
@@ -484,7 +464,7 @@ const AdminActivitiesCharges = () => {
     },
     {
       key: "effectiveFrom",
-      header: "Effective From",
+      header: UI_MESSAGES.TABLE.EFFECTIVE_FROM,
       sortable: true,
       render: (item) => (
         <span className="text-sm">
@@ -494,16 +474,16 @@ const AdminActivitiesCharges = () => {
     },
     {
       key: "active",
-      header: "Status",
+      header: UI_MESSAGES.TABLE.STATUS,
       render: (item) => (
         <Badge variant={item.active ? "default" : "secondary"}>
-          {item.active ? "Active" : "Inactive"}
+          {item.active ? UI_MESSAGES.KPI.ACTIVE : UI_MESSAGES.COMMON.INACTIVE}
         </Badge>
       ),
     },
     {
       key: "actions",
-      header: "Actions",
+      header: UI_MESSAGES.TABLE.ACTIONS,
       render: (item) => (
         <Button
           variant="ghost"
@@ -512,11 +492,12 @@ const AdminActivitiesCharges = () => {
             setEditingCharge(item);
             setNewRate(item.rate.toString());
             setEffectiveDate(new Date().toISOString().split("T")[0]);
+            setIsActiveCharge(item.active);
             setIsUpdateRateOpen(true);
           }}
         >
           <Edit className="h-4 w-4 mr-1" />
-          Update Rate
+          {UI_MESSAGES.TABLE.UPDATE_STATUS}
         </Button>
       ),
     },
@@ -525,22 +506,24 @@ const AdminActivitiesCharges = () => {
   const historyColumns: Column<ChargeHistory>[] = [
     {
       key: "activityName",
-      header: "Activity",
+      header: UI_MESSAGES.TABLE.ACTIVITY,
       sortable: true,
     },
     {
       key: "containerSize",
-      header: "Size",
+      header: UI_MESSAGES.COMMON.SIZE,
       sortable: true,
       render: (item) => (
         <Badge variant="outline" className="capitalize">
-          {item.containerSize === "all" ? "All Sizes" : item.containerSize}
+          {item.containerSize === "all"
+            ? UI_MESSAGES.TABLE.ALL_SIZES
+            : item.containerSize}
         </Badge>
       ),
     },
     {
       key: "oldRate",
-      header: "Old Rate",
+      header: UI_MESSAGES.TABLE.OLD_RATE,
       render: (item) => (
         <span className="text-muted-foreground line-through">
           {item.currency} {item.oldRate.toFixed(2)}
@@ -549,7 +532,7 @@ const AdminActivitiesCharges = () => {
     },
     {
       key: "newRate",
-      header: "New Rate",
+      header: UI_MESSAGES.TABLE.NEW_RATE,
       render: (item) => (
         <span className="font-bold text-green-600">
           {item.currency} {item.newRate.toFixed(2)}
@@ -558,7 +541,7 @@ const AdminActivitiesCharges = () => {
     },
     {
       key: "changedAt",
-      header: "Changed On",
+      header: UI_MESSAGES.TABLE.CHANGED_ON,
       sortable: true,
       render: (item) => (
         <span className="text-sm">
@@ -584,10 +567,10 @@ const AdminActivitiesCharges = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-foreground">
-              Activities & Charges
+              {UI_MESSAGES.TITLES.ACTIVITIES_CHARGES}
             </h1>
             <p className="text-muted-foreground">
-              Manage billable activities and their charge rates
+              {UI_MESSAGES.ACTIVITY.MISC_BILL_DESC}
             </p>
           </div>
           <div className="flex gap-2">
@@ -598,23 +581,27 @@ const AdminActivitiesCharges = () => {
               <DialogTrigger asChild>
                 <Button>
                   <Plus className="h-4 w-4 mr-2" />
-                  New Activity
+                  {UI_MESSAGES.TITLES.NEW_ACTIVITY}
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
-                  <DialogTitle>Create New Activity</DialogTitle>
+                  <DialogTitle>{UI_MESSAGES.TITLES.NEW_ACTIVITY}</DialogTitle>
                   <DialogDescription>
-                    Add a new billable activity to the system.
+                    {UI_MESSAGES.STUFFING.DESCRIPTION}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="code">Activity Code *</Label>
+                      <Label htmlFor="code">
+                        {UI_MESSAGES.TABLE.ACTIVITY_CODE} *
+                      </Label>
                       <Input
                         id="code"
-                        placeholder="e.g. LIFT"
+                        placeholder={
+                          UI_MESSAGES.COMMON.PLACEHOLDERS.ACTIVITY_CODE_EG
+                        }
                         value={newActivity.code}
                         onChange={(e) =>
                           setNewActivity({
@@ -625,10 +612,14 @@ const AdminActivitiesCharges = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="name">Activity Name *</Label>
+                      <Label htmlFor="name">
+                        {UI_MESSAGES.TABLE.ACTIVITY_NAME} *
+                      </Label>
                       <Input
                         id="name"
-                        placeholder="e.g. Container Lift"
+                        placeholder={
+                          UI_MESSAGES.COMMON.PLACEHOLDERS.ACTIVITY_NAME_EG
+                        }
                         value={newActivity.name}
                         onChange={(e) =>
                           setNewActivity({
@@ -640,10 +631,14 @@ const AdminActivitiesCharges = () => {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="description">Description</Label>
+                    <Label htmlFor="description">
+                      {UI_MESSAGES.TABLE.DESCRIPTION}
+                    </Label>
                     <Input
                       id="description"
-                      placeholder="Enter a brief description"
+                      placeholder={
+                        UI_MESSAGES.COMMON.PLACEHOLDERS.DESCRIPTION_EG
+                      }
                       value={newActivity.description}
                       onChange={(e) =>
                         setNewActivity({
@@ -655,7 +650,9 @@ const AdminActivitiesCharges = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="category">Category *</Label>
+                      <Label htmlFor="category">
+                        {UI_MESSAGES.TABLE.CATEGORY} *
+                      </Label>
                       <Select
                         value={newActivity.category}
                         onValueChange={(value) =>
@@ -663,19 +660,35 @@ const AdminActivitiesCharges = () => {
                         }
                       >
                         <SelectTrigger id="category">
-                          <SelectValue placeholder="Select category" />
+                          <SelectValue
+                            placeholder={
+                              UI_MESSAGES.STUFFING.CATEGORY_PLACEHOLDER
+                            }
+                          />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="handling">Handling</SelectItem>
-                          <SelectItem value="storage">Storage</SelectItem>
-                          <SelectItem value="stuffing">Stuffing</SelectItem>
-                          <SelectItem value="transport">Transport</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
+                          <SelectItem value="handling">
+                            {UI_MESSAGES.ACTIVITY.CATEGORIES.HANDLING}
+                          </SelectItem>
+                          <SelectItem value="storage">
+                            {UI_MESSAGES.ACTIVITY.CATEGORIES.STORAGE}
+                          </SelectItem>
+                          <SelectItem value="stuffing">
+                            {UI_MESSAGES.ACTIVITY.CATEGORIES.STUFFING}
+                          </SelectItem>
+                          <SelectItem value="transport">
+                            {UI_MESSAGES.ACTIVITY.CATEGORIES.TRANSPORT}
+                          </SelectItem>
+                          <SelectItem value="other">
+                            {UI_MESSAGES.ACTIVITY.CATEGORIES.OTHER}
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="unitType">Unit Type *</Label>
+                      <Label htmlFor="unitType">
+                        {UI_MESSAGES.TABLE.UNIT_TYPE} *
+                      </Label>
                       <Select
                         value={newActivity.unitType}
                         onValueChange={(value) =>
@@ -683,16 +696,28 @@ const AdminActivitiesCharges = () => {
                         }
                       >
                         <SelectTrigger id="unitType">
-                          <SelectValue placeholder="Select unit type" />
+                          <SelectValue
+                            placeholder={
+                              UI_MESSAGES.COMMON.PLACEHOLDERS.SELECT_UNIT
+                            }
+                          />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="per-container">
-                            Per Container
+                            {UI_MESSAGES.ACTIVITY.UNIT_TYPES.PER_CONTAINER}
                           </SelectItem>
-                          <SelectItem value="per-day">Per Day</SelectItem>
-                          <SelectItem value="per-hour">Per Hour</SelectItem>
-                          <SelectItem value="per-teu">Per TEU</SelectItem>
-                          <SelectItem value="fixed">Fixed</SelectItem>
+                          <SelectItem value="per-day">
+                            {UI_MESSAGES.ACTIVITY.UNIT_TYPES.PER_DAY}
+                          </SelectItem>
+                          <SelectItem value="per-hour">
+                            {UI_MESSAGES.ACTIVITY.UNIT_TYPES.PER_HOUR}
+                          </SelectItem>
+                          <SelectItem value="per-teu">
+                            {UI_MESSAGES.ACTIVITY.UNIT_TYPES.PER_TEU}
+                          </SelectItem>
+                          <SelectItem value="fixed">
+                            {UI_MESSAGES.ACTIVITY.UNIT_TYPES.FIXED}
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -703,13 +728,13 @@ const AdminActivitiesCharges = () => {
                     variant="outline"
                     onClick={() => setIsNewActivityOpen(false)}
                   >
-                    Cancel
+                    {UI_MESSAGES.COMMON.CANCEL}
                   </Button>
                   <Button onClick={handleCreateActivity} disabled={isCreating}>
                     {isCreating && (
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     )}
-                    Create Activity
+                    {UI_MESSAGES.COMMON.SUBMIT}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -728,7 +753,7 @@ const AdminActivitiesCharges = () => {
                 <div>
                   <p className="text-2xl font-bold">{activities.length}</p>
                   <p className="text-sm text-muted-foreground">
-                    Total Activities
+                    {UI_MESSAGES.TABLE.TOTAL_ACTIVITIES}
                   </p>
                 </div>
               </div>
@@ -743,7 +768,7 @@ const AdminActivitiesCharges = () => {
                 <div>
                   <p className="text-2xl font-bold">{activeActivities}</p>
                   <p className="text-sm text-muted-foreground">
-                    Active Activities
+                    {UI_MESSAGES.TABLE.ACTIVE_ACTIVITIES}
                   </p>
                 </div>
               </div>
@@ -757,7 +782,9 @@ const AdminActivitiesCharges = () => {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{totalCharges}</p>
-                  <p className="text-sm text-muted-foreground">Charge Rates</p>
+                  <p className="text-sm text-muted-foreground">
+                    {UI_MESSAGES.TABLE.CHARGE_RATES}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -770,7 +797,9 @@ const AdminActivitiesCharges = () => {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{activeCharges}</p>
-                  <p className="text-sm text-muted-foreground">Active Rates</p>
+                  <p className="text-sm text-muted-foreground">
+                    {UI_MESSAGES.TABLE.ACTIVE_RATES}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -782,10 +811,18 @@ const AdminActivitiesCharges = () => {
           <CardContent className="p-6">
             <Tabs defaultValue="activities">
               <TabsList className="mb-4">
-                <TabsTrigger value="activities">Activities</TabsTrigger>
-                <TabsTrigger value="charges">Charge Rates</TabsTrigger>
-                <TabsTrigger value="categories">Cargo Categories</TabsTrigger>
-                <TabsTrigger value="history">Rate History</TabsTrigger>
+                <TabsTrigger value="activities">
+                  {UI_MESSAGES.KPI.OPERATIONS}
+                </TabsTrigger>
+                <TabsTrigger value="charges">
+                  {UI_MESSAGES.TABLE.CHARGE_RATES}
+                </TabsTrigger>
+                <TabsTrigger value="categories">
+                  {UI_MESSAGES.TABLE.CARGO_CATEGORIES}
+                </TabsTrigger>
+                <TabsTrigger value="history">
+                  {UI_MESSAGES.TABLE.RATE_HISTORY}
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="activities">
                 <DataTable
@@ -794,7 +831,7 @@ const AdminActivitiesCharges = () => {
                     activityColumns as Column<Activity & { id: string }>[]
                   }
                   searchable
-                  searchPlaceholder="Search activities..."
+                  searchPlaceholder={UI_MESSAGES.TABLE.SEARCH_ACTIVITIES}
                 />
               </TabsContent>
               <TabsContent value="charges">
@@ -802,7 +839,7 @@ const AdminActivitiesCharges = () => {
                   data={charges as (Charge & { id: string })[]}
                   columns={chargeColumns as Column<Charge & { id: string }>[]}
                   searchable
-                  searchPlaceholder="Search charge rates..."
+                  searchPlaceholder={UI_MESSAGES.TABLE.SEARCH_CHARGE_RATES}
                 />
               </TabsContent>
               <TabsContent value="categories">
@@ -814,22 +851,28 @@ const AdminActivitiesCharges = () => {
                     <DialogTrigger asChild>
                       <Button size="sm">
                         <Plus className="h-4 w-4 mr-1" />
-                        Add Category
+                        {UI_MESSAGES.TITLES.ADD_CATEGORY}
                       </Button>
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
-                        <DialogTitle>Add Cargo Category</DialogTitle>
+                        <DialogTitle>
+                          {UI_MESSAGES.TITLES.ADD_CATEGORY}
+                        </DialogTitle>
                         <DialogDescription>
                           Create a new cargo category for specialized billing.
                         </DialogDescription>
                       </DialogHeader>
                       <div className="space-y-4 py-4">
                         <div className="space-y-2">
-                          <Label htmlFor="catName">Category Name *</Label>
+                          <Label htmlFor="catName">
+                            {UI_MESSAGES.TABLE.CATEGORY_NAME} *
+                          </Label>
                           <Input
                             id="catName"
-                            placeholder="e.g. Hazardous, Reefer High Value"
+                            placeholder={
+                              UI_MESSAGES.COMMON.PLACEHOLDERS.CARGO_CATEGORY_EG
+                            }
                             value={newCategory.name}
                             onChange={(e) =>
                               setNewCategory({
@@ -840,10 +883,14 @@ const AdminActivitiesCharges = () => {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="catDesc">Description</Label>
+                          <Label htmlFor="catDesc">
+                            {UI_MESSAGES.TABLE.DESCRIPTION}
+                          </Label>
                           <Input
                             id="catDesc"
-                            placeholder="Brief description"
+                            placeholder={
+                              UI_MESSAGES.COMMON.PLACEHOLDERS.DESCRIPTION_EG
+                            }
                             value={newCategory.description}
                             onChange={(e) =>
                               setNewCategory({
@@ -854,11 +901,15 @@ const AdminActivitiesCharges = () => {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="catCharge">Charge per ton *</Label>
+                          <Label htmlFor="catCharge">
+                            {UI_MESSAGES.TABLE.CHARGE_PER_TON} *
+                          </Label>
                           <Input
                             id="catCharge"
                             type="number"
-                            placeholder="0.00"
+                            placeholder={
+                              UI_MESSAGES.COMMON.PLACEHOLDERS.ZERO_AMOUNT
+                            }
                             value={newCategory.chargePerTon}
                             onChange={(e) =>
                               setNewCategory({
@@ -874,7 +925,7 @@ const AdminActivitiesCharges = () => {
                           variant="outline"
                           onClick={() => setIsNewCategoryOpen(false)}
                         >
-                          Cancel
+                          {UI_MESSAGES.COMMON.CANCEL}
                         </Button>
                         <Button
                           onClick={handleCreateCategory}
@@ -883,7 +934,7 @@ const AdminActivitiesCharges = () => {
                           {isCreating && (
                             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                           )}
-                          Create
+                          {UI_MESSAGES.COMMON.SUBMIT}
                         </Button>
                       </DialogFooter>
                     </DialogContent>
@@ -892,11 +943,18 @@ const AdminActivitiesCharges = () => {
                 <DataTable
                   data={cargoCategories as (CargoCategory & { id: string })[]}
                   columns={[
-                    { key: "name", header: "Name", sortable: true },
-                    { key: "description", header: "Description" },
+                    {
+                      key: "name",
+                      header: UI_MESSAGES.PROFILE.NAME,
+                      sortable: true,
+                    },
+                    {
+                      key: "description",
+                      header: UI_MESSAGES.TABLE.DESCRIPTION,
+                    },
                     {
                       key: "chargePerTon",
-                      header: "Charge/Ton",
+                      header: UI_MESSAGES.TABLE.CHARGE_PER_TON,
                       render: (item: CargoCategory) => (
                         <span className="font-medium">
                           ₹{item.chargePerTon?.toFixed(2) || "0.00"}
@@ -905,16 +963,18 @@ const AdminActivitiesCharges = () => {
                     },
                     {
                       key: "active",
-                      header: "Status",
+                      header: UI_MESSAGES.TABLE.STATUS,
                       render: (item: CargoCategory) => (
                         <Badge variant={item.active ? "default" : "secondary"}>
-                          {item.active ? "Active" : "Inactive"}
+                          {item.active
+                            ? UI_MESSAGES.KPI.ACTIVE
+                            : UI_MESSAGES.COMMON.INACTIVE}
                         </Badge>
                       ),
                     },
                     {
                       key: "actions",
-                      header: "Actions",
+                      header: UI_MESSAGES.TABLE.ACTIONS,
                       render: (item: CargoCategory) => (
                         <Button
                           variant="ghost"
@@ -925,13 +985,13 @@ const AdminActivitiesCharges = () => {
                           }}
                         >
                           <Edit className="h-4 w-4 mr-1" />
-                          Edit
+                          {UI_MESSAGES.COMMON.EDIT}
                         </Button>
                       ),
                     },
                   ]}
                   searchable
-                  searchPlaceholder="Search categories..."
+                  searchPlaceholder={UI_MESSAGES.TABLE.SEARCH_CATEGORIES}
                 />
 
                 {/* Edit Category Dialog */}
@@ -941,7 +1001,9 @@ const AdminActivitiesCharges = () => {
                 >
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Edit Cargo Category</DialogTitle>
+                      <DialogTitle>
+                        {UI_MESSAGES.TITLES.EDIT_CATEGORY}
+                      </DialogTitle>
                       <DialogDescription>
                         Update the details of the selected cargo category.
                       </DialogDescription>
@@ -949,7 +1011,9 @@ const AdminActivitiesCharges = () => {
                     {editingCategory && (
                       <div className="space-y-4 py-4">
                         <div className="space-y-2">
-                          <Label htmlFor="editCatName">Category Name *</Label>
+                          <Label htmlFor="editCatName">
+                            {UI_MESSAGES.TABLE.CATEGORY_NAME} *
+                          </Label>
                           <Input
                             id="editCatName"
                             value={editingCategory.name}
@@ -962,7 +1026,9 @@ const AdminActivitiesCharges = () => {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="editCatDesc">Description</Label>
+                          <Label htmlFor="editCatDesc">
+                            {UI_MESSAGES.TABLE.DESCRIPTION}
+                          </Label>
                           <Input
                             id="editCatDesc"
                             value={editingCategory.description || ""}
@@ -985,7 +1051,9 @@ const AdminActivitiesCharges = () => {
                               })
                             }
                           />
-                          <Label htmlFor="editCatActive">Active</Label>
+                          <Label htmlFor="editCatActive">
+                            {UI_MESSAGES.TABLE.ACTIVE_LABEL}
+                          </Label>
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="editCatCharge">
@@ -1010,7 +1078,7 @@ const AdminActivitiesCharges = () => {
                         variant="outline"
                         onClick={() => setIsEditCategoryOpen(false)}
                       >
-                        Cancel
+                        {UI_MESSAGES.COMMON.CANCEL}
                       </Button>
                       <Button
                         onClick={handleEditCategory}
@@ -1019,7 +1087,7 @@ const AdminActivitiesCharges = () => {
                         {isCreating && (
                           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                         )}
-                        Save Changes
+                        {UI_MESSAGES.COMMON.SAVE_CHANGES}
                       </Button>
                     </DialogFooter>
                   </DialogContent>
@@ -1032,7 +1100,7 @@ const AdminActivitiesCharges = () => {
                     historyColumns as Column<ChargeHistory & { id: string }>[]
                   }
                   searchable
-                  searchPlaceholder="Search history..."
+                  searchPlaceholder={UI_MESSAGES.TABLE.SEARCH_HISTORY}
                 />
               </TabsContent>
             </Tabs>
@@ -1043,7 +1111,7 @@ const AdminActivitiesCharges = () => {
         <Dialog open={isUpdateRateOpen} onOpenChange={setIsUpdateRateOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Update Charge Rate</DialogTitle>
+              <DialogTitle>{UI_MESSAGES.TITLES.UPDATE_CHARGE_RATE}</DialogTitle>
               <DialogDescription>
                 Set a new rate for this activity and specify its effective date.
               </DialogDescription>
@@ -1051,23 +1119,25 @@ const AdminActivitiesCharges = () => {
             <div className="space-y-4 py-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-muted-foreground">Activity</Label>
+                  <Label className="text-muted-foreground">
+                    {UI_MESSAGES.TABLE.ACTIVITY}
+                  </Label>
                   <p className="font-medium">{editingCharge?.activityName}</p>
                 </div>
                 <div>
                   <Label className="text-muted-foreground">
-                    Container Size
+                    {UI_MESSAGES.TABLE.SIZE}
                   </Label>
                   <p className="capitalize">
                     {editingCharge?.containerSize === "all"
-                      ? "All Sizes"
+                      ? UI_MESSAGES.TABLE.ALL_SIZES
                       : editingCharge?.containerSize}
                   </p>
                 </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="currentRate">
-                  Current Rate ({editingCharge?.currency})
+                  {UI_MESSAGES.TABLE.CURRENT_RATE} ({editingCharge?.currency})
                 </Label>
                 <Input
                   id="currentRate"
@@ -1077,7 +1147,7 @@ const AdminActivitiesCharges = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="newRate">
-                  New Rate ({editingCharge?.currency})
+                  {UI_MESSAGES.TABLE.NEW_RATE} ({editingCharge?.currency})
                 </Label>
                 <Input
                   id="newRate"
@@ -1085,16 +1155,28 @@ const AdminActivitiesCharges = () => {
                   step="0.01"
                   value={newRate}
                   onChange={(e) => setNewRate(e.target.value)}
-                  placeholder="Enter new rate"
+                  placeholder={UI_MESSAGES.COMMON.PLACEHOLDERS.NEW_RATE}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="updateEffectiveDate">Effective From</Label>
+                <Label htmlFor="updateEffectiveDate">
+                  {UI_MESSAGES.TABLE.EFFECTIVE_FROM}
+                </Label>
                 <Input
                   id="updateEffectiveDate"
                   type="date"
                   value={effectiveDate}
                   onChange={(e) => setEffectiveDate(e.target.value)}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="activeCharge">
+                  {UI_MESSAGES.TABLE.ACTIVE_LABEL}
+                </Label>
+                <Switch
+                  id="activeCharge"
+                  checked={isActiveCharge}
+                  onCheckedChange={setIsActiveCharge}
                 />
               </div>
             </div>
@@ -1103,111 +1185,25 @@ const AdminActivitiesCharges = () => {
                 variant="outline"
                 onClick={() => setIsUpdateRateOpen(false)}
               >
-                Cancel
+                {UI_MESSAGES.COMMON.CANCEL}
               </Button>
               <Button onClick={handleUpdateRate} disabled={isUpdating}>
                 {isUpdating && (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 )}
-                Update Rate
+                {UI_MESSAGES.TABLE.UPDATE_STATUS}
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
-        {/* Add Rate Dialog */}
-        <Dialog open={isAddRateOpen} onOpenChange={setIsAddRateOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add Charge Rate</DialogTitle>
-              <DialogDescription>
-                Add a new rate for the selected activity based on container size
-                and type.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div>
-                <Label className="text-muted-foreground">Activity</Label>
-                <p className="font-medium">
-                  {selectedActivity?.name} ({selectedActivity?.code})
-                </p>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="size">Container Size</Label>
-                  <Select
-                    value={newCharge.containerSize}
-                    onValueChange={(value) =>
-                      setNewCharge({ ...newCharge, containerSize: value })
-                    }
-                  >
-                    <SelectTrigger id="size">
-                      <SelectValue placeholder="Select size" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="20ft">20ft</SelectItem>
-                      <SelectItem value="40ft">40ft</SelectItem>
-                      <SelectItem value="all">All Sizes</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="type">Container Type</Label>
-                  <Select
-                    value={newCharge.containerType}
-                    onValueChange={(value) =>
-                      setNewCharge({ ...newCharge, containerType: value })
-                    }
-                  >
-                    <SelectTrigger id="type">
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="standard">Standard</SelectItem>
-                      <SelectItem value="reefer">Reefer</SelectItem>
-                      <SelectItem value="tank">Tank</SelectItem>
-                      <SelectItem value="all">All Types</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="rate">Rate (INR)</Label>
-                <Input
-                  id="rate"
-                  type="number"
-                  value={newCharge.rate}
-                  onChange={(e) =>
-                    setNewCharge({
-                      ...newCharge,
-                      rate: parseFloat(e.target.value),
-                    })
-                  }
-                  placeholder="Enter rate"
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsAddRateOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleAddRate} disabled={isCreating}>
-                {isCreating && (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                )}
-                Add Rate
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
 
         {/* Edit Activity Dialog */}
         <Dialog open={isEditActivityOpen} onOpenChange={setIsEditActivityOpen}>
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
-              <DialogTitle>Edit Activity</DialogTitle>
+              <DialogTitle>{UI_MESSAGES.TITLES.EDIT_ACTIVITY}</DialogTitle>
               <DialogDescription>
                 Modify the details of an existing billable activity.
               </DialogDescription>
@@ -1215,7 +1211,9 @@ const AdminActivitiesCharges = () => {
             <div className="space-y-4 py-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="edit-code">Activity Code</Label>
+                  <Label htmlFor="edit-code">
+                    {UI_MESSAGES.TABLE.ACTIVITY_CODE}
+                  </Label>
                   <Input
                     id="edit-code"
                     value={editingActivity?.code}
@@ -1227,10 +1225,14 @@ const AdminActivitiesCharges = () => {
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="edit-name">Activity Name *</Label>
+                  <Label htmlFor="edit-name">
+                    {UI_MESSAGES.TABLE.ACTIVITY_NAME} *
+                  </Label>
                   <Input
                     id="edit-name"
-                    placeholder="e.g. Container Lift"
+                    placeholder={
+                      UI_MESSAGES.COMMON.PLACEHOLDERS.ACTIVITY_NAME_EG
+                    }
                     value={editingActivity?.name || ""}
                     onChange={(e) =>
                       setEditingActivity((prev) =>
@@ -1241,10 +1243,12 @@ const AdminActivitiesCharges = () => {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-description">Description</Label>
+                <Label htmlFor="edit-description">
+                  {UI_MESSAGES.TABLE.DESCRIPTION}
+                </Label>
                 <Input
                   id="edit-description"
-                  placeholder="Enter a brief description"
+                  placeholder={UI_MESSAGES.COMMON.PLACEHOLDERS.DESCRIPTION_EG}
                   value={editingActivity?.description || ""}
                   onChange={(e) =>
                     setEditingActivity((prev) =>
@@ -1255,7 +1259,9 @@ const AdminActivitiesCharges = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="edit-category">Category *</Label>
+                  <Label htmlFor="edit-category">
+                    {UI_MESSAGES.TABLE.CATEGORY} *
+                  </Label>
                   <Select
                     value={editingActivity?.category}
                     onValueChange={(value) =>
@@ -1277,7 +1283,9 @@ const AdminActivitiesCharges = () => {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="edit-unitType">Unit Type *</Label>
+                  <Label htmlFor="edit-unitType">
+                    {UI_MESSAGES.TABLE.UNIT_TYPE} *
+                  </Label>
                   <Select
                     value={editingActivity?.unitType}
                     onValueChange={(value) =>
@@ -1307,13 +1315,13 @@ const AdminActivitiesCharges = () => {
                 variant="outline"
                 onClick={() => setIsEditActivityOpen(false)}
               >
-                Cancel
+                {UI_MESSAGES.COMMON.CANCEL}
               </Button>
               <Button onClick={handleEditActivity} disabled={isCreating}>
                 {isCreating && (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 )}
-                Save Changes
+                {UI_MESSAGES.COMMON.SAVE_CHANGES}
               </Button>
             </DialogFooter>
           </DialogContent>

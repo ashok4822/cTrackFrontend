@@ -20,6 +20,7 @@ import { fetchAuditLogs } from "@/store/slices/auditLogSlice";
 import type { AuditLog } from "@/services/auditLogService";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { UI_MESSAGES } from "@/constants/messages";
 
 export default function AdminAuditLogs() {
   const dispatch = useAppDispatch();
@@ -49,7 +50,7 @@ export default function AdminAuditLogs() {
 
       dispatch(fetchAuditLogs(cleanFilters))
         .unwrap()
-        .catch((err) => toast.error(err || "Failed to load audit logs"));
+        .catch((err) => toast.error(err || UI_MESSAGES.AUDIT.FETCH_FAILED));
     },
     [dispatch, filters],
   );
@@ -121,7 +122,7 @@ export default function AdminAuditLogs() {
   const columns: Column<AuditLog>[] = [
     {
       key: "timestamp",
-      header: "Timestamp",
+      header: UI_MESSAGES.TABLE.TIMESTAMP,
       sortable: true,
       render: (item) => (
         <div className="text-sm">
@@ -136,7 +137,7 @@ export default function AdminAuditLogs() {
     },
     {
       key: "userName",
-      header: "User",
+      header: UI_MESSAGES.TABLE.USER,
       sortable: true,
       render: (item) => (
         <div>
@@ -149,7 +150,7 @@ export default function AdminAuditLogs() {
     },
     {
       key: "action",
-      header: "Action",
+      header: UI_MESSAGES.TABLE.ACTION,
       render: (item) => (
         <span className="px-2 py-1 rounded-md text-xs font-medium bg-primary/10 text-primary">
           {formatAction(item.action)}
@@ -158,12 +159,12 @@ export default function AdminAuditLogs() {
     },
     {
       key: "entityType",
-      header: "Entity",
+      header: UI_MESSAGES.TABLE.ENTITY,
       render: (item) => <span className="capitalize">{item.entityType}</span>,
     },
     {
       key: "details",
-      header: "Details",
+      header: UI_MESSAGES.TABLE.DETAILS,
       render: (item) => (
         <div
           className="max-w-xs truncate text-sm text-muted-foreground"
@@ -180,7 +181,7 @@ export default function AdminAuditLogs() {
   return (
     <DashboardLayout
       navItems={adminNavItems}
-      pageTitle="Audit Logs"
+      pageTitle={UI_MESSAGES.TITLES.AUDIT_LOGS}
       pageActions={
         <Button
           variant={showFilters ? "default" : "outline"}
@@ -188,7 +189,7 @@ export default function AdminAuditLogs() {
           onClick={() => setShowFilters(!showFilters)}
         >
           <Filter className="h-4 w-4" />
-          {showFilters ? "Hide Filters" : "Show Filters"}
+          {showFilters ? UI_MESSAGES.TABLE.HIDE_FILTERS : UI_MESSAGES.TABLE.SHOW_FILTERS}
         </Button>
       }
     >
@@ -203,7 +204,7 @@ export default function AdminAuditLogs() {
               <div>
                 <p className="text-2xl font-bold text-foreground">{total}</p>
                 <p className="text-sm text-muted-foreground">
-                  Total Audit Logs
+                  {UI_MESSAGES.AUDIT.TOTAL_LOGS}
                 </p>
               </div>
             </div>
@@ -217,7 +218,7 @@ export default function AdminAuditLogs() {
           <CardContent className="p-6">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div className="space-y-2">
-                <Label htmlFor="startDate">Start Date</Label>
+                <Label htmlFor="startDate">{UI_MESSAGES.TABLE.START_DATE}</Label>
                 <Input
                   id="startDate"
                   type="date"
@@ -228,7 +229,7 @@ export default function AdminAuditLogs() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="endDate">End Date</Label>
+                <Label htmlFor="endDate">{UI_MESSAGES.TABLE.END_DATE}</Label>
                 <Input
                   id="endDate"
                   type="date"
@@ -239,7 +240,7 @@ export default function AdminAuditLogs() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Action Type</Label>
+                <Label>{UI_MESSAGES.TABLE.ACTION_TYPE}</Label>
                 <Select
                   value={filters.actionType}
                   onValueChange={(value) =>
@@ -247,50 +248,50 @@ export default function AdminAuditLogs() {
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="All Actions" />
+                    <SelectValue placeholder={UI_MESSAGES.TABLE.ALL_ACTIONS} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Actions</SelectItem>
-                    <SelectItem value="USER_CREATED">User Created</SelectItem>
-                    <SelectItem value="USER_UPDATED">User Updated</SelectItem>
-                    <SelectItem value="USER_BLOCKED">User Blocked</SelectItem>
+                    <SelectItem value="">{UI_MESSAGES.TABLE.ALL_ACTIONS}</SelectItem>
+                    <SelectItem value="USER_CREATED">{UI_MESSAGES.AUDIT.ACTIONS.USER_CREATED}</SelectItem>
+                    <SelectItem value="USER_UPDATED">{UI_MESSAGES.AUDIT.ACTIONS.USER_UPDATED}</SelectItem>
+                    <SelectItem value="USER_BLOCKED">{UI_MESSAGES.AUDIT.ACTIONS.USER_BLOCKED}</SelectItem>
                     <SelectItem value="USER_UNBLOCKED">
-                      User Unblocked
+                      {UI_MESSAGES.AUDIT.ACTIONS.USER_UNBLOCKED}
                     </SelectItem>
-                    <SelectItem value="USER_LOGIN">User Login</SelectItem>
+                    <SelectItem value="USER_LOGIN">{UI_MESSAGES.AUDIT.ACTIONS.USER_LOGIN}</SelectItem>
                     <SelectItem value="PROFILE_UPDATED">
-                      Profile Updated
+                      {UI_MESSAGES.AUDIT.ACTIONS.PROFILE_UPDATED}
                     </SelectItem>
                     <SelectItem value="PASSWORD_CHANGED">
-                      Password Changed
+                      {UI_MESSAGES.AUDIT.ACTIONS.PASSWORD_CHANGED}
                     </SelectItem>
-                    <SelectItem value="BLOCK_CREATED">Block Created</SelectItem>
-                    <SelectItem value="BLOCK_UPDATED">Block Updated</SelectItem>
+                    <SelectItem value="BLOCK_CREATED">{UI_MESSAGES.AUDIT.ACTIONS.BLOCK_CREATED}</SelectItem>
+                    <SelectItem value="BLOCK_UPDATED">{UI_MESSAGES.AUDIT.ACTIONS.BLOCK_UPDATED}</SelectItem>
                     <SelectItem value="SHIPPING_LINE_CREATED">
-                      Shipping Line Created
+                      {UI_MESSAGES.AUDIT.ACTIONS.SHIPPING_LINE_CREATED}
                     </SelectItem>
                     <SelectItem value="SHIPPING_LINE_UPDATED">
-                      Shipping Line Updated
+                      {UI_MESSAGES.AUDIT.ACTIONS.SHIPPING_LINE_UPDATED}
                     </SelectItem>
                     <SelectItem value="CONTAINER_CREATED">
-                      Container Created
+                      {UI_MESSAGES.AUDIT.ACTIONS.CONTAINER_CREATED}
                     </SelectItem>
                     <SelectItem value="CONTAINER_UPDATED">
-                      Container Updated
+                      {UI_MESSAGES.AUDIT.ACTIONS.CONTAINER_UPDATED}
                     </SelectItem>
                     <SelectItem value="REQUEST_CREATED">
-                      Request Created
+                      {UI_MESSAGES.AUDIT.ACTIONS.REQUEST_CREATED}
                     </SelectItem>
                     <SelectItem value="REQUEST_UPDATED">
-                      Request Updated
+                      {UI_MESSAGES.AUDIT.ACTIONS.REQUEST_UPDATED}
                     </SelectItem>
-                    <SelectItem value="BILL_PAID">Bill Paid</SelectItem>
-                    <SelectItem value="SIGNUP">User Signup</SelectItem>
+                    <SelectItem value="BILL_PAID">{UI_MESSAGES.AUDIT.ACTIONS.BILL_PAID}</SelectItem>
+                    <SelectItem value="SIGNUP">{UI_MESSAGES.AUDIT.ACTIONS.SIGNUP}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Entity Type</Label>
+                <Label>{UI_MESSAGES.TABLE.ENTITY_TYPE}</Label>
                 <Select
                   value={filters.entityType}
                   onValueChange={(value) =>
@@ -298,27 +299,27 @@ export default function AdminAuditLogs() {
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="All Entities" />
+                    <SelectValue placeholder={UI_MESSAGES.TABLE.ALL_ENTITIES} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Entities</SelectItem>
-                    <SelectItem value="User">User</SelectItem>
-                    <SelectItem value="Profile">Profile</SelectItem>
-                    <SelectItem value="Auth">Auth</SelectItem>
-                    <SelectItem value="Block">Block</SelectItem>
-                    <SelectItem value="ShippingLine">Shipping Line</SelectItem>
-                    <SelectItem value="Container">Container</SelectItem>
-                    <SelectItem value="Request">Request</SelectItem>
-                    <SelectItem value="Bill">Bill</SelectItem>
+                    <SelectItem value="">{UI_MESSAGES.TABLE.ALL_ENTITIES}</SelectItem>
+                    <SelectItem value="User">{UI_MESSAGES.AUDIT.ENTITIES.USER}</SelectItem>
+                    <SelectItem value="Profile">{UI_MESSAGES.AUDIT.ENTITIES.PROFILE}</SelectItem>
+                    <SelectItem value="Auth">{UI_MESSAGES.AUDIT.ENTITIES.AUTH}</SelectItem>
+                    <SelectItem value="Block">{UI_MESSAGES.AUDIT.ENTITIES.BLOCK}</SelectItem>
+                    <SelectItem value="ShippingLine">{UI_MESSAGES.AUDIT.ENTITIES.SHIPPING_LINE}</SelectItem>
+                    <SelectItem value="Container">{UI_MESSAGES.AUDIT.ENTITIES.CONTAINER}</SelectItem>
+                    <SelectItem value="Request">{UI_MESSAGES.AUDIT.ENTITIES.REQUEST}</SelectItem>
+                    <SelectItem value="Bill">{UI_MESSAGES.AUDIT.ENTITIES.BILL}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <div className="mt-4 flex gap-2">
-              <Button onClick={handleApplyFilters}>Apply Filters</Button>
+              <Button onClick={handleApplyFilters}>{UI_MESSAGES.TABLE.APPLY_FILTERS}</Button>
               <Button variant="outline" onClick={handleClearFilters}>
                 <X className="h-4 w-4 mr-2" />
-                Clear Filters
+                {UI_MESSAGES.REPORTS.CLEAR_FILTERS}
               </Button>
             </div>
           </CardContent>
@@ -330,7 +331,7 @@ export default function AdminAuditLogs() {
         data={logs}
         columns={columns}
         isLoading={isLoading}
-        searchPlaceholder="Search audit logs..."
+        searchPlaceholder={UI_MESSAGES.TABLE.SEARCH_AUDIT_LOGS}
         showFooter={false}
         manualPagination={true}
       />
@@ -339,8 +340,11 @@ export default function AdminAuditLogs() {
       {totalPages > 1 && (
         <div className="mt-4 flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Showing {(page - 1) * limit + 1} to {Math.min(page * limit, total)}{" "}
-            of {total} logs
+            {UI_MESSAGES.TABLE.SHOWING_LOGS(
+              (page - 1) * limit + 1,
+              Math.min(page * limit, total),
+              total
+            )}
           </p>
           <div className="flex gap-2">
             <Button
@@ -349,7 +353,7 @@ export default function AdminAuditLogs() {
               onClick={() => handlePageChange(page - 1)}
               disabled={page === 1}
             >
-              Previous
+              {UI_MESSAGES.REPORTS.PREVIOUS}
             </Button>
             <div className="flex items-center gap-1">
               {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
@@ -372,7 +376,7 @@ export default function AdminAuditLogs() {
               onClick={() => handlePageChange(page + 1)}
               disabled={page === totalPages}
             >
-              Next
+              {UI_MESSAGES.REPORTS.NEXT}
             </Button>
           </div>
         </div>

@@ -30,6 +30,7 @@ import { useEffect, useState } from "react";
 import { pdaService } from "@/services/pdaService";
 import type { PreDepositAccount } from "@/types";
 import { toast } from "sonner";
+import { UI_MESSAGES } from "@/constants/messages";
 
 export default function OperatorPDAView() {
   const [pdas, setPDAs] = useState<PreDepositAccount[]>([]);
@@ -46,7 +47,7 @@ export default function OperatorPDAView() {
       const data = await pdaService.getAllPDAs();
       setPDAs(data);
     } catch (error) {
-      toast.error("Failed to fetch PDA accounts");
+      toast.error(UI_MESSAGES.PDA.FETCH_FAILED);
       console.error(error);
     } finally {
       setLoading(false);
@@ -61,56 +62,56 @@ export default function OperatorPDAView() {
   );
 
   const columns: Column<PreDepositAccount>[] = [
-    { key: "customer", header: "Customer", sortable: true },
+    { key: "customer", header: UI_MESSAGES.TABLE.CUSTOMER, sortable: true },
     {
       key: "balance",
-      header: "Balance",
+      header: UI_MESSAGES.TABLE.BALANCE,
       sortable: true,
       render: (item) => (
         <span
           className={`font-medium ${item.balance < (item.lowBalanceThreshold || 10000) ? "text-destructive" : "text-success"}`}
         >
-          ₹{item.balance.toLocaleString()}
+          {UI_MESSAGES.COMMON.CURRENCY_SYMBOL}{item.balance.toLocaleString()}
         </span>
       ),
     },
     {
       key: "lastUpdated",
-      header: "Last Updated",
+      header: UI_MESSAGES.TABLE.LAST_UPDATE,
       render: (item) => new Date(item.lastUpdated).toLocaleString(),
     },
     {
       key: "status",
-      header: "Status",
+      header: UI_MESSAGES.TABLE.STATUS,
       render: (item) => (
         <StatusBadge status={item.balance < (item.lowBalanceThreshold || 10000) ? "warning" : "active"} />
       ),
     },
     {
       key: "actions",
-      header: "Actions",
+      header: UI_MESSAGES.TABLE.ACTIONS,
       render: (item) => (
         <Dialog>
           <DialogTrigger asChild>
             <Button size="sm" variant="outline">
-              View Details
+              {UI_MESSAGES.TABLE.VIEW_DETAILS}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Pre-Deposit Account</DialogTitle>
+              <DialogTitle>{UI_MESSAGES.PDA.ACCOUNT_DETAILS}</DialogTitle>
               <DialogDescription>{item.customer}</DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
                 <div>
                   <p className="text-sm text-muted-foreground">
-                    Current Balance
+                    {UI_MESSAGES.PDA.AVAILABLE_FUNDS}
                   </p>
                   <p
                     className={`text-3xl font-bold ${item.balance < (item.lowBalanceThreshold || 10000) ? "text-destructive" : "text-success"}`}
                   >
-                    ₹{item.balance.toLocaleString()}
+                    {UI_MESSAGES.COMMON.CURRENCY_SYMBOL}{item.balance.toLocaleString()}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -125,7 +126,7 @@ export default function OperatorPDAView() {
               <Separator />
 
               <div>
-                <h4 className="font-semibold mb-3">Recent Transactions</h4>
+                <h4 className="font-semibold mb-3">{UI_MESSAGES.PDA.RECENT_TRANSACTIONS}</h4>
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                   {item.transactions?.map((tx) => (
                     <div
@@ -149,17 +150,17 @@ export default function OperatorPDAView() {
                         <p
                           className={`font-medium ${tx.type === "credit" ? "text-success" : "text-destructive"}`}
                         >
-                          {tx.type === "credit" ? "+" : "-"}₹
+                          {tx.type === "credit" ? "+" : "-"}{UI_MESSAGES.COMMON.CURRENCY_SYMBOL}
                           {tx.amount.toLocaleString()}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          Bal: ₹{tx.balanceAfter.toLocaleString()}
+                          {UI_MESSAGES.PDA.BALANCE_AFTER} {UI_MESSAGES.COMMON.CURRENCY_SYMBOL}{tx.balanceAfter.toLocaleString()}
                         </p>
                       </div>
                     </div>
                   ))}
                   {(!item.transactions || item.transactions.length === 0) && (
-                    <p className="text-center py-4 text-muted-foreground">No transactions found</p>
+                    <p className="text-center py-4 text-muted-foreground">{UI_MESSAGES.PDA.NO_TRANSACTIONS_DESC}</p>
                   )}
                 </div>
               </div>
@@ -172,7 +173,7 @@ export default function OperatorPDAView() {
 
   if (loading) {
     return (
-      <DashboardLayout navItems={operatorNavItems} pageTitle="PDA">
+      <DashboardLayout navItems={operatorNavItems} pageTitle={UI_MESSAGES.TITLES.PDA_ACCOUNTS}>
         <div className="flex h-96 items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
@@ -183,29 +184,29 @@ export default function OperatorPDAView() {
   return (
     <DashboardLayout
       navItems={operatorNavItems}
-      pageTitle="Pre-Deposit Accounts (PDA)"
+      pageTitle={UI_MESSAGES.TITLES.PDA_ACCOUNTS}
     >
       {/* KPI Cards */}
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KPICard
-          title="Total PDA Balance"
-          value={`₹${totalBalance.toLocaleString()}`}
+          title={UI_MESSAGES.PDA.TOTAL_PDA_BALANCE}
+          value={`${UI_MESSAGES.COMMON.CURRENCY_SYMBOL}${totalBalance.toLocaleString()}`}
           icon={Wallet}
           variant="success"
         />
         <KPICard
-          title="Customers"
+          title={UI_MESSAGES.TABLE.CUSTOMER}
           value={pdas.length}
           icon={Building2}
           variant="primary"
         />
         <KPICard
-          title="Low Balance Accounts"
+          title={UI_MESSAGES.KPI.LOW_BALANCE_ALERT}
           value={lowBalanceAccounts.length}
           icon={TrendingDown}
           variant="warning"
         />
-        <KPICard title="Active Today" value={pdas.length} icon={TrendingUp} />
+        <KPICard title={UI_MESSAGES.KPI.ACTIVE} value={pdas.length} icon={TrendingUp} />
       </div>
 
       {/* Search */}
@@ -213,7 +214,7 @@ export default function OperatorPDAView() {
         <CardContent className="pt-6">
           <div className="flex gap-3 max-w-md">
             <Input
-              placeholder="Search Customer..."
+              placeholder={UI_MESSAGES.PDA.SEARCH_CUSTOMER_PLACEHOLDER}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -227,14 +228,14 @@ export default function OperatorPDAView() {
       {/* PDA List */}
       <Card>
         <CardHeader>
-          <CardTitle>PDA Accounts</CardTitle>
+          <CardTitle>{UI_MESSAGES.PDA.PDA_ACCOUNTS}</CardTitle>
         </CardHeader>
         <CardContent>
           <DataTable
             data={filteredPDAs}
             columns={columns}
             searchable={false}
-            emptyMessage="No PDA accounts found"
+            emptyMessage={UI_MESSAGES.COMMON.NO_DATA}
           />
         </CardContent>
       </Card>
@@ -242,7 +243,7 @@ export default function OperatorPDAView() {
       {/* Quick Balance Overview */}
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle>Balance Overview</CardTitle>
+          <CardTitle>{UI_MESSAGES.PDA.BALANCE_OVERVIEW}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -255,17 +256,17 @@ export default function OperatorPDAView() {
                   <h4 className="font-semibold truncate">{pda.customer}</h4>
                   {pda.balance < (pda.lowBalanceThreshold || 10000) && (
                     <span className="text-xs text-destructive font-medium">
-                      Low
+                      {UI_MESSAGES.PDA.LOW_BALANCE_LABEL}
                     </span>
                   )}
                 </div>
                 <p
                   className={`text-2xl font-bold ${pda.balance < (pda.lowBalanceThreshold || 10000) ? "text-destructive" : "text-foreground"}`}
                 >
-                  ₹{pda.balance.toLocaleString()}
+                  {UI_MESSAGES.COMMON.CURRENCY_SYMBOL}{pda.balance.toLocaleString()}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Updated: {new Date(pda.lastUpdated).toLocaleDateString()}
+                  {UI_MESSAGES.PDA.UPDATED} {new Date(pda.lastUpdated).toLocaleDateString()}
                 </p>
               </div>
             ))}

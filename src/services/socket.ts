@@ -5,11 +5,11 @@ const BASE_URL =
 const SOCKET_URL = BASE_URL.replace(/\/api$/, "");
 
 class SocketService {
-  private static instance: SocketService;
-  private socket: Socket;
+  private static _instance: SocketService;
+  private _socket: Socket;
 
   private constructor() {
-    this.socket = io(SOCKET_URL, {
+    this._socket = io(SOCKET_URL, {
       withCredentials: true,
       autoConnect: true,
       reconnection: true,
@@ -17,50 +17,50 @@ class SocketService {
       reconnectionDelay: 1000,
     });
 
-    this.socket.on("connect", () => {
+    this._socket.on("connect", () => {
     });
 
-    this.socket.on("disconnect", () => {
+    this._socket.on("disconnect", () => {
     });
 
-    this.socket.on("connect_error", (error) => {
+    this._socket.on("connect_error", (error) => {
       console.error("Socket connection error:", error);
     });
   }
 
   public static getInstance(): SocketService {
-    if (!SocketService.instance) {
-      SocketService.instance = new SocketService();
+    if (!SocketService._instance) {
+      SocketService._instance = new SocketService();
     }
-    return SocketService.instance;
+    return SocketService._instance;
   }
 
   public getSocket(): Socket {
-    return this.socket;
+    return this._socket;
   }
 
   public on(event: string, callback: (data: unknown) => void) {
-    this.socket.on(event, callback);
+    this._socket.on(event, callback);
   }
 
   public off(event: string, callback?: (data: unknown) => void) {
     if (callback) {
-      this.socket.off(event, callback);
+      this._socket.off(event, callback);
     } else {
-      this.socket.off(event);
+      this._socket.off(event);
     }
   }
 
   public onAny(callback: (event: string, data: unknown) => void) {
-    this.socket.onAny(callback);
+    this._socket.onAny(callback);
   }
 
   public offAny(callback: (event: string, data: unknown) => void) {
-    this.socket.offAny(callback);
+    this._socket.offAny(callback);
   }
 
   public emit(event: string, data: unknown) {
-    this.socket.emit(event, data);
+    this._socket.emit(event, data);
   }
 }
 

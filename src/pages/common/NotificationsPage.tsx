@@ -19,6 +19,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { notificationService } from "@/services/notificationService";
+import { UI_MESSAGES } from "@/constants/messages";
 
 const NotificationsPage = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -74,7 +75,7 @@ const NotificationsPage = () => {
             <div className="flex h-[60vh] items-center justify-center">
                 <div className="flex flex-col items-center gap-2">
                     <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-                    <p className="text-muted-foreground font-medium">Loading notifications...</p>
+                    <p className="text-muted-foreground font-medium">{UI_MESSAGES.TITLES.LOADING}</p>
                 </div>
             </div>
         );
@@ -84,10 +85,10 @@ const NotificationsPage = () => {
         <div className="mx-auto max-w-4xl space-y-6">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <h1 className="text-2xl font-bold tracking-tight">Notifications</h1>
+                    <h1 className="text-2xl font-bold tracking-tight">{UI_MESSAGES.TITLES.NOTIFICATIONS}</h1>
                     {unreadCount > 0 && (
                         <Badge variant="secondary" className="px-2 py-0.5">
-                            {unreadCount} Unread
+                            {unreadCount} {UI_MESSAGES.TITLES.UNREAD}
                         </Badge>
                     )}
                 </div>
@@ -95,7 +96,7 @@ const NotificationsPage = () => {
                     {unreadCount > 0 && (
                         <Button variant="outline" size="sm" onClick={handleMarkAllRead}>
                             <CheckCheck className="mr-2 h-4 w-4" />
-                            Mark all as read
+                            {UI_MESSAGES.TITLES.MARK_ALL_READ}
                         </Button>
                     )}
                 </div>
@@ -145,7 +146,7 @@ const NotificationsPage = () => {
                                                     className="h-auto p-0 text-primary font-medium"
                                                     onClick={() => handleNotificationClick(notification)}
                                                 >
-                                                    View Details
+                                                    {UI_MESSAGES.COMMON.VIEW_DETAILS}
                                                 </Button>
                                             )}
                                             {!notification.read && (
@@ -155,7 +156,7 @@ const NotificationsPage = () => {
                                                     className="h-auto p-0 text-muted-foreground hover:text-foreground"
                                                     onClick={() => notification.id && handleMarkAsRead(notification.id)}
                                                 >
-                                                    Mark as read
+                                                    {UI_MESSAGES.TITLES.MARK_AS_READ}
                                                 </Button>
                                             )}
                                         </div>
@@ -179,7 +180,7 @@ const NotificationsPage = () => {
                         </div>
                         <h2 className="text-xl font-semibold text-foreground mb-1">Stay Tuned!</h2>
                         <p className="text-muted-foreground max-w-xs text-center">
-                            You don't have any notifications at the moment. We'll let you know when something important happens.
+                            {UI_MESSAGES.TITLES.NO_NOTIFICATIONS}
                         </p>
                     </div>
                 )}

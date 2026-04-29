@@ -3,6 +3,7 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 import { adminService } from "@/services/adminService";
 import type { User } from "@/types";
 import { AxiosError } from "axios";
+import { UI_MESSAGES } from "@/constants/messages";
 
 interface AdminState {
     users: User[];
@@ -23,7 +24,7 @@ export const fetchAllUsers = createAsyncThunk(
             return await adminService.fetchAllUsers();
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
-            return rejectWithValue(axiosError.response?.data?.message || "Failed to fetch users");
+            return rejectWithValue(axiosError.response?.data?.message || UI_MESSAGES.ADMIN_USER.LOAD_FAILED);
         }
     }
 );
@@ -35,7 +36,7 @@ export const toggleUserBlock = createAsyncThunk(
             return await adminService.toggleUserBlock(userId);
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
-            return rejectWithValue(axiosError.response?.data?.message || "Failed to toggle block status");
+            return rejectWithValue(axiosError.response?.data?.message || UI_MESSAGES.ADMIN_USER.STATUS_UPDATE_FAILED);
         }
     }
 );
@@ -49,7 +50,7 @@ export const adminCreateUser = createAsyncThunk(
             return response;
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
-            return rejectWithValue(axiosError.response?.data?.message || "Failed to create user");
+            return rejectWithValue(axiosError.response?.data?.message || UI_MESSAGES.ADMIN_USER.ADD_FAILED);
         }
     }
 );
@@ -61,7 +62,7 @@ export const adminUpdateUser = createAsyncThunk(
             return await adminService.updateUser(userId, userData);
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
-            return rejectWithValue(axiosError.response?.data?.message || "Failed to update user");
+            return rejectWithValue(axiosError.response?.data?.message || UI_MESSAGES.ADMIN_USER.UPDATE_FAILED);
         }
     }
 );
@@ -88,15 +89,15 @@ const adminSlice = createSlice({
                 state.isLoading = false;
                 state.error = action.payload as string;
             })
-            .addCase(toggleUserBlock.fulfilled, (state, action) => {
-                const { id, isBlocked } = action.payload.user;
+            .addCase(toggleUserBlock.fulfilled, (state, action: PayloadAction<User>) => {
+                const { id, isBlocked } = action.payload;
                 const user = state.users.find((u) => u.id === id);
                 if (user) {
                     user.isBlocked = isBlocked;
                 }
             })
-            .addCase(adminUpdateUser.fulfilled, (state, action) => {
-                const updatedUser = action.payload.user;
+            .addCase(adminUpdateUser.fulfilled, (state, action: PayloadAction<User>) => {
+                const updatedUser = action.payload;
                 const index = state.users.findIndex((u) => u.id === updatedUser.id);
                 if (index !== -1) {
                     state.users[index] = { ...state.users[index], ...updatedUser };

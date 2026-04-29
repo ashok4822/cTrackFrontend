@@ -1,4 +1,5 @@
 import { useEffect, useCallback } from "react";
+import { UI_MESSAGES } from "@/constants/messages";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   fetchKPIData,
@@ -40,7 +41,7 @@ const formatTimeAgo = (dateString: string) => {
   const now = new Date();
   const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-  if (seconds < 60) return "Just now";
+  if (seconds < 60) return UI_MESSAGES.TABLE.JUST_NOW;
   const minutes = Math.floor(seconds / 60);
   if (minutes < 60) return `${minutes}m ago`;
   const hours = Math.floor(minutes / 60);
@@ -126,7 +127,7 @@ export default function AdminDashboard() {
   // Only show full-page loader on initial load (when kpiData is missing)
   if (!kpiData) {
     return (
-      <DashboardLayout navItems={adminNavItems} pageTitle="Admin Dashboard">
+      <DashboardLayout navItems={adminNavItems} pageTitle={UI_MESSAGES.TITLES.HOME_PAGE}>
         <div className="flex h-[400px] items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
@@ -139,7 +140,7 @@ export default function AdminDashboard() {
       navItems={adminNavItems}
       pageTitle={
         <div className="flex items-center gap-2">
-          Admin Dashboard
+          {UI_MESSAGES.TITLES.HOME_PAGE}
           {isLoading && (
             <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
           )}
@@ -149,33 +150,33 @@ export default function AdminDashboard() {
       {/* KPI Cards */}
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <KPICard
-          title="Containers in Yard"
+          title={UI_MESSAGES.DASHBOARD.KPI.CONTAINERS_IN_YARD}
           value={kpiData.totalContainersInYard}
           icon={Container}
           variant="primary"
           trend={{ value: 5.2, isPositive: true }}
         />
         <KPICard
-          title="In Transit"
+          title={UI_MESSAGES.DASHBOARD.KPI.IN_TRANSIT}
           value={kpiData.containersInTransit}
           icon={Truck}
           variant="default"
         />
         <KPICard
-          title="Gate-In Today"
+          title={UI_MESSAGES.DASHBOARD.KPI.GATE_IN_TODAY}
           value={kpiData.gateInToday}
           icon={DoorOpen}
           variant="success"
           trend={{ value: 12, isPositive: true }}
         />
         <KPICard
-          title="Gate-Out Today"
+          title={UI_MESSAGES.DASHBOARD.KPI.GATE_OUT_TODAY}
           value={kpiData.gateOutToday}
           icon={DoorOpen}
           variant="default"
         />
         <KPICard
-          title="Yard Utilization"
+          title={UI_MESSAGES.DASHBOARD.KPI.YARD_UTILIZATION}
           value={`${kpiData.yardUtilization}%`}
           icon={BarChart3}
           variant="warning"
@@ -188,7 +189,7 @@ export default function AdminDashboard() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">
-              Daily Gate Movements
+              {UI_MESSAGES.DASHBOARD.CHARTS.DAILY_GATE_MOVEMENTS}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -210,13 +211,13 @@ export default function AdminDashboard() {
                   />
                   <Bar
                     dataKey="gateIn"
-                    name="Gate In"
+                    name={UI_MESSAGES.DASHBOARD.CHARTS.GATE_IN}
                     fill="hsl(var(--success))"
                     radius={[4, 4, 0, 0]}
                   />
                   <Bar
                     dataKey="gateOut"
-                    name="Gate Out"
+                    name={UI_MESSAGES.DASHBOARD.CHARTS.GATE_OUT}
                     fill="hsl(var(--primary))"
                     radius={[4, 4, 0, 0]}
                   />
@@ -230,7 +231,7 @@ export default function AdminDashboard() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">
-              Container Dwell Time
+              {UI_MESSAGES.DASHBOARD.CHARTS.DWELL_TIME}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -276,7 +277,7 @@ export default function AdminDashboard() {
       <Card className="mb-6">
         <CardHeader className="pb-2">
           <CardTitle className="text-base font-semibold">
-            Yard Capacity by Block
+            {UI_MESSAGES.DASHBOARD.CHARTS.YARD_CAPACITY_BLOCK}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -304,8 +305,8 @@ export default function AdminDashboard() {
                     />
                   </div>
                   <div className="mt-2 flex justify-between text-xs text-muted-foreground">
-                    <span>{block.occupied} occupied</span>
-                    <span>{block.capacity} total</span>
+                    <span>{block.occupied} {UI_MESSAGES.YARD.OCCUPIED}</span>
+                    <span>{block.capacity} {UI_MESSAGES.YARD.TOTAL_CAPACITY}</span>
                   </div>
                 </div>
               );

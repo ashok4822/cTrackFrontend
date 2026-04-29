@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Factory, ChevronLeft, Eye, EyeOff, CheckCircle2 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { resetPassword, verifyResetOtp, clearError } from "@/store/slices/authSlice";
+import { UI_MESSAGES } from "@/constants/messages";
 
 const ResetPassword = () => {
     const [searchParams] = useSearchParams();
@@ -90,7 +91,7 @@ const ResetPassword = () => {
                         className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
                     >
                         <ChevronLeft className="h-4 w-4" />
-                        Back to Home
+                        {UI_MESSAGES.AUTH.BACK_TO_HOME}
                     </Link>
                 </div>
             </header>
@@ -107,7 +108,7 @@ const ResetPassword = () => {
                             )}
                         </div>
                         <CardTitle className="text-2xl font-bold tracking-tight">
-                            {isOtpVerified ? "Create New Password" : "Verify OTP"}
+                            {isOtpVerified ? UI_MESSAGES.TITLES.CREATE_NEW_PASSWORD : UI_MESSAGES.TITLES.VERIFY_OTP}
                         </CardTitle>
                         <CardDescription className="mt-2">
                             {isOtpVerified
@@ -132,7 +133,7 @@ const ResetPassword = () => {
                         {!isOtpVerified ? (
                             <form onSubmit={handleVerifyOtp} className="space-y-6">
                                 <div className="space-y-3">
-                                    <Label htmlFor="otp" className="text-sm font-medium">Reset Code</Label>
+                                    <Label htmlFor="otp" className="text-sm font-medium">{UI_MESSAGES.AUTH.RESET_CODE}</Label>
                                     <Input
                                         id="otp"
                                         type="text"
@@ -156,7 +157,7 @@ const ResetPassword = () => {
                                     className="w-full h-12 text-base font-semibold transition-all hover:scale-[1.01]"
                                     disabled={isLoading || timeLeft === 0}
                                 >
-                                    {isLoading ? "Verifying..." : "Verify Code"}
+                                    {isLoading ? UI_MESSAGES.AUTH.VERIFYING : UI_MESSAGES.AUTH.VERIFY_CODE}
                                 </Button>
 
                                 <div className="text-center pt-2">
@@ -164,7 +165,7 @@ const ResetPassword = () => {
                                         to={`/forgot-password?role=${role}`}
                                         className="text-sm text-muted-foreground hover:text-primary transition-colors font-medium border-b border-transparent hover:border-primary/30 pb-0.5"
                                     >
-                                        Didn't get the code? Resend
+                                        {UI_MESSAGES.AUTH.RESEND_CODE}
                                     </Link>
                                 </div>
                             </form>
@@ -172,7 +173,7 @@ const ResetPassword = () => {
                             <form onSubmit={handleResetPassword} className="space-y-5 animate-in slide-in-from-right-4 duration-300">
                                 <div className="space-y-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="password">New Password</Label>
+                                        <Label htmlFor="password">{UI_MESSAGES.AUTH.NEW_PASSWORD}</Label>
                                         <div className="relative group">
                                             <Input
                                                 id="password"
@@ -200,7 +201,7 @@ const ResetPassword = () => {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="confirmPassword">Confirm Password</Label>
+                                        <Label htmlFor="confirmPassword">{UI_MESSAGES.AUTH.CONFIRM_PASSWORD}</Label>
                                         <Input
                                             id="confirmPassword"
                                             type={showPassword ? "text" : "password"}
@@ -219,15 +220,15 @@ const ResetPassword = () => {
                                     </div>
                                 )}
 
-                                <div className="pt-2">
-                                    <Button
-                                        type="submit"
-                                        className="w-full h-12 text-base font-semibold shadow-lg shadow-primary/10 transition-all hover:scale-[1.01]"
-                                        disabled={isLoading}
-                                    >
-                                        {isLoading ? "Resetting..." : "Update Password"}
-                                    </Button>
-                                </div>
+                                    <div className="pt-2">
+                                        <Button
+                                            type="submit"
+                                            className="w-full h-12 text-base font-semibold shadow-lg shadow-primary/10 transition-all hover:scale-[1.01]"
+                                            disabled={isLoading}
+                                        >
+                                            {isLoading ? UI_MESSAGES.AUTH.RESETTING : UI_MESSAGES.PROFILE.CHANGE_PASSWORD}
+                                        </Button>
+                                    </div>
                             </form>
                         )}
                     </CardContent>

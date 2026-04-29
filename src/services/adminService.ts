@@ -8,20 +8,20 @@ export const adminService = {
         return response.data;
     },
 
-    async toggleUserBlock(userId: string): Promise<{ user: { id: string; isBlocked: boolean } }> {
-        const response = await api.patch<{ user: { id: string; isBlocked: boolean } }>(
+    async toggleUserBlock(userId: string): Promise<User> {
+        const response = await api.patch<User>(
             API_ENDPOINTS.USERS.BLOCK(userId)
         );
         return response.data;
     },
 
-    async createUser(userData: Partial<User> & { password?: string }): Promise<{ message: string }> {
-        const response = await api.post<{ message: string }>(API_ENDPOINTS.USERS.CREATE, userData);
+    async createUser(userData: Partial<User> & { password?: string }): Promise<User> {
+        const response = await api.post<User>(API_ENDPOINTS.USERS.CREATE, userData);
         return response.data;
     },
 
-    async updateUser(userId: string, userData: Partial<User>): Promise<{ message: string; user: User }> {
-        const response = await api.put<{ message: string; user: User }>(API_ENDPOINTS.USERS.BY_ID(userId), userData);
+    async updateUser(userId: string, userData: Partial<User>): Promise<User> {
+        const response = await api.put<User>(API_ENDPOINTS.USERS.BY_ID(userId), userData);
         return response.data;
     },
 };

@@ -16,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { UI_MESSAGES } from "@/constants/messages";
 import type { ShippingLine } from "@/types";
 
 const AdminShippinglineManagement = () => {
@@ -50,7 +51,7 @@ const AdminShippinglineManagement = () => {
 
   const handleSave = async () => {
     if (!formData.name || !formData.code) {
-      toast.error("Please fill in all fields");
+      toast.error(UI_MESSAGES.SHIPPING.FILL_ALL_FIELDS);
       return;
     }
 
@@ -61,10 +62,10 @@ const AdminShippinglineManagement = () => {
           name: formData.name,
           code: formData.code,
         })).unwrap();
-        toast.success("Shipping line updated successfully");
+        toast.success(UI_MESSAGES.SHIPPING.UPDATE_SUCCESS);
       } else {
         await dispatch(createShippingLine(formData)).unwrap();
-        toast.success("Shipping line added successfully");
+        toast.success(UI_MESSAGES.SHIPPING.ADD_SUCCESS);
       }
       setIsDialogOpen(false);
       setFormData({ name: "", code: "" });
@@ -76,11 +77,11 @@ const AdminShippinglineManagement = () => {
   return (
     <DashboardLayout
       navItems={adminNavItems}
-      pageTitle="Shipping Line Management"
+      pageTitle={UI_MESSAGES.TITLES.SHIPPING_LINE_MANAGEMENT}
       pageActions={
         <Button onClick={handleOpenAdd} className="gap-2">
           <Plus className="h-4 w-4" />
-          Add Shipping Line
+          {UI_MESSAGES.SHIPPING.ADD_TITLE}
         </Button>
       }
     >
@@ -91,7 +92,7 @@ const AdminShippinglineManagement = () => {
           </div>
         ) : lines.length === 0 ? (
           <div className="col-span-full py-12 text-center text-muted-foreground">
-            No shipping lines found. Click "Add Shipping Line" to create one.
+            {UI_MESSAGES.SHIPPING.NO_LINES_FOUND}
           </div>
         ) : (
           lines.map((line) => (
@@ -112,12 +113,12 @@ const AdminShippinglineManagement = () => {
               <CardContent>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Code</span>
+                    <span className="text-sm text-muted-foreground">{UI_MESSAGES.TABLE.CODE}</span>
                     <span className="font-mono text-sm font-semibold text-primary">{line.shipping_line_code}</span>
                   </div>
                   <div className="flex items-center gap-2 pt-2 border-t text-xs text-muted-foreground">
                     <Calendar className="h-3 w-3" />
-                    <span>Added on {line.createdAt ? new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(line.createdAt)) : "N/A"}</span>
+                    <span>{UI_MESSAGES.COMMON.ADDED_ON} {line.createdAt ? new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(line.createdAt)) : UI_MESSAGES.COMMON.NA}</span>
                   </div>
                 </div>
               </CardContent>
@@ -129,35 +130,35 @@ const AdminShippinglineManagement = () => {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{dialogMode === "add" ? "Add New Shipping Line" : "Edit Shipping Line"}</DialogTitle>
+            <DialogTitle>{dialogMode === "add" ? UI_MESSAGES.SHIPPING.ADD_TITLE : UI_MESSAGES.SHIPPING.EDIT_TITLE}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Shipping Line Name</Label>
+              <Label htmlFor="name">{UI_MESSAGES.SHIPPING.NAME_LABEL}</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="e.g. Maersk Line"
+                placeholder={UI_MESSAGES.SHIPPING.NAME_PLACEHOLDER}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="code">Shipping Line Code</Label>
+              <Label htmlFor="code">{UI_MESSAGES.SHIPPING.CODE_LABEL}</Label>
               <Input
                 id="code"
                 value={formData.code}
                 onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                placeholder="e.g. MAEU"
+                placeholder={UI_MESSAGES.SHIPPING.CODE_PLACEHOLDER}
               />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isLoading}>
-              Cancel
+              {UI_MESSAGES.COMMON.CANCEL}
             </Button>
             <Button onClick={handleSave} disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {dialogMode === "add" ? "Create Shipping Line" : "Save Changes"}
+              {dialogMode === "add" ? UI_MESSAGES.COMMON.SUBMIT : UI_MESSAGES.COMMON.SAVE_CHANGES}
             </Button>
           </DialogFooter>
         </DialogContent>

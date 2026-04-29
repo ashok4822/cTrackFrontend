@@ -42,6 +42,7 @@ import { containerRequestService } from "@/services/containerRequestService";
 import { containerService } from "@/services/containerService";
 import { billingService, type CargoCategory } from "@/services/billingService";
 import { useToast } from "@/hooks/useToast";
+import { UI_MESSAGES } from "@/constants/messages";
 
 interface CargoRequest {
   id: string;
@@ -104,13 +105,13 @@ export default function OperatorCargoRequests() {
         ...r,
         id: r._id || r.id,
         // customerName is populated by the backend aggregate; fall back gracefully
-        customerName: r.customerName || r.name || "Unknown",
+        customerName: r.customerName || r.name || UI_MESSAGES.COMMON.NO_DATA,
       }));
       setRequests(formattedData);
     } catch {
       toast({
-        title: "Error",
-        description: "Failed to fetch container requests",
+        title: UI_MESSAGES.TITLES.ERROR,
+        description: UI_MESSAGES.DESTUFFING.FETCH_REQUESTS_FAILED,
         variant: "destructive",
       });
     }
@@ -123,7 +124,7 @@ export default function OperatorCargoRequests() {
         const categories = await billingService.fetchCargoCategories();
         setCargoCategories(categories.filter(c => c.active));
       } catch (error) {
-        console.error("Failed to fetch cargo categories:", error);
+        console.error(UI_MESSAGES.ACTIVITY.FETCH_FAILED, error);
       }
     };
     init();
@@ -157,8 +158,8 @@ export default function OperatorCargoRequests() {
         setAvailableContainers(filteredContainers);
       } catch {
         toast({
-          title: "Error",
-          description: "Failed to fetch available containers",
+          title: UI_MESSAGES.TITLES.ERROR,
+          description: UI_MESSAGES.DESTUFFING.FETCH_CONTAINERS_FAILED,
           variant: "destructive",
         });
         setAvailableContainers([]);
@@ -181,8 +182,8 @@ export default function OperatorCargoRequests() {
     // For stuffing, a container must be selected from the dropdown
     if (!isDestuffing && !selectedContainer) {
       toast({
-        title: "Error",
-        description: "Please select a container to allocate",
+        title: UI_MESSAGES.TITLES.ERROR,
+        description: UI_MESSAGES.DESTUFFING.SELECT_LABEL,
         variant: "destructive",
       });
       return;
@@ -226,8 +227,8 @@ export default function OperatorCargoRequests() {
       );
 
       toast({
-        title: "Request Approved",
-        description: `Container ${updatePayload.containerNumber} approved for request`,
+        title: UI_MESSAGES.DESTUFFING.REQUEST_APPROVED,
+        description: UI_MESSAGES.DESTUFFING.REQUEST_APPROVED_DESC(updatePayload.containerNumber || ""),
       });
 
       setAllocationDialogOpen(false);
@@ -237,8 +238,8 @@ export default function OperatorCargoRequests() {
       fetchRequests();
     } catch {
       toast({
-        title: "Error",
-        description: "Failed to allocate container",
+        title: UI_MESSAGES.TITLES.ERROR,
+        description: UI_MESSAGES.DESTUFFING.ALLOCATE_FAILED,
         variant: "destructive",
       });
     }
@@ -247,8 +248,8 @@ export default function OperatorCargoRequests() {
   const handleReject = async () => {
     if (!selectedRequest || !rejectionReason.trim()) {
       toast({
-        title: "Error",
-        description: "Please provide a rejection reason",
+        title: UI_MESSAGES.TITLES.ERROR,
+        description: UI_MESSAGES.DESTUFFING.PROVIDE_REASON,
         variant: "destructive",
       });
       return;
@@ -261,8 +262,8 @@ export default function OperatorCargoRequests() {
       });
 
       toast({
-        title: "Request Rejected",
-        description: `Request ${selectedRequest.id} has been rejected`,
+        title: UI_MESSAGES.DESTUFFING.REQUEST_REJECTED,
+        description: UI_MESSAGES.DESTUFFING.REQUEST_REJECTED_DESC(selectedRequest.id),
         variant: "destructive",
       });
 
@@ -272,8 +273,8 @@ export default function OperatorCargoRequests() {
       fetchRequests(); // Refresh data
     } catch {
       toast({
-        title: "Error",
-        description: "Failed to reject request",
+        title: UI_MESSAGES.TITLES.ERROR,
+        description: UI_MESSAGES.DESTUFFING.REJECT_FAILED,
         variant: "destructive",
       });
     }
@@ -282,7 +283,7 @@ export default function OperatorCargoRequests() {
   const columns: Column<CargoRequest>[] = [
     {
       key: "id",
-      header: "Request ID",
+      header: UI_MESSAGES.TABLE.REQUEST_ID,
       render: (item) => {
         const idString = item.id || "";
         return (
@@ -294,20 +295,20 @@ export default function OperatorCargoRequests() {
     },
     {
       key: "type",
-      header: "Type",
+      header: UI_MESSAGES.TABLE.TYPE,
       render: (item) => (
         <Badge
           variant={item.type === "stuffing" ? "default" : "secondary"}
           className="capitalize"
         >
-          {item.type}
+          {item.type === "stuffing" ? UI_MESSAGES.COMMON.STUFFING : UI_MESSAGES.COMMON.DESTUFFING}
         </Badge>
       ),
     },
-    { key: "customerName", header: "Customer", sortable: true },
+    { key: "customerName", header: UI_MESSAGES.TABLE.CUSTOMER, sortable: true },
     {
       key: "containerSpecs",
-      header: "Req. Container",
+      header: UI_MESSAGES.DESTUFFING.REQ_CONTAINER,
       render: (item) =>
         item.containerSize && item.containerType ? (
           <span className="text-sm whitespace-nowrap">
@@ -315,12 +316,12 @@ export default function OperatorCargoRequests() {
             <span className="capitalize">{item.containerType}</span>
           </span>
         ) : (
-          <span className="text-muted-foreground text-sm">N/A</span>
+          <span className="text-muted-foreground text-sm">{UI_MESSAGES.COMMON.NO_DATA}</span>
         ),
     },
     {
       key: "cargoDescription",
-      header: "Cargo",
+      header: UI_MESSAGES.TABLE.CARGO,
       render: (item) => (
         <div className="max-w-[200px] truncate" title={item.cargoDescription}>
           {item.cargoDescription}
@@ -329,52 +330,52 @@ export default function OperatorCargoRequests() {
     },
     {
       key: "cargoWeight",
-      header: "Weight",
+      header: UI_MESSAGES.TABLE.WEIGHT,
       render: (item) =>
         item.cargoWeight != null
-          ? `${item.cargoWeight.toLocaleString()} kg`
-          : "N/A",
+          ? `${item.cargoWeight.toLocaleString()} ${UI_MESSAGES.COMMON.KG}`
+          : UI_MESSAGES.COMMON.NO_DATA,
     },
     {
       key: "cargoCategoryName",
-      header: "Category",
+      header: UI_MESSAGES.TABLE.CATEGORY,
       render: (item) => (
         <Badge variant="outline" className="capitalize">
-          {item.cargoCategoryName || "N/A"}
+          {item.cargoCategoryName || UI_MESSAGES.COMMON.NO_DATA}
         </Badge>
       ),
     },
     {
       key: "containerNumber",
-      header: "Allocated Container",
+      header: UI_MESSAGES.DESTUFFING.ALLOCATED_CONTAINER,
       render: (item) =>
         item.containerNumber ? (
           <span className="font-mono">{item.containerNumber}</span>
         ) : (
-          <span className="text-muted-foreground">Not allocated</span>
+          <span className="text-muted-foreground">{UI_MESSAGES.DESTUFFING.NOT_ALLOCATED}</span>
         ),
     },
     {
       key: "isHazardous",
-      header: "Hazardous",
+      header: UI_MESSAGES.DESTUFFING.HAZARDOUS,
       render: (item) =>
         item.isHazardous ? (
           <Badge variant="destructive" className="gap-1">
             <AlertTriangle className="h-3 w-3" />
-            Yes
+            {UI_MESSAGES.COMMON.YES}
           </Badge>
         ) : (
-          <span className="text-muted-foreground">No</span>
+          <span className="text-muted-foreground">{UI_MESSAGES.COMMON.NO}</span>
         ),
     },
     {
       key: "status",
-      header: "Status",
+      header: UI_MESSAGES.TABLE.STATUS,
       render: (item) => <StatusBadge status={item.status} />,
     },
     {
       key: "actions",
-      header: "Actions",
+      header: UI_MESSAGES.TABLE.ACTIONS,
       render: (item) => (
         <div className="flex gap-2">
           {item.status === "pending" && (
@@ -401,7 +402,7 @@ export default function OperatorCargoRequests() {
                   setAllocationDialogOpen(true);
                 }}
               >
-                Allocate
+                {UI_MESSAGES.DESTUFFING.ALLOCATE}
               </Button>
               <Button
                 size="sm"
@@ -411,18 +412,18 @@ export default function OperatorCargoRequests() {
                   setRejectDialogOpen(true);
                 }}
               >
-                Reject
+                {UI_MESSAGES.DESTUFFING.REJECT}
               </Button>
             </>
           )}
           {item.status === "rejected" && (
             <span className="text-muted-foreground text-sm flex items-center gap-1">
-              <XCircle className="h-4 w-4" /> Rejected
+              <XCircle className="h-4 w-4" /> {UI_MESSAGES.DESTUFFING.REJECTED}
             </span>
           )}
           {item.status === "approved" && (
             <span className="text-success text-sm flex items-center gap-1">
-              <CheckCircle className="h-4 w-4" /> Allocated
+              <CheckCircle className="h-4 w-4" /> {UI_MESSAGES.DESTUFFING.ALLOCATED}
             </span>
           )}
         </div>
@@ -433,24 +434,24 @@ export default function OperatorCargoRequests() {
   return (
     <DashboardLayout
       navItems={operatorNavItems}
-      pageTitle="Cargo Requests & Allocation"
+      pageTitle={UI_MESSAGES.TITLES.CARGO_REQUESTS}
     >
       {/* KPI Cards */}
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
         <KPICard
-          title="Pending Requests"
+          title={UI_MESSAGES.DESTUFFING.PENDING_REQUESTS}
           value={pendingRequests.length}
           icon={Clock}
           variant="warning"
         />
         <KPICard
-          title="Allocated (Approved)"
+          title={UI_MESSAGES.DESTUFFING.ALLOCATED_APPROVED}
           value={approvedRequests.length}
           icon={Container}
           variant="primary"
         />
         <KPICard
-          title="Rejected"
+          title={UI_MESSAGES.DESTUFFING.REJECTED}
           value={rejectedRequests.length}
           icon={XCircle}
           variant="danger"
@@ -462,22 +463,22 @@ export default function OperatorCargoRequests() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            Customer Cargo Requests
+            {UI_MESSAGES.DESTUFFING.CUSTOMER_CARGO_REQUESTS}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="pending" className="space-y-4">
             <TabsList>
               <TabsTrigger value="pending">
-                Pending ({pendingRequests.length})
+                {UI_MESSAGES.KPI.PENDING} ({pendingRequests.length})
               </TabsTrigger>
               <TabsTrigger value="approved">
-                Approved ({approvedRequests.length})
+                {UI_MESSAGES.TITLES.APPROVED} ({approvedRequests.length})
               </TabsTrigger>
               <TabsTrigger value="rejected">
-                Rejected ({rejectedRequests.length})
+                {UI_MESSAGES.TITLES.REJECTED} ({rejectedRequests.length})
               </TabsTrigger>
-              <TabsTrigger value="all">All Requests</TabsTrigger>
+              <TabsTrigger value="all">{UI_MESSAGES.KPI.ALL_REQUESTS}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="pending">
@@ -506,10 +507,9 @@ export default function OperatorCargoRequests() {
       >
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Allocate Container</DialogTitle>
+            <DialogTitle>{UI_MESSAGES.DESTUFFING.ALLOCATE_CONTAINER}</DialogTitle>
             <DialogDescription>
-              Select a container to allocate to this {selectedRequest?.type}{" "}
-              request
+              {UI_MESSAGES.DESTUFFING.SELECT_CONTAINER_DESC(selectedRequest?.type || "")}
             </DialogDescription>
           </DialogHeader>
 
@@ -521,7 +521,7 @@ export default function OperatorCargoRequests() {
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4 text-muted-foreground" />
                     <div>
-                      <p className="text-muted-foreground text-xs">Customer</p>
+                      <p className="text-muted-foreground text-xs">{UI_MESSAGES.TABLE.CUSTOMER}</p>
                       <p className="font-medium">
                         {selectedRequest.customerName}
                       </p>
@@ -530,9 +530,9 @@ export default function OperatorCargoRequests() {
                   <div className="flex items-center gap-2">
                     <Package className="h-4 w-4 text-muted-foreground" />
                     <div>
-                      <p className="text-muted-foreground text-xs">Type</p>
+                      <p className="text-muted-foreground text-xs">{UI_MESSAGES.TABLE.TYPE}</p>
                       <p className="font-medium capitalize">
-                        {selectedRequest.type}
+                        {selectedRequest.type === "stuffing" ? UI_MESSAGES.COMMON.STUFFING : UI_MESSAGES.COMMON.DESTUFFING}
                       </p>
                     </div>
                   </div>
@@ -540,12 +540,12 @@ export default function OperatorCargoRequests() {
                     <Weight className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p className="text-muted-foreground text-xs">
-                        Cargo Weight
+                        {UI_MESSAGES.DESTUFFING.CARGO_WEIGHT}
                       </p>
                       <p className="font-medium">
                         {selectedRequest.cargoWeight != null
-                          ? `${selectedRequest.cargoWeight.toLocaleString()} kg`
-                          : "N/A"}
+                          ? `${selectedRequest.cargoWeight.toLocaleString()} ${UI_MESSAGES.COMMON.KG}`
+                          : UI_MESSAGES.COMMON.NO_DATA}
                       </p>
                     </div>
                   </div>
@@ -553,37 +553,37 @@ export default function OperatorCargoRequests() {
                     <Calendar className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p className="text-muted-foreground text-xs">
-                        Preferred Date
+                        {UI_MESSAGES.TABLE.PREFERRED_DATE}
                       </p>
                       <p className="font-medium">
                         {selectedRequest.preferredDate
                           ? new Date(
                             selectedRequest.preferredDate,
                           ).toLocaleDateString()
-                          : "N/A"}
+                          : UI_MESSAGES.COMMON.NO_DATA}
                       </p>
                     </div>
                   </div>
                 </div>
                 <div>
                   <p className="text-muted-foreground text-xs">
-                    Cargo Description
+                    {UI_MESSAGES.DESTUFFING.CARGO_DESC}
                   </p>
                   <p className="text-sm">{selectedRequest.cargoDescription}</p>
                 </div>
                 {selectedRequest.isHazardous && (
                   <Badge variant="destructive" className="gap-1">
                     <AlertTriangle className="h-3 w-3" />
-                    Hazardous: {selectedRequest.hazardClass} - UN{" "}
+                    {UI_MESSAGES.DESTUFFING.HAZARDOUS}: {selectedRequest.hazardClass} - UN{" "}
                     {selectedRequest.unNumber}
                   </Badge>
                 )}
                 <div className="flex items-center gap-2 pt-2 border-t border-muted-foreground/10">
                   <Package className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <p className="text-muted-foreground text-xs">Initial Cargo Category</p>
+                    <p className="text-muted-foreground text-xs">{UI_MESSAGES.DESTUFFING.INITIAL_CATEGORY}</p>
                     <p className="font-medium">
-                      {selectedRequest.cargoCategoryName || "N/A"}
+                      {selectedRequest.cargoCategoryName || UI_MESSAGES.COMMON.NO_DATA}
                     </p>
                   </div>
                 </div>
@@ -594,7 +594,7 @@ export default function OperatorCargoRequests() {
                 {selectedRequest.type === "destuffing" ? (
                   // Destuffing: container is already known — show it as read-only
                   <>
-                    <Label>Container</Label>
+                    <Label>{UI_MESSAGES.TABLE.CONTAINER}</Label>
                     <div className="flex items-center gap-3 rounded-md border border-input bg-muted/50 px-3 py-2">
                       <span className="font-mono font-semibold text-sm">
                         {selectedRequest.containerNumber}
@@ -607,29 +607,29 @@ export default function OperatorCargoRequests() {
                           </span>
                         )}
                       <span className="ml-auto text-xs text-muted-foreground italic">
-                        Customer's loaded container
+                        {UI_MESSAGES.DESTUFFING.CUSTOMERS_CONTAINER}
                       </span>
                     </div>
                   </>
                 ) : (
                   // Stuffing: operator picks an empty container
                   <>
-                    <Label>Select Container</Label>
+                    <Label>{UI_MESSAGES.DESTUFFING.SELECT_LABEL}</Label>
                     <Select
                       value={selectedContainer}
                       onValueChange={setSelectedContainer}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Choose a container" />
+                        <SelectValue placeholder={UI_MESSAGES.DESTUFFING.CHOOSE_CONTAINER} />
                       </SelectTrigger>
                       <SelectContent>
                         {loadingContainers ? (
                           <div className="px-4 py-2 text-sm text-muted-foreground">
-                            Loading containers...
+                            {UI_MESSAGES.BILLING.LOADING}
                           </div>
                         ) : availableContainers.length === 0 ? (
                           <div className="px-4 py-2 text-sm text-muted-foreground">
-                            No matching containers available
+                            {UI_MESSAGES.DESTUFFING.NO_MATCHING_CONTAINERS}
                           </div>
                         ) : (
                           availableContainers
@@ -663,8 +663,8 @@ export default function OperatorCargoRequests() {
                     <p className="text-xs text-muted-foreground">
                       {selectedRequest.containerSize &&
                         selectedRequest.containerType
-                        ? `Showing ${selectedRequest.containerSize} ${selectedRequest.containerType} containers available in yard`
-                        : "Showing all empty containers available in yard"}
+                        ? UI_MESSAGES.DESTUFFING.SHOWING_MATCHING_CONTAINERS(selectedRequest.containerSize, selectedRequest.containerType)
+                        : UI_MESSAGES.DESTUFFING.SHOWING_ALL_EMPTY}
                     </p>
                   </>
                 )}
@@ -672,13 +672,13 @@ export default function OperatorCargoRequests() {
 
               {/* Cargo Category Adjustment */}
               <div className="space-y-2">
-                <Label htmlFor="category">Change Cargo Category (Optional)</Label>
+                <Label htmlFor="category">{UI_MESSAGES.DESTUFFING.CHANGE_CATEGORY_OPT}</Label>
                 <Select
                   value={selectedCargoCategoryId}
                   onValueChange={setSelectedCargoCategoryId}
                 >
                   <SelectTrigger id="category">
-                    <SelectValue placeholder="Select category" />
+                    <SelectValue placeholder={UI_MESSAGES.STUFFING.SELECT_TASK_TYPE} />
                   </SelectTrigger>
                   <SelectContent>
                     {cargoCategories.map((cat) => (
@@ -689,19 +689,22 @@ export default function OperatorCargoRequests() {
                   </SelectContent>
                 </Select>
                 <p className="text-[10px] text-muted-foreground">
-                  You can change the category here to apply different charge rates during allocation if needed.
+                  {UI_MESSAGES.DESTUFFING.CHANGE_CATEGORY_OPT}
                 </p>
                 {selectedCargoCategoryId !== "none" && selectedCargoCategoryId !== "" && (
                   <div className="mt-2 p-2 bg-primary/5 border border-primary/10 rounded">
                     <div className="flex justify-between items-center text-xs">
-                      <span className="text-muted-foreground font-medium">Calculated Cargo Charge:</span>
+                      <span className="text-muted-foreground font-medium">{UI_MESSAGES.DESTUFFING.CALCULATED_CHARGE}</span>
                       <span className="text-primary font-bold">
-                        ₹{(((selectedRequest?.cargoWeight || 0) / 1000) *
+                        {UI_MESSAGES.COMMON.CURRENCY_SYMBOL}{(((selectedRequest?.cargoWeight || 0) / 1000) *
                           (cargoCategories.find(c => c.id === selectedCargoCategoryId)?.chargePerTon || 0)).toFixed(2)}
                       </span>
                     </div>
                     <p className="text-[10px] text-muted-foreground italic mt-0.5">
-                      Based on {((selectedRequest?.cargoWeight || 0) / 1000).toFixed(3)} tons @ ₹{cargoCategories.find(c => c.id === selectedCargoCategoryId)?.chargePerTon || 0}/ton
+                      {UI_MESSAGES.DESTUFFING.CHARGE_BASIS(
+                        ((selectedRequest?.cargoWeight || 0) / 1000).toFixed(3),
+                        cargoCategories.find(c => c.id === selectedCargoCategoryId)?.chargePerTon || 0
+                      )}
                     </p>
                   </div>
                 )}
@@ -714,7 +717,7 @@ export default function OperatorCargoRequests() {
               variant="outline"
               onClick={() => setAllocationDialogOpen(false)}
             >
-              Cancel
+              {UI_MESSAGES.COMMON.CANCEL}
             </Button>
             <Button
               onClick={handleAllocate}
@@ -723,7 +726,7 @@ export default function OperatorCargoRequests() {
               }
             >
               <CheckCircle className="mr-2 h-4 w-4" />
-              Allocate Container
+              {UI_MESSAGES.DESTUFFING.ALLOCATE_CONTAINER}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -733,17 +736,17 @@ export default function OperatorCargoRequests() {
       <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Reject Request</DialogTitle>
+            <DialogTitle>{UI_MESSAGES.DESTUFFING.REJECT_REQUEST}</DialogTitle>
             <DialogDescription>
-              Please provide a reason for rejecting this request
+              {UI_MESSAGES.DESTUFFING.REJECT_REASON_DESC}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Rejection Reason</Label>
+              <Label>{UI_MESSAGES.DESTUFFING.REJECT_REASON_LABEL}</Label>
               <Textarea
-                placeholder="Enter the reason for rejection..."
+                placeholder={UI_MESSAGES.DESTUFFING.REJECT_REASON_PLACEHOLDER}
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
                 rows={4}
@@ -756,11 +759,11 @@ export default function OperatorCargoRequests() {
               variant="outline"
               onClick={() => setRejectDialogOpen(false)}
             >
-              Cancel
+              {UI_MESSAGES.COMMON.CANCEL}
             </Button>
             <Button variant="destructive" onClick={handleReject}>
               <XCircle className="mr-2 h-4 w-4" />
-              Reject Request
+              {UI_MESSAGES.DESTUFFING.REJECT_REQUEST}
             </Button>
           </DialogFooter>
         </DialogContent>

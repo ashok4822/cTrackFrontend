@@ -22,6 +22,8 @@ import { useToast } from "@/hooks/useToast";
 import { useOverdueStatus } from "@/hooks/useOverdueStatus";
 import { OverdueBlocker } from "@/components/common/OverdueBlocker";
 import { Skeleton } from "@/components/ui/skeleton";
+import { UI_MESSAGES } from "@/constants/messages";
+
 
 interface ContainerRequest {
   id: string;
@@ -45,9 +47,11 @@ interface ContainerRequest {
 
 export default function CustomerStuffingDestuffing() {
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
-  const [selectedOperation, setSelectedOperation] =
-    useState<ContainerRequest | null>(null);
+  const [selectedOperation, setSelectedOperation] = useState<ContainerRequest | null>(null);
   const [requests, setRequests] = useState<ContainerRequest[]>([]);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [pendingRequestId, setPendingRequestId] = useState<string | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const { hasOverdueBills, loading: checkingOverdue } = useOverdueStatus();
@@ -63,8 +67,8 @@ export default function CustomerStuffingDestuffing() {
       setRequests(formattedData);
     } catch {
       toast({
-        title: "Error",
-        description: "Failed to fetch container requests",
+        title: UI_MESSAGES.TITLES.ERROR,
+        description: UI_MESSAGES.CONTAINER.SUBMIT_FAILED,
         variant: "destructive",
       });
     } finally {
@@ -93,31 +97,38 @@ export default function CustomerStuffingDestuffing() {
 
 
 
-  const handleMarkAsComplete = async (requestId: string) => {
+  const handleMarkAsComplete = async () => {
+    if (!pendingRequestId) return;
+    
+    setIsUpdating(true);
     try {
-      await containerRequestService.updateRequest(requestId, {
+      await containerRequestService.updateRequest(pendingRequestId, {
         status: "completed",
       });
 
       toast({
-        title: "Success",
-        description: "Operation marked as complete.",
+        title: UI_MESSAGES.TITLES.SUCCESS,
+        description: UI_MESSAGES.TRANSIT.OPERATION_COMPLETED,
       });
 
+      setShowConfirmDialog(false);
+      setPendingRequestId(null);
       fetchRequests();
     } catch {
       toast({
-        title: "Error",
-        description: "Failed to mark as complete",
+        title: UI_MESSAGES.TITLES.ERROR,
+        description: UI_MESSAGES.TRANSIT.COMPLETE_OPERATION_FAILED,
         variant: "destructive",
       });
+    } finally {
+      setIsUpdating(false);
     }
   };
 
   const columns: Column<ContainerRequest>[] = [
     {
       key: "id",
-      header: "Request No.",
+      header: UI_MESSAGES.TABLE.REQUEST_NO,
       sortable: true,
       render: (item) => (
         <span className="font-mono font-medium text-primary">
@@ -127,17 +138,17 @@ export default function CustomerStuffingDestuffing() {
     },
     {
       key: "containerNumber",
-      header: "Container No.",
+      header: UI_MESSAGES.TABLE.CONTAINER_NO,
       sortable: true,
       render: (item) => (
         <span className="font-mono font-medium text-foreground">
-          {item.containerNumber || "Not allocated"}
+          {item.containerNumber || UI_MESSAGES.DESTUFFING.NOT_ALLOCATED}
         </span>
       ),
     },
     {
       key: "type",
-      header: "Type",
+      header: UI_MESSAGES.TABLE.TYPE,
       sortable: true,
       render: (item) => (
         <span className="capitalize font-medium">{item.type}</span>
@@ -146,35 +157,35 @@ export default function CustomerStuffingDestuffing() {
 
     {
       key: "preferredDate",
-      header: "Scheduled Date",
+      header: UI_MESSAGES.TABLE.SCHEDULED_DATE,
       sortable: true,
-      render: (item) => item.preferredDate ? new Date(item.preferredDate).toLocaleDateString() : "N/A",
+      render: (item) => item.preferredDate ? new Date(item.preferredDate).toLocaleDateString() : UI_MESSAGES.COMMON.NA,
     },
     {
       key: "status",
-      header: "Status",
+      header: UI_MESSAGES.TABLE.STATUS,
       sortable: true,
       render: (item) => <StatusBadge status={item.status} />,
     },
     {
       key: "createdAt",
-      header: "Requested On",
+      header: UI_MESSAGES.COMMON.REQUESTED_ON,
       render: (item) =>
         item.createdAt
           ? new Date(item.createdAt).toLocaleDateString()
-          : "-",
+          : UI_MESSAGES.COMMON.NA,
     },
     {
       key: "cargoCategoryName",
-      header: "Category",
+      header: UI_MESSAGES.TABLE.CATEGORY,
       sortable: true,
       render: (item) => (
-        <span className="capitalize">{item.cargoCategoryName || "N/A"}</span>
+        <span className="capitalize">{item.cargoCategoryName || UI_MESSAGES.COMMON.NA}</span>
       ),
     },
     {
       key: "actions",
-      header: "Actions",
+      header: UI_MESSAGES.TABLE.ACTIONS,
       render: (item) => (
         <div className="flex gap-2">
           <Button
@@ -184,17 +195,20 @@ export default function CustomerStuffingDestuffing() {
             className="gap-1"
           >
             <Eye className="h-4 w-4" />
-            View
+            {UI_MESSAGES.TABLE.VIEW}
           </Button>
           {item.status === "at-factory" && (
             <Button
               variant="default"
               size="sm"
-              onClick={() => handleMarkAsComplete(item.id)}
+              onClick={() => {
+                setPendingRequestId(item.id);
+                setShowConfirmDialog(true);
+              }}
               className="gap-1 h-8 bg-success hover:bg-success/90 text-white"
             >
               <CheckCircle className="h-3.5 w-3.5" />
-              Complete
+              {UI_MESSAGES.TABLE.COMPLETE}
             </Button>
           )}
         </div>
@@ -204,7 +218,7 @@ export default function CustomerStuffingDestuffing() {
 
   if (hasOverdueBills) {
     return (
-      <DashboardLayout navItems={customerNavItems} pageTitle="Stuffing / Destuffing">
+      <DashboardLayout navItems={customerNavItems} pageTitle={UI_MESSAGES.TITLES.STUFFING_DESTUFFING}>
         <OverdueBlocker />
       </DashboardLayout>
     );
@@ -224,25 +238,25 @@ export default function CustomerStuffingDestuffing() {
   return (
     <DashboardLayout
       navItems={customerNavItems}
-      pageTitle="Stuffing / Destuffing"
+      pageTitle={UI_MESSAGES.TITLES.STUFFING_DESTUFFING}
     >
       {/* KPI Cards */}
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KPICard
-          title="Total Operations"
+          title={UI_MESSAGES.KPI.TOTAL_OPERATIONS}
           value={requests.length}
           icon={Package}
           variant="primary"
         />
         <KPICard
-          title="Pending"
+          title={UI_MESSAGES.KPI.PENDING}
           value={pendingOps}
           icon={Clock}
           variant="warning"
         />
-        <KPICard title="In Progress" value={inProgressOps} icon={Package} />
+        <KPICard title={UI_MESSAGES.KPI.IN_PROGRESS} value={inProgressOps} icon={Package} />
         <KPICard
-          title="Completed"
+          title={UI_MESSAGES.KPI.DELIVERED}
           value={completedOps}
           icon={CheckCircle}
           variant="success"
@@ -252,14 +266,14 @@ export default function CustomerStuffingDestuffing() {
       {/* Operations Tabs */}
       <Card>
         <CardHeader>
-          <CardTitle>Operations</CardTitle>
+          <CardTitle>{UI_MESSAGES.KPI.OPERATIONS}</CardTitle>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="all">
             <TabsList className="mb-4">
-              <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="stuffing">Stuffing</TabsTrigger>
-              <TabsTrigger value="destuffing">Destuffing</TabsTrigger>
+              <TabsTrigger value="all">{UI_MESSAGES.COMMON.ALL}</TabsTrigger>
+              <TabsTrigger value="stuffing">{UI_MESSAGES.COMMON.STUFFING}</TabsTrigger>
+              <TabsTrigger value="destuffing">{UI_MESSAGES.COMMON.DESTUFFING}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="all">
@@ -267,8 +281,8 @@ export default function CustomerStuffingDestuffing() {
                 data={requests}
                 columns={columns}
                 searchable
-                searchPlaceholder="Search operations..."
-                emptyMessage="No operations found"
+                searchPlaceholder={UI_MESSAGES.TABLE.SEARCH_OPERATIONS}
+                emptyMessage={UI_MESSAGES.TABLE.NO_OPERATIONS_FOUND}
               />
             </TabsContent>
 
@@ -277,8 +291,8 @@ export default function CustomerStuffingDestuffing() {
                 data={requests.filter((op) => op.type === "stuffing")}
                 columns={columns}
                 searchable
-                searchPlaceholder="Search stuffing operations..."
-                emptyMessage="No stuffing operations found"
+                searchPlaceholder={UI_MESSAGES.TABLE.SEARCH_OPERATIONS}
+                emptyMessage={UI_MESSAGES.TABLE.NO_OPERATIONS_FOUND}
               />
             </TabsContent>
 
@@ -287,8 +301,8 @@ export default function CustomerStuffingDestuffing() {
                 data={requests.filter((op) => op.type === "destuffing")}
                 columns={columns}
                 searchable
-                searchPlaceholder="Search destuffing operations..."
-                emptyMessage="No destuffing operations found"
+                searchPlaceholder={UI_MESSAGES.TABLE.SEARCH_OPERATIONS}
+                emptyMessage={UI_MESSAGES.TABLE.NO_OPERATIONS_FOUND}
               />
             </TabsContent>
           </Tabs>
@@ -298,77 +312,77 @@ export default function CustomerStuffingDestuffing() {
       <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Operation Details</DialogTitle>
+            <DialogTitle>{UI_MESSAGES.DIALOG.OPERATION_DETAILS}</DialogTitle>
           </DialogHeader>
           {selectedOperation && (
             <div className="space-y-4">
               {/* Operation Info */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">Container</p>
+                  <p className="text-sm text-muted-foreground">{UI_MESSAGES.TABLE.CONTAINER}</p>
                   <p className="font-mono font-medium">
-                    {selectedOperation.containerNumber}
+                    {selectedOperation.containerNumber || UI_MESSAGES.COMMON.NA}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Type</p>
+                  <p className="text-sm text-muted-foreground">{UI_MESSAGES.TABLE.TYPE}</p>
                   <p className="capitalize font-medium">
-                    {selectedOperation.type}
+                    {selectedOperation.type || UI_MESSAGES.COMMON.NA}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">
-                    Current Status
+                    {UI_MESSAGES.TABLE.STATUS}
                   </p>
                   <StatusBadge status={selectedOperation.status} />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">
-                    Scheduled Date
+                    {UI_MESSAGES.TABLE.SCHEDULED_DATE}
                   </p>
                   <p>
-                    {selectedOperation.preferredDate ? new Date(selectedOperation.preferredDate).toLocaleString() : "N/A"}
+                    {selectedOperation.preferredDate ? new Date(selectedOperation.preferredDate).toLocaleString() : UI_MESSAGES.COMMON.NA}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">
-                    Requested On
+                    {UI_MESSAGES.COMMON.REQUESTED_ON}
                   </p>
                   <p>
-                    {selectedOperation.createdAt ? new Date(selectedOperation.createdAt).toLocaleString() : "N/A"}
+                    {selectedOperation.createdAt ? new Date(selectedOperation.createdAt).toLocaleString() : UI_MESSAGES.COMMON.NA}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">
-                    Cargo Category
+                    {UI_MESSAGES.TABLE.CATEGORY}
                   </p>
                   <p className="capitalize font-medium">
-                    {selectedOperation.cargoCategoryName || "N/A"}
+                    {selectedOperation.cargoCategoryName || UI_MESSAGES.COMMON.NA}
                   </p>
                 </div>
               </div>
 
               {/* Cargo Details */}
               <div className="border-t pt-4">
-                <h4 className="font-semibold mb-3">Cargo Details</h4>
+                <h4 className="font-semibold mb-3">{UI_MESSAGES.COMMON.CARGO_DETAILS}</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-2">
-                    <p className="text-sm text-muted-foreground">Description</p>
-                    <p className="font-medium">{selectedOperation.cargoDescription || "N/A"}</p>
+                    <p className="text-sm text-muted-foreground">{UI_MESSAGES.COMMON.DESCRIPTION}</p>
+                    <p className="font-medium">{selectedOperation.cargoDescription || UI_MESSAGES.COMMON.NA}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Weight</p>
-                    <p className="font-medium">{selectedOperation.cargoWeight ? `${selectedOperation.cargoWeight} kg` : "N/A"}</p>
+                    <p className="text-sm text-muted-foreground">{UI_MESSAGES.COMMON.WEIGHT}</p>
+                    <p className="font-medium">{selectedOperation.cargoWeight ? `${selectedOperation.cargoWeight} ${UI_MESSAGES.COMMON.KG}` : UI_MESSAGES.COMMON.NA}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Hazardous</p>
+                    <p className="text-sm text-muted-foreground">{UI_MESSAGES.TABLE.HAZARDOUS}</p>
                     {selectedOperation.isHazardous ? (
                       <div className="flex items-center gap-1 text-destructive">
                         <AlertTriangle className="h-4 w-4" />
-                        <span className="font-medium">Yes ({selectedOperation.hazardClass})</span>
+                        <span className="font-medium">{UI_MESSAGES.COMMON.YES} ({selectedOperation.hazardClass})</span>
                       </div>
                     ) : (
-                      <p className="font-medium">No</p>
+                      <p className="font-medium">{UI_MESSAGES.COMMON.NO}</p>
                     )}
                   </div>
                 </div>
@@ -376,7 +390,7 @@ export default function CustomerStuffingDestuffing() {
 
               {selectedOperation.remarks && (
                 <div>
-                  <p className="text-sm text-muted-foreground">Remarks</p>
+                  <p className="text-sm text-muted-foreground">{UI_MESSAGES.COMMON.REMARKS}</p>
                   <p className="text-sm">{selectedOperation.remarks}</p>
                 </div>
               )}
@@ -387,7 +401,41 @@ export default function CustomerStuffingDestuffing() {
               variant="outline"
               onClick={() => setShowDetailsDialog(false)}
             >
-              Close
+              {UI_MESSAGES.COMMON.CANCEL}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{UI_MESSAGES.TRANSIT.CONFIRM_COMPLETE}</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-sm text-muted-foreground">
+              {UI_MESSAGES.TRANSIT.CONFIRM_COMPLETE_DESC}
+            </p>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowConfirmDialog(false);
+                setPendingRequestId(null);
+              }}
+              disabled={isUpdating}
+            >
+              {UI_MESSAGES.COMMON.CANCEL}
+            </Button>
+            <Button
+              variant="default"
+              onClick={handleMarkAsComplete}
+              disabled={isUpdating}
+              className="bg-success hover:bg-success/90"
+            >
+              {isUpdating ? UI_MESSAGES.COMMON.LOADING : UI_MESSAGES.COMMON.SUBMIT}
             </Button>
           </DialogFooter>
         </DialogContent>

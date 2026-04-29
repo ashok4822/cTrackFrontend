@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { containerRequestService } from "@/services/containerRequestService";
 import type { ContainerRequest } from "@/types";
+import { UI_MESSAGES } from "@/constants/messages";
 
 export default function AdminTransitTracking() {
   const [requests, setRequests] = useState<ContainerRequest[]>([]);
@@ -70,22 +71,22 @@ export default function AdminTransitTracking() {
   const columns: Column<ContainerRequest>[] = [
     {
       key: "containerNumber",
-      header: "Container No.",
+      header: UI_MESSAGES.TABLE.CONTAINER_NO,
       sortable: true,
       render: (item) => (
         <span className="font-mono font-medium text-foreground">
-          {item.containerNumber || "NEW"}
+          {item.containerNumber || UI_MESSAGES.DESTUFFING.NEW_CONTAINER}
         </span>
       ),
     },
     {
       key: "customerName",
-      header: "Factory",
+      header: UI_MESSAGES.TABLE.CUSTOMER,
       sortable: true,
     },
     {
       key: "status",
-      header: "Status",
+      header: UI_MESSAGES.TABLE.STATUS,
       sortable: true,
       render: (item) => {
         const variant = item.status === "at-factory" || item.status === "completed" ? ("secondary" as const) : ("default" as const);
@@ -94,15 +95,15 @@ export default function AdminTransitTracking() {
     },
     {
       key: "checkpoints",
-      header: "Checkpoints",
+      header: UI_MESSAGES.TABLE.CHECKPOINTS,
       render: (item) => (
-        <span className="text-muted-foreground">{item.checkpoints?.length || 0} passed</span>
+        <span className="text-muted-foreground">{UI_MESSAGES.TABLE.PASSED_CHECKPOINTS(item.checkpoints?.length || 0)}</span>
       ),
     },
 
     {
       key: "actions",
-      header: "Actions",
+      header: UI_MESSAGES.TABLE.ACTIONS,
       render: (item) => (
         <Button
           variant="ghost"
@@ -114,7 +115,7 @@ export default function AdminTransitTracking() {
           className="gap-1"
         >
           <Eye className="h-4 w-4" />
-          Track
+          {UI_MESSAGES.TABLE.TRACK}
         </Button>
       ),
     },
@@ -123,30 +124,30 @@ export default function AdminTransitTracking() {
   return (
     <DashboardLayout
       navItems={adminNavItems}
-      pageTitle="Transit Tracking (Admin)"
+      pageTitle={UI_MESSAGES.BILLING.TRANSIT_ADMIN_TITLE}
     >
       {/* KPI Cards */}
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KPICard
-          title="In Transit"
+          title={UI_MESSAGES.KPI.IN_TRANSIT}
           value={inTransitCount}
           icon={Truck}
           variant="warning"
         />
         <KPICard
-          title="Ready for Dispatch"
+          title={UI_MESSAGES.KPI.PENDING_DISPATCH}
           value={pendingCount}
           icon={Clock}
           variant="primary"
         />
         <KPICard
-          title="At Factory"
+          title={UI_MESSAGES.KPI.AT_FACTORY}
           value={atFactoryCount}
           icon={CheckCircle}
           variant="success"
         />
         <KPICard
-          title="Completed"
+          title={UI_MESSAGES.KPI.DELIVERED}
           value={completedCount}
           icon={CheckCircle}
         />
@@ -155,16 +156,16 @@ export default function AdminTransitTracking() {
       {/* Container List */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Global Transit Overview</CardTitle>
+          <CardTitle>{UI_MESSAGES.BILLING.TRANSIT_OVERVIEW}</CardTitle>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-40">
-              <SelectValue placeholder="Filter by status" />
+              <SelectValue placeholder={UI_MESSAGES.TABLE.FILTER_BY_STATUS} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="in-transit">In Transit</SelectItem>
-              <SelectItem value="delivered">Delivered</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="all">{UI_MESSAGES.TABLE.ALL_STATUSES}</SelectItem>
+              <SelectItem value="in-transit">{UI_MESSAGES.KPI.IN_TRANSIT}</SelectItem>
+              <SelectItem value="delivered">{UI_MESSAGES.KPI.DELIVERED}</SelectItem>
+              <SelectItem value="pending">{UI_MESSAGES.KPI.PENDING}</SelectItem>
             </SelectContent>
           </Select>
         </CardHeader>
@@ -174,8 +175,8 @@ export default function AdminTransitTracking() {
             columns={columns}
             searchable
             isLoading={loading}
-            searchPlaceholder="Search all containers..."
-            emptyMessage="No shipments found in transit"
+            searchPlaceholder={UI_MESSAGES.BILLING.SEARCH_ALL_CONTAINERS}
+            emptyMessage={UI_MESSAGES.BILLING.NO_TRANSIT_FOUND}
           />
         </CardContent>
       </Card>
@@ -186,7 +187,7 @@ export default function AdminTransitTracking() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Navigation className="h-5 w-5" />
-              Transit Checkpoints
+              {UI_MESSAGES.DIALOG.TRANSIT_DETAILS}
             </DialogTitle>
           </DialogHeader>
 
@@ -195,13 +196,13 @@ export default function AdminTransitTracking() {
               {/* Container Info */}
               <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
                 <div>
-                  <p className="text-sm text-muted-foreground">Container</p>
+                  <p className="text-sm text-muted-foreground">{UI_MESSAGES.TABLE.CONTAINER}</p>
                   <p className="font-mono font-medium text-lg">
-                    {selectedRequest.containerNumber || "NEW REQUEST"}
+                    {selectedRequest.containerNumber || UI_MESSAGES.DESTUFFING.NEW_CONTAINER}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm text-muted-foreground">Status</p>
+                  <p className="text-sm text-muted-foreground">{UI_MESSAGES.TABLE.STATUS}</p>
                   <Badge variant={selectedRequest.status === "at-factory" || selectedRequest.status === "completed" ? "secondary" : "default"}>
                     {selectedRequest.status.replace(/-/g, " ")}
                   </Badge>
@@ -249,9 +250,9 @@ export default function AdminTransitTracking() {
                 ) : (
                   <div className="pl-10 py-8 text-center text-muted-foreground">
                     <Truck className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                    <p>No checkpoint data available yet.</p>
+                    <p>{UI_MESSAGES.BILLING.NO_CHECKPOINTS}</p>
                     <p className="text-sm">
-                      Tracking will begin once the container is gated out.
+                      {UI_MESSAGES.BILLING.TRACKING_START_DESC}
                     </p>
                   </div>
                 )}

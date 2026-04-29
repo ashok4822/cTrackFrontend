@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import auditLogService from "@/services/auditLogService";
 import type { AuditLog, AuditLogFilters, AuditLogsResponse } from "@/services/auditLogService";
+import { UI_MESSAGES } from "@/constants/messages";
 import { AxiosError } from "axios";
 
 interface AuditLogState {
@@ -29,7 +30,7 @@ export const fetchAuditLogs = createAsyncThunk(
             return await auditLogService.getAuditLogs(filters);
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
-            return rejectWithValue(axiosError.response?.data?.message || "Failed to fetch audit logs");
+            return rejectWithValue(axiosError.response?.data?.message || UI_MESSAGES.AUDIT.FETCH_FAILED);
         }
     }
 );

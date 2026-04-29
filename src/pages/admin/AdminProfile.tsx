@@ -23,6 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { UI_MESSAGES } from "@/constants/messages";
 import {
   User,
   Mail,
@@ -71,18 +72,18 @@ export default function AdminProfile() {
 
     try {
       await dispatch(updateProfileImage(file)).unwrap();
-      toast.success("Profile image updated successfully");
+      toast.success(UI_MESSAGES.PROFILE.IMAGE_UPDATE_SUCCESS);
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : String(error));
+      toast.error(error instanceof Error ? error.message : UI_MESSAGES.PROFILE.IMAGE_UPLOAD_FAILED);
     }
   };
 
   const handleSaveProfile = async () => {
     try {
       await dispatch(updateProfile({ name, phone })).unwrap();
-      toast.success("Profile updated successfully");
+      toast.success(UI_MESSAGES.PROFILE.UPDATE_SUCCESS);
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : String(error));
+      toast.error(error instanceof Error ? error.message : UI_MESSAGES.PROFILE.UPDATE_FAILED);
     }
   };
 
@@ -91,12 +92,12 @@ export default function AdminProfile() {
       await dispatch(
         updatePassword({ currentPassword, newPassword, confirmPassword }),
       ).unwrap();
-      toast.success("Password updated successfully");
+      toast.success(UI_MESSAGES.PROFILE.PASSWORD_UPDATE_SUCCESS);
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : String(error));
+      toast.error(error instanceof Error ? error.message : UI_MESSAGES.PROFILE.PASSWORD_UPDATE_FAILED);
     }
   };
 
@@ -112,7 +113,7 @@ export default function AdminProfile() {
     if (email) {
       return email.slice(0, 2).toUpperCase();
     }
-    return "AU";
+    return UI_MESSAGES.TITLES.ADMINISTRATOR.slice(0, 2).toUpperCase();
   };
 
   const getImageUrl = (path?: string) => {
@@ -130,7 +131,7 @@ export default function AdminProfile() {
 
   if (isLoading && !profile) {
     return (
-      <DashboardLayout navItems={adminNavItems} pageTitle="Profile">
+      <DashboardLayout navItems={adminNavItems} pageTitle={UI_MESSAGES.TITLES.PROFILE}>
         <div className="flex items-center justify-center h-64">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
@@ -139,7 +140,7 @@ export default function AdminProfile() {
   }
 
   return (
-    <DashboardLayout navItems={adminNavItems} pageTitle="Profile">
+    <DashboardLayout navItems={adminNavItems} pageTitle={UI_MESSAGES.TITLES.PROFILE}>
       <div className="space-y-6">
         {/* Profile Header */}
         <Card>
@@ -171,11 +172,11 @@ export default function AdminProfile() {
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
                   <h2 className="text-2xl font-bold">
-                    {profile?.name || user?.name || "Admin User"}
+                    {profile?.name || user?.name || UI_MESSAGES.PROFILE.ADMIN_USER}
                   </h2>
                   <Badge className="bg-primary/10 text-primary hover:bg-primary/20">
                     <Shield className="h-3 w-3 mr-1" />
-                    Administrator
+                    {UI_MESSAGES.TITLES.ADMINISTRATOR}
                   </Badge>
                 </div>
                 <p className="text-muted-foreground">
@@ -184,7 +185,7 @@ export default function AdminProfile() {
                 <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Building className="h-4 w-4" />
-                    Administration
+                    {UI_MESSAGES.PROFILE.ADMINISTRATION}
                   </span>
                 </div>
               </div>
@@ -199,7 +200,7 @@ export default function AdminProfile() {
                   ) : (
                     <Save className="h-4 w-4" />
                   )}
-                  Save Changes
+                  {UI_MESSAGES.COMMON.SAVE_CHANGES}
                 </Button>
               </div>
             </div>
@@ -211,12 +212,12 @@ export default function AdminProfile() {
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="personal" className="gap-2">
               <User className="h-4 w-4" />
-              Personal
+              {UI_MESSAGES.PROFILE.PERSONAL_INFO_TAB}
             </TabsTrigger>
 
             <TabsTrigger value="security" className="gap-2">
               <Shield className="h-4 w-4" />
-              Security
+              {UI_MESSAGES.PROFILE.SECURITY_TAB}
             </TabsTrigger>
           </TabsList>
 
@@ -224,25 +225,25 @@ export default function AdminProfile() {
           <TabsContent value="personal">
             <Card>
               <CardHeader>
-                <CardTitle>Personal Information</CardTitle>
+                <CardTitle>{UI_MESSAGES.PROFILE.PERSONAL_INFO}</CardTitle>
                 <CardDescription>
-                  Update your personal details here
+                  {UI_MESSAGES.PROFILE.UPDATE_DETAILS}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="Name">Name</Label>
+                    <Label htmlFor="Name">{UI_MESSAGES.PROFILE.YOUR_NAME}</Label>
                     <Input
                       id="Name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder={profile?.name || user?.name || "Admin User"}
+                      placeholder={profile?.name || user?.name || UI_MESSAGES.TITLES.ADMINISTRATOR}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email">{UI_MESSAGES.PROFILE.EMAIL}</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -254,7 +255,7 @@ export default function AdminProfile() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Phone</Label>
+                    <Label htmlFor="phone">{UI_MESSAGES.PROFILE.PHONE_NUMBER}</Label>
                     <div className="relative">
                       <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -262,7 +263,7 @@ export default function AdminProfile() {
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         className="pl-10"
-                        placeholder="+91 98765 43210"
+                        placeholder={UI_MESSAGES.PROFILE.PHONE_PLACEHOLDER}
                       />
                     </div>
                   </div>
@@ -277,7 +278,7 @@ export default function AdminProfile() {
                   ) : (
                     <Save className="h-4 w-4" />
                   )}
-                  Save Changes
+                  {UI_MESSAGES.COMMON.SAVE_CHANGES}
                 </Button>
               </CardContent>
             </Card>
@@ -287,13 +288,13 @@ export default function AdminProfile() {
           <TabsContent value="security">
             <Card>
               <CardHeader>
-                <CardTitle>Security Settings</CardTitle>
-                <CardDescription>Manage your account security</CardDescription>
+                <CardTitle>{UI_MESSAGES.PROFILE.SECURITY_SETTINGS}</CardTitle>
+                <CardDescription>{UI_MESSAGES.PROFILE.MANAGE_SECURITY}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="currentPassword">Current Password</Label>
+                    <Label htmlFor="currentPassword">{UI_MESSAGES.PROFILE.CURRENT_PASSWORD}</Label>
                     <div className="relative">
                       <Key className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -322,7 +323,7 @@ export default function AdminProfile() {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="newPassword">New Password</Label>
+                      <Label htmlFor="newPassword">{UI_MESSAGES.PROFILE.NEW_PASSWORD}</Label>
                       <div className="relative">
                         <Input
                           id="newPassword"
@@ -346,7 +347,7 @@ export default function AdminProfile() {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="confirmPassword">Confirm Password</Label>
+                      <Label htmlFor="confirmPassword">{UI_MESSAGES.PROFILE.CONFIRM_NEW_PASSWORD}</Label>
                       <div className="relative">
                         <Input
                           id="confirmPassword"
@@ -378,25 +379,25 @@ export default function AdminProfile() {
                     className="gap-2"
                   >
                     {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-                    Update Password
+                    {UI_MESSAGES.PROFILE.CHANGE_PASSWORD}
                   </Button>
                 </div>
                 <Separator />
 
                 <Separator />
                 <div>
-                  <p className="font-medium mb-2">Active Sessions</p>
+                  <p className="font-medium mb-2">{UI_MESSAGES.PROFILE.ACTIVE_SESSIONS}</p>
                   <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                     <div className="flex items-center gap-3">
                       <div className="h-2 w-2 bg-success rounded-full" />
                       <div>
-                        <p className="text-sm font-medium">Current Session</p>
+                        <p className="text-sm font-medium">{UI_MESSAGES.PROFILE.CURRENT_SESSION}</p>
                         <p className="text-xs text-muted-foreground">
-                          Chrome on Windows • Last active now
+                          {UI_MESSAGES.PROFILE.CURRENT_SESSION_DETAILS}
                         </p>
                       </div>
                     </div>
-                    <Badge variant="outline">Active</Badge>
+                    <Badge variant="outline">{UI_MESSAGES.KPI.ACTIVE}</Badge>
                   </div>
                 </div>
               </CardContent>
