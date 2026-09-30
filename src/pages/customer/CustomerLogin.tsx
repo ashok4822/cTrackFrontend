@@ -46,6 +46,23 @@ const CustomerLogin = () => {
     }
   };
 
+  const handleDemoLogin = async () => {
+    const demoEmail = "customer@demo.com";
+    const demoPassword = "Customer@123";
+    setEmail(demoEmail);
+    setPassword(demoPassword);
+    try {
+      const resultAction = await dispatch(
+        login({ email: demoEmail, password: demoPassword, role: "customer" }),
+      );
+      if (login.fulfilled.match(resultAction)) {
+        navigate("/customer/dashboard");
+      }
+    } catch (err) {
+      console.error("Demo login error:", err);
+    }
+  };
+
   const handleGoogleLogin = useGoogleLogin({
     flow: "auth-code",
     onSuccess: async (codeResponse) => {
@@ -162,6 +179,33 @@ const CustomerLogin = () => {
                   {error}
                 </p>
               )}
+
+              {/* Demo Login */}
+              <div className="relative my-2">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-dashed" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">or try demo</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleDemoLogin}
+                disabled={isLoading}
+                className="w-full group relative overflow-hidden rounded-lg border-2 border-dashed border-success/40 bg-success/5 px-4 py-3 text-sm font-medium text-success transition-all hover:border-success hover:bg-success/10 hover:shadow-sm disabled:opacity-50"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Factory className="h-4 w-4" />
+                    <span>Demo Customer Login</span>
+                  </div>
+                  <div className="text-right text-xs font-mono text-muted-foreground group-hover:text-success">
+                    <div>customer@demo.com</div>
+                    <div>Customer@123</div>
+                  </div>
+                </div>
+              </button>
 
               <div className="relative my-4">
                 <div className="absolute inset-0 flex items-center">

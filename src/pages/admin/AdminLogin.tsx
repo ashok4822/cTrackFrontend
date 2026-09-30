@@ -64,6 +64,23 @@ const AdminLogin = () => {
     }
   };
 
+  const handleDemoLogin = async () => {
+    const demoEmail = "admin@demo.com";
+    const demoPassword = "Admin@123";
+    setEmail(demoEmail);
+    setPassword(demoPassword);
+    try {
+      const resultAction = await dispatch(
+        login({ email: demoEmail, password: demoPassword, role: "admin" }),
+      );
+      if (login.fulfilled.match(resultAction)) {
+        navigate("/admin/dashboard");
+      }
+    } catch (err) {
+      console.error("Demo login error:", err);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
       {/* Header */}
@@ -160,6 +177,33 @@ const AdminLogin = () => {
                   {error}
                 </p>
               )}
+
+              {/* Demo Login */}
+              <div className="relative my-2">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-dashed" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">or try demo</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleDemoLogin}
+                disabled={isLoading}
+                className="w-full group relative overflow-hidden rounded-lg border-2 border-dashed border-primary/40 bg-primary/5 px-4 py-3 text-sm font-medium text-primary transition-all hover:border-primary hover:bg-primary/10 hover:shadow-sm disabled:opacity-50"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-4 w-4" />
+                    <span>Demo Admin Login</span>
+                  </div>
+                  <div className="text-right text-xs font-mono text-muted-foreground group-hover:text-primary">
+                    <div>admin@demo.com</div>
+                    <div>Admin@123</div>
+                  </div>
+                </div>
+              </button>
             </form>
           </CardContent>
         </Card>
